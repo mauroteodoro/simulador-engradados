@@ -1,0 +1,3592 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR"
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Artefacto | Custos Industriais</title>
+    <!-- Substituímos o SheetJS pelo ExcelJS para permitir fórmulas, bordas e cores perfeitas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <style>
+      /* VARIAVEIS DE TEMA (LIQUID GLASS & MODERN DARK) */
+      :root {
+        --bg-body: #f3f4f6;
+        --bg-panel: rgba(255, 255, 255, 0.7);
+        --text-main: #1f2937;
+        --text-muted: #6b7280;
+        --border-light: rgba(0, 0, 0, 0.08); /* Cinza sutil para aparecer no fundo claro */
+        --border-edge: rgba(255, 255, 255, 0.8);
+        --primary: #0071e3; /* Azul Clássico Apple */
+        --primary-hover: #0077ed;
+        --canvas-bg: #e5e7eb;
+        --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+      }
+
+      :root[data-theme="dark"] {
+        --bg-body: #121214;
+        --bg-panel: rgba(32, 32, 36, 0.65);
+        --text-main: #e1e1e6;
+        --text-muted: #a8a8b3;
+        --border-light: rgba(255, 255, 255, 0.08);
+        --border-edge: rgba(255, 255, 255, 0.03);
+        --primary: #0a84ff; /* Azul vibrante para Dark Mode */
+        --primary-hover: #409cff;
+        --canvas-bg: #09090a;
+        --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+      }
+
+      /* BASE STYLES */
+      * {
+        box-sizing: border-box;
+        transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-body);
+        color: var(--text-main);
+        margin: 0;
+        padding: 20px;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* HEADER & TABS */
+      .app-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1400px;
+        margin: 0 auto 20px auto;
+        padding: 0 10px;
+      }
+      .header-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      .header-title h1 {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 700;
+      }
+      .header-title span {
+        font-weight: 300;
+        font-size: 1rem;
+        color: var(--text-muted);
+      }
+
+      .theme-toggle {
+        background: rgba(148, 163, 184, 0.15);
+        color: var(--text-main);
+        border: none;
+        padding: 8px 18px;
+        border-radius: 980px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.9rem;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition: all 0.25s ease;
+        box-shadow: none;
+      }
+      .theme-toggle:hover {
+        background: rgba(148, 163, 184, 0.25);
+      }
+      .theme-toggle:active {
+        transform: scale(0.95);
+      }
+
+      .tabs {
+        max-width: 1400px;
+        margin: 0 auto 20px auto;
+        display: flex;
+        gap: 12px; /* Espaço entre os botões */
+      }
+      .tab-btn {
+        background: transparent;
+        color: var(--text-muted);
+        border: 1px solid var(--border-light);
+        padding: 10px 24px;
+        border-radius: 980px; /* Formato pílula arredondada */
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+      }
+      .tab-btn:hover {
+        border-color: var(--primary);
+        color: var(--text-main);
+      }
+      .tab-btn.active {
+        background: var(--primary);
+        color: #ffffff;
+        border-color: var(--primary);
+        box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3); /* Brilho sutil ao redor */
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+
+      /* GRID LAYOUT (SIMULADOR) */
+      .dashboard-container {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr);
+        gap: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      /* PANELS */
+      .panel {
+        background: var(--bg-panel);
+        border-radius: 20px;
+        padding: 24px;
+        /* Efeito Liquid Glass: Desfoque + Saturação */
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        /* Brilho interno simulando a borda do vidro */
+        box-shadow: inset 0 1px 1px var(--border-edge), var(--card-shadow);
+        border: 1px solid var(--border-light);
+      }
+
+      h2 {
+        margin-top: 0;
+        font-size: 1.1rem;
+        border-bottom: 2px solid var(--border-light);
+        padding-bottom: 10px;
+        color: var(--text-main);
+      }
+
+      /* INPUTS */
+      .input-group {
+        margin-bottom: 16px;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+        color: var(--text-muted);
+      }
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input {
+        -moz-appearance: textfield;
+        width: 100%;
+        padding: 12px 16px;
+        background: var(--canvas-bg);
+        border: 1px solid transparent;
+        border-radius: 12px;
+        color: var(--text-main);
+        font-size: 1rem;
+        outline: none;
+        transition: all 0.2s ease;
+      }
+      input:focus {
+        border-color: var(--primary);
+        background: var(--bg-panel);
+        box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+      }
+
+      /* BUTTONS & TOAST */
+      .btn-calc, .btn-export {
+        width: 100%;
+        border: none;
+        padding: 14px;
+        border-radius: 14px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #ffffff;
+      }
+      .btn-calc {
+        background: var(--primary);
+        margin-top: 10px;
+      }
+      .btn-calc:hover {
+        background: var(--primary-hover);
+      }
+      .btn-calc:active, .btn-export:active {
+        transform: scale(0.96);
+        opacity: 0.9;
+      }
+      .btn-export {
+        background: #34c759; /* Verde autêntico do iOS */
+        margin-top: 15px;
+      }
+      .btn-export:hover {
+        background: #30d158;
+      }
+
+      #toast {
+        position: fixed;
+        bottom: -60px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        padding: 12px 28px;
+        border-radius: 30px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 9999;
+        pointer-events: none;
+      }
+      #toast.show {
+        bottom: 30px;
+      }
+
+      /* 3D CANVAS AREA */
+      .main-content {
+        display: flex;
+        flex-direction: column;
+      }
+      .main-content .panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      #canvas-container {
+        width: 100%;
+        flex: 1;
+        min-height: 350px;
+        background: var(--canvas-bg);
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid var(--border-light);
+      }
+      .canvas-hint {
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: 10px;
+      }
+
+      /* EXPLODE CONTROLS */
+      .explode-controls {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+        z-index: 100;
+      }
+      .btn-explode {
+        background: rgba(148, 163, 184, 0.15);
+        color: var(--text-main);
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        padding: 10px 24px;
+        border-radius: 980px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        cursor: pointer;
+        box-shadow: none;
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        transition: all 0.25s ease;
+      }
+      .btn-explode:hover {
+        background: rgba(148, 163, 184, 0.25);
+        transform: scale(0.98);
+      }
+      .btn-explode:active {
+        transform: scale(0.95);
+      }
+      .btn-explode.active {
+        background: #007AFF; /* Azul clássico da Apple */
+        color: white;
+        border-color: #007AFF;
+      }
+
+      .slider-wrapper {
+        background: rgba(var(--bg-panel), 0.8);
+        backdrop-filter: blur(10px);
+        padding: 10px 15px;
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+      }
+      .slider-wrapper label {
+        margin-bottom: 5px;
+        color: var(--text-main);
+        font-size: 0.75rem;
+      }
+
+      /* CAIXA DE INSPEÇÃO (RAIO-X) - Efeito de entrada suave */
+      .piece-info-box {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.98);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+      .piece-info-box.visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      /* RESULTS GRID */
+      .results-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+      .result-card {
+        background: var(--bg-panel);
+        border-radius: 20px;
+        padding: 24px;
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        box-shadow: inset 0 1px 1px var(--border-edge), var(--card-shadow);
+        border: 1px solid var(--border-light);
+      }
+      .result-card h3 {
+        margin: 0 0 16px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .result-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        /* Adicionamos padding lateral e margem negativa para o fundo não "esmagar" o texto */
+        padding: 12px 12px;
+        margin: 0 -12px; 
+        border-bottom: 1px solid var(--border-light);
+        font-size: 0.95rem;
+        cursor: default;
+        border-radius: 10px;
+        transition: background-color 0.2s ease;
+      }
+      .result-row:hover {
+        /* Ao passar o mouse, a linha acende usando a própria cor translúcida da borda */
+        background-color: var(--border-light);
+      }
+      .result-row:last-child {
+        border-bottom: none;
+      }
+      .result-row strong {
+        color: var(--text-muted);
+        font-weight: 400; /* Apple usa fonte normal para rótulos */
+      }
+      .result-row span {
+        font-weight: 500; /* Leve destaque para o valor (medium) */
+        text-align: right;
+        line-height: 1.4;
+        color: var(--text-main);
+      }
+      .highlight-total {
+        font-weight: 900;
+        font-size: 1.2rem;
+        color: #10b981 !important;
+      }
+
+      /* ALERTS */
+      .alert-box {
+        background: var(--danger-bg);
+        border-left: 4px solid var(--danger-border);
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+      }
+      .alert-box strong {
+        color: var(--danger-text);
+        display: block;
+        margin-bottom: 4px;
+        font-size: 0.9rem;
+      }
+      .alert-box p {
+        margin: 0;
+        font-size: 0.8rem;
+        color: var(--danger-text);
+        opacity: 0.9;
+      }
+
+      /* MANUAL STYLES */
+      .manual-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+      .manual-card {
+        background: var(--bg-panel);
+        border-radius: 20px;
+        padding: 24px;
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        box-shadow: inset 0 1px 1px var(--border-edge), var(--card-shadow);
+        border: 1px solid var(--border-light);
+        cursor: pointer;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, border-color 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .manual-card:hover {
+        transform: translateY(-8px) scale(1.01);
+        box-shadow: 0 20px 40px rgba(0, 113, 227, 0.15), inset 0 1px 1px var(--border-edge);
+        border-color: var(--primary);
+      }
+      .manual-card h3 {
+        color: var(--primary);
+        margin-top: 0;
+        border-bottom: 1px solid var(--border-light);
+        padding-bottom: 10px;
+      }
+      .manual-card ul {
+        padding-left: 20px;
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 10px;
+      }
+      .manual-card li {
+        margin-bottom: 8px;
+      }
+      .manual-card strong {
+        color: var(--text-main);
+      }
+
+      @media (max-width: 900px) {
+        .dashboard-container {
+          grid-template-columns: 1fr;
+        }
+        .header-title {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 5px;
+        }
+        .app-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 15px;
+        }
+        .tabs {
+          flex-wrap: wrap;
+        }
+        .tab-btn {
+          flex: 1;
+          text-align: center;
+        }
+        #canvas-container {
+          min-height: 400px;
+        }
+        /* Reposiciona a caixa de Raio-X no celular para não cobrir tudo */
+        .piece-info-box {
+          top: auto;
+          bottom: 15px;
+          left: 15px;
+          right: 15px;
+          min-width: auto;
+        }
+      }
+      /* TELA DE LOGIN */
+      #login-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: var(--bg-body);
+        z-index: 999999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: opacity 0.4s ease, visibility 0.4s;
+      }
+      .login-box {
+        background: var(--bg-panel);
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        border: 1px solid var(--border-light);
+        width: 90%;
+        max-width: 380px;
+        text-align: center;
+        transform: translateY(0);
+        transition: transform 0.4s ease;
+      }
+      #login-overlay.hidden .login-box {
+        transform: translateY(-20px);
+      }
+      .login-box h1 {
+        margin: 0 0 5px 0;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 2.2rem;
+        color: var(--text-main);
+        letter-spacing: -1px;
+        text-transform: lowercase;
+      }
+      .login-box p {
+        color: var(--text-muted);
+        margin: 0 0 30px 0;
+        font-size: 0.95rem;
+      }
+      .login-input {
+        width: 100%;
+        padding: 14px;
+        margin-bottom: 15px;
+        background: var(--bg-body);
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        color: var(--text-main);
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.2s;
+        text-align: center;
+      }
+      .login-input:focus {
+        border-color: var(--primary);
+      }
+      .login-btn {
+        width: 100%;
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.1s, background 0.2s;
+        margin-top: 5px;
+      }
+      .login-btn:hover {
+        background: #60a5fa;
+      }
+      .login-btn:active {
+        transform: scale(0.97);
+      }
+      .login-error {
+        color: var(--danger-text);
+        font-size: 0.85rem;
+        margin-top: 15px;
+        opacity: 0;
+        transition: opacity 0.2s;
+        font-weight: 600;
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  </head>
+  <body>
+    <!-- TELA DE LOGIN OVERLAY -->
+    <div id="login-overlay">
+      <div class="login-box">
+        <h1>artefacto</h1>
+        <p>Acesso restrito a Custos Industriais.</p>
+        <input
+          type="text"
+          id="loginUser"
+          class="login-input"
+          placeholder="Usuário"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <input
+          type="password"
+          id="loginPass"
+          class="login-input"
+          placeholder="Senha"
+          onkeypress="if(event.key === 'Enter') validarLogin()"
+        />
+        <button class="login-btn" onclick="validarLogin()">
+          Acessar Sistema
+        </button>
+        <div id="loginError" class="login-error">
+          ⚠️ Credenciais incorretas!
+        </div>
+      </div>
+    </div>
+
+    <div class="app-header">
+      <div class="header-title">
+        <h1
+          style="
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            letter-spacing: -1px;
+            text-transform: lowercase;
+            font-size: 1.8rem;
+          "
+        >
+          artefacto
+        </h1>
+        <h1 style="font-weight: 300; font-size: 1rem; color: var(--text-muted)">
+          |
+          <a
+            href="https://www.linkedin.com/in/maurosantosjr/"
+            target="_blank"
+            style="
+              font-weight: 600;
+              font-size: 1.05rem;
+              color: var(--text-main);
+              text-decoration: none;
+              transition: color 0.2s;
+            "
+            onmouseover="this.style.color='var(--primary)'"
+            onmouseout="this.style.color='var(--text-main)'"
+            >Mauro Santos</a
+          >
+          - Custos Industriais
+        </h1>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center">
+        <!-- BOTÃO DARK MODE / LIGHT MODE -->
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+          🌙 Dark Mode
+        </button>
+        <!-- BOTÃO SAIR (Estilo Destrutivo Apple) -->
+        <button class="theme-toggle" style="color: #ff3b30;" onclick="fazerLogout()">
+          Sair
+        </button>
+      </div>
+    </div>
+
+    <!-- TABS NAVEGAÇÃO -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('simulador')">
+        Simulador de Engradados
+      </button>
+      <button class="tab-btn" onclick="switchTab('manual')">
+        Manual de Engenharia
+      </button>
+    </div>
+
+    <!-- ABA 1: SIMULADOR -->
+    <div id="simulador-tab" class="tab-content active">
+      <div class="dashboard-container">
+        <!-- SIDEBAR PARÂMETROS -->
+        <div class="panel">
+          <h2>Configuração de Peça</h2>
+          <div class="input-group">
+            <label>Comprimento Interno (m)</label>
+            <input type="text" id="cInt" value="0,930" inputmode="decimal" onblur="formatarMedida(this)" />
+          </div>
+          <div class="input-group">
+            <label>Largura Interna (m)</label>
+            <input type="text" id="lInt" value="0,930" inputmode="decimal" onblur="formatarMedida(this)" />
+          </div>
+          <div class="input-group">
+            <label>Altura Interna (m)</label>
+            <input type="text" id="aInt" value="0,050" inputmode="decimal" onblur="formatarMedida(this)" />
+          </div>
+          <div class="input-group">
+            <label>Corte do MDF</label>
+            <select
+              id="metodoCorteMdf"
+              style="
+                width: 100%;
+                padding: 12px;
+                background: var(--bg-body);
+                border: 1px solid var(--border-light);
+                border-radius: 8px;
+                color: var(--text-main);
+                font-size: 1rem;
+                outline: none;
+                cursor: pointer;
+              "
+            >
+              <option value="router" selected>Router CNC</option>
+              <option value="serra">Serra Circular</option>
+            </select>
+          </div>
+          <button class="btn-calc" onclick="atualizarModelo(true)">
+            Processar Produção
+          </button>
+
+          <!-- BOTÃO DE EXPORTAÇÃO EXCEL -->
+          <button
+            class="btn-export"
+            onclick="exportarExcel()"
+            id="btnExport"
+            style="display: none"
+          >
+            📥 Exportar para Planilha
+          </button>
+
+          <div style="margin-top: 20px" id="alertaContainer"></div>
+        </div>
+
+        <!-- MAIN AREA -->
+        <div class="main-content">
+          <div class="panel" style="padding: 15px">
+            <div id="canvas-container">
+              <!-- Efeito visual de Flash (aparece via JS) -->
+              <div id="cameraFlash" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; z-index: 9999; pointer-events: none; transition: opacity 0.15s ease-out;"></div>
+          
+              <!-- CAIXA DE INFORMAÇÕES DA PEÇA (RAIO-X) -->
+              <div
+                id="pieceInfoBox"
+                class="piece-info-box"
+                style="
+                  position: absolute;
+                  top: 15px;
+                  left: 15px;
+                  background: rgba(15, 23, 42, 0.9);
+                  border: 1px solid var(--primary);
+                  padding: 15px;
+                  border-radius: 8px;
+                  color: white;
+                  z-index: 200;
+                  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+                  backdrop-filter: blur(5px);
+                  pointer-events: none;
+                  min-width: 220px;
+                "
+              >
+                <h4
+                  id="piTitle"
+                  style="
+                    margin: 0 0 10px 0;
+                    color: #60a5fa;
+                    border-bottom: 1px solid #334155;
+                    padding-bottom: 5px;
+                    font-size: 1rem;
+                  "
+                >
+                  Nome da Peça
+                </h4>
+                <div style="font-size: 0.85rem; line-height: 1.5">
+                  <div>
+                    <strong style="color: #94a3b8">Material:</strong>
+                    <span id="piMat">--</span>
+                  </div>
+                  <div>
+                    <strong style="color: #94a3b8">Medidas:</strong>
+                    <span id="piDim">--</span>
+                  </div>
+                  <div
+                    id="piQtdBox"
+                    style="
+                      margin-top: 5px;
+                      padding-top: 5px;
+                      border-top: 1px dashed #334155;
+                    "
+                  >
+                    <strong style="color: #94a3b8">Qtd. Total:</strong>
+                    <span id="piQtd">--</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="explode-controls">
+                <!-- BOTÃO DE CÂMERA (PRINT PARA EXCEL) -->
+<!-- BOTÃO DE CÂMERA MINIMALISTA -->
+<!-- BOTÃO DE CÂMERA (SÓ O ÍCONE COM DEGRADÊ E GLOW) -->
+<!-- BOTÃO DE CÂMERA (SÓ O ÍCONE COM DEGRADÊ E GLOW) -->
+<!-- BOTÃO DE CÂMERA (Estilo iOS) -->
+<button
+id="btnCameraPrint"
+class="btn-explode"
+onclick="tirarFotoExcel()"
+title="Tirar Foto PNG"
+style="width: 44px; height: 44px; padding: 0; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; margin-left: auto;"
+>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+  <circle cx="12" cy="13" r="4"></circle>
+</svg>
+</button>
+
+<!-- BOTÃO DE RAIO-X -->
+<button
+id="btnInspector"
+class="btn-explode"
+onclick="toggleInspector()"
+style="margin-bottom: 8px;"
+>
+🔍 Inspecionar
+</button>
+
+<!-- BOTÃO EXPLODIR -->
+<button
+id="btnExplode"
+class="btn-explode"
+onclick="toggleExplosion()"
+>
+💥 Explodir
+</button>
+                <div
+                  id="sliderContainer"
+                  class="slider-wrapper"
+                  style="width: 100%; box-sizing: border-box"
+                >
+                  <label>Nível de Expansão</label>
+                  <input
+                    type="range"
+                    id="rangeExplode"
+                    min="0"
+                    max="1.5"
+                    step="0.01"
+                    value="0.8"
+                    oninput="updateExplosion(this.value)"
+                    style="width: 100%"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="canvas-hint">
+              💡 Use o mouse: Botão esquerdo para girar e scroll para zoom.
+            </div>
+          </div>
+        </div>
+        <!-- Fecha a coluna da direita aqui! -->
+
+        <!-- TÍTULO DINÂMICO DO ENGRADADO (COM MINIATURA 3D) -->
+        
+
+        <!-- RESULTS GRID (Agora span largura total) -->
+        <div class="results-grid" style="grid-column: 1 / -1; margin-top: 0">
+          <div class="result-card">
+            <h3>📏 Estrutura & Madeira</h3>
+            <div class="result-row">
+              <strong>Comprimento Externo:</strong> <span id="outComp">--</span>
+            </div>
+            <div class="result-row">
+              <strong>Largura Externa:</strong> <span id="outLarg">--</span>
+            </div>
+            <div class="result-row">
+              <strong>Pinus (ripas da base e tampa):</strong> <span id="outE11">--</span>
+            </div>
+            <div class="result-row">
+              <strong id="lblMadQuadro">Caxeta:</strong> <span id="outE8">--</span>
+            </div>
+            <div class="result-row">
+              <strong>MDF 03mm:</strong> <span id="outE10">--</span>
+            </div>
+          </div>
+
+          <div class="result-card">
+            <h3>🔩 Fixadores & Insumos</h3>
+            <div class="result-row">
+              <strong>Atarraxante:</strong> <span id="outE14">--</span>
+            </div>
+            <div class="result-row">
+              <strong>Sextavado:</strong> <span id="outE15">--</span>
+            </div>
+            <div class="result-row">
+              <strong>Grampo 14/40:</strong> <span id="outE16">--</span>
+            </div>
+            <div class="result-row">
+              <strong>Grampo 80/12:</strong> <span id="outE17">--</span>
+            </div>
+            <div class="result-row">
+              <strong>Cola Branca:</strong> <span id="outE18">--</span>
+            </div>
+            <div class="result-row">
+              <strong>Peso EVA:</strong> <span id="outE19">--</span>
+            </div>
+            <div class="result-row">
+              <strong>Cola Contato:</strong> <span id="outE20">--</span>
+            </div>
+          </div>
+
+          <div class="result-card">
+            <h3>⏱️ Tempos de Processo</h3>
+            <div class="result-row">
+              <strong>Plaina:</strong> <span id="outH10">--</span>
+            </div>
+            <div class="result-row">
+              <strong>Desengross.:</strong> <span id="outH9">--</span>
+            </div>
+            <div class="result-row">
+              <strong>Serra Fita:</strong> <span id="outH12">--</span>
+            </div>
+            <div class="result-row">
+              <strong>Serra Circular:</strong> <span id="outH11">--</span>
+            </div>
+            <div class="result-row">
+              <strong>Montagem:</strong> <span id="outH13">--</span>
+            </div>
+            <div class="result-row" id="rowRouter" style="display: none">
+              <strong>Router CNC:</strong> <span id="outRouter">--</span>
+            </div>
+            <div class="result-row" id="rowSetup" style="display: none">
+              <strong>Setup Router:</strong> <span id="outSetup">--</span>
+            </div>
+            <div
+              class="result-row"
+              style="margin-top: 10px; border: none; background: transparent"
+            >
+              <strong>TEMPO TOTAL:</strong>
+              <span id="outH15" class="highlight-total" style="cursor: help;">--</span>
+            </div>
+          </div>
+
+        </div> <!-- Fecha results-grid -->
+      </div> <!-- Fecha dashboard-container -->
+    </div> <!-- Fecha simulador-tab -->
+
+    <!-- ABA 2: MANUAL DE ENGENHARIA & PRODUÇÃO -->
+    <div id="manual-tab" class="tab-content" style="max-width: 1400px; margin: 0 auto; padding-bottom: 50px;">
+      
+      <!-- CABEÇALHO DO MANUAL -->
+      <div class="panel" style="margin-bottom: 24px; text-align: left;">
+        <h2 style="color: var(--primary); font-size: 1.35rem; margin-bottom: 8px;">
+          📚 Manual de Engenharia, Dimensionamento & Custos Industriais
+        </h2>
+        <p style="color: var(--text-muted); line-height: 1.6; font-size: 0.95rem; margin: 0;">
+          Diretrizes técnicas, especificações de matéria-prima, fórmulas de cálculo e roteiro de processos para a fabricação de engradados. <strong>Passe o mouse sobre os módulos abaixo para destacar as peças diretamente no modelo 3D.</strong>
+        </p>
+      </div>
+
+      <div class="results-grid" style="margin-top: 0;">
+        
+        <!-- CARD 1: QUADRO ESTRUTURAL -->
+        <div class="manual-card" onmouseenter="hologramPart('quadro')" onmouseleave="restoreCrate()">
+          <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">📦 1. Quadro Estrutural & Madeira</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
+            Estrutura perimetral rígida responsável por suportar o empilhamento, torções e impactos laterais durante o transporte.
+          </p>
+          <div class="result-row">
+            <strong>Folga Técnica (+7 cm):</strong>
+            <span>Garante que a peça interna não toque nas bordas do engradado, criando uma zona de segurança contra impactos.</span>
+          </div>
+          <div class="result-row">
+            <strong>Critério Caxeta:</strong>
+            <span>Utilizada apenas em quadros com Altura Interna de até 7 cm, ideal para peças leves e finas (ex: quadros, espelhos).</span>
+          </div>
+          <div class="result-row">
+            <strong>Critério Tecplay:</strong>
+            <span>Utilizado para alturas maiores que 7 cm ou bases superiores a 1 metro quadrado. Oferece alta resistência mecânica contra empenamento.</span>
+          </div>
+          <div class="result-row" style="border-bottom: none;">
+            <strong>Otimização de Corte:</strong>
+            <span>O sistema inverte automaticamente os eixos de Comprimento e Largura para garantir o melhor aproveitamento da chapa na serra.</span>
+          </div>
+        </div>
+
+        <!-- CARD 2: MALHA DE RIPAS -->
+        <div class="manual-card" onmouseenter="hologramPart('ripas')" onmouseleave="restoreCrate()">
+          <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">🌲 2. Malha de Ripas (Pinus 60x20 mm)</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
+            Sistema de grelha em Pinus aparelhado que forma o fundo (palete) e a tampa de travamento da caixa.
+          </p>
+          <div class="result-row">
+            <strong>Ripas da Base:</strong>
+            <span>Calculadas para criar vãos máximos de 50 cm. Isso impede que o fundo ceda sob o peso da peça. É exigido um mínimo de 3 ripas estruturais.</span>
+          </div>
+          <div class="result-row">
+            <strong>Ripas da Tampa:</strong>
+            <span>São cruzadas a 90° em relação à base, criando amarração em X e travando a torção diagonal da caixa.</span>
+          </div>
+          <div class="result-row">
+            <strong>Reforço para Cargas Pesadas:</strong>
+            <span>Engradados com mais de 2 metros de comprimento recebem automaticamente uma malha adensada (mínimo de 4 ripas dependendo da largura).</span>
+          </div>
+        </div>
+
+        <!-- CARD 3: FECHAMENTO EM MDF -->
+        <div class="manual-card" onmouseenter="hologramPart('mdf')" onmouseleave="restoreCrate()">
+          <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">📐 3. Fechamento em MDF Cru (03 mm)</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
+            A chapa de 3mm atua como barreira física contra poeira, riscos e umidade, sem adicionar peso excessivo ao frete.
+          </p>
+          <div class="result-row">
+            <strong>Dimensão de Cobertura:</strong>
+            <span>O MDF é cortado na medida externa exata do engradado, cobrindo totalmente a estrutura de madeira.</span>
+          </div>
+          <div class="result-row">
+            <strong>Chapa Padrão Matriz:</strong>
+            <span>O sistema considera o limite de chapas comerciais de 2,75 x 1,85 metros.</span>
+          </div>
+          <div class="result-row" style="border-bottom: none;">
+            <strong>Lógica Inteligente de Emendas:</strong>
+            <span>Se o engradado for maior que a chapa, o sistema fraciona o MDF em 2, 4 ou 8 peças. O corte é calculado para cair <strong>exatamente sobre o eixo de uma ripa de Pinus</strong>, garantindo que a emenda não fique solta no ar.</span>
+          </div>
+        </div>
+
+        <!-- CARD 4: FIXADORES E AMARRAÇÃO -->
+        <div class="manual-card" onmouseenter="hologramPart('fixadores')" onmouseleave="restoreCrate()">
+          <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">🔩 4. Lógica de Fixação & Ferragens</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
+            Conjunto de elementos de ancoragem mecânica, dimensionados pelo esforço de ruptura e tamanho do engradado.
+          </p>
+          <div class="result-row">
+            <strong>Atarraxante Philips (Quinas):</strong>
+            <span>Caixas de até 7 cm usam 2 parafusos por quina. Caixas entre 7 e 30 cm usam 3 parafusos para suportar o momento fletor.</span>
+          </div>
+          <div class="result-row">
+            <strong>Sextavado (Travamento de Vãos):</strong>
+            <span>Aplicados no centro dos vãos entre as ripas. Usam arruela e borracha para evitar infiltração e afrouxamento por vibração.</span>
+          </div>
+          <div class="result-row">
+            <strong>Grampo Pesado 14/40:</strong>
+            <span>Usado para unir as ripas estruturais. São disparados 5 grampos em formato de cruz em cada intersecção.</span>
+          </div>
+          <div class="result-row" style="border-bottom: none;">
+            <strong>Grampo Leve 80/12:</strong>
+            <span>Disparados a cada 10 cm para pregar as "peles" de MDF na estrutura de madeira crua.</span>
+          </div>
+        </div>
+
+        <!-- CARD 5: AMORTECIMENTO EM EVA -->
+        <div class="manual-card" onmouseenter="hologramPart('eva')" onmouseleave="restoreCrate()">
+          <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">🛡️ 5. Proteção & Amortecimento em EVA</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
+            Espuma de alta densidade (20 mm) para absorção de vibração e proteção da obra de arte / peça embalada.
+          </p>
+          <div class="result-row">
+            <strong>Faixas Soltas Internas:</strong>
+            <span>Kit obrigatório de 4 tiras. Possuem sempre 28 cm de comprimento, e a altura é adaptada ao vão interno da caixa.</span>
+          </div>
+          <div class="result-row">
+            <strong>Faixas Externas Coladas:</strong>
+            <span>Aplicadas no fundo da caixa para gerar atrito no empilhamento. Só são aplicadas em engradados com até 25 cm de altura.</span>
+          </div>
+          <div class="result-row" style="border-bottom: none;">
+            <strong>Adesivo de Contato:</strong>
+            <span>O peso da cola é calculado matematicamente em cima da área quadrada exata onde o EVA tocará a madeira (10g por metro quadrado).</span>
+          </div>
+        </div>
+
+        <!-- CARD 6: CRONOANÁLISE E TEMPOS DE PROCESSO -->
+        <div class="manual-card" style="grid-column: 1 / -1;">
+          <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">⏱️ 6. Roteiro de Fabricação (Cronoanálise)</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
+            Os tempos de fabricação não são estimativas, mas sim fórmulas paramétricas extraídas de cronoanálise real no chão de fábrica:
+          </p>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 15px;">
+            <div style="background: var(--canvas-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border-light);">
+              <strong style="color: var(--text-main); display: block; margin-bottom: 6px;">1. Usinagem Bruta da Caxeta</strong>
+              <span style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.4; display: block;">
+                <strong>Plaina:</strong> 40 seg (Setup) + (Lado Maior x 50 seg)<br>
+                <strong>Desengrossadeira:</strong> 60 seg (Setup) + (Lado Maior x 90 seg)
+              </span>
+            </div>
+
+            <div style="background: var(--canvas-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border-light);">
+              <strong style="color: var(--text-main); display: block; margin-bottom: 6px;">2. Cortes Primários</strong>
+              <span style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.4; display: block;">
+                <strong>Serra Fita (EVA):</strong> 150 seg + (Metros de EVA x 70 seg)<br>
+                <strong>Serra Circular:</strong> 360 seg (Limpeza) + (Cortes x Comprimento da peça)
+              </span>
+            </div>
+
+            <div style="background: var(--canvas-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border-light);">
+              <strong style="color: var(--text-main); display: block; margin-bottom: 6px;">3. Router CNC (Opcional)</strong>
+              <span style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.4; display: block;">
+                <strong>Setup de Mesa:</strong> 3 minutos de preparação por chapa bruta utilizada.<br>
+                <strong>Usinagem do MDF:</strong> 30 segundos por metro perimetral.
+              </span>
+            </div>
+
+            <div style="background: var(--canvas-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border-light);">
+              <strong style="color: var(--text-main); display: block; margin-bottom: 6px;">4. Montagem & Fechamento</strong>
+              <span style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.4; display: block;">
+                O tempo flutua de acordo com os fixadores. Furos (15s), Parafusos (40s), Grampos (3s a 15s) e manuseio de chapas (120s por chapa). Caixas imensas recebem fator multiplicador de dificuldade.
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast"></div>
+
+    <!-- LOGIC SCRIPT -->
+    <script>
+      // --- SISTEMA DE LOGIN DE ACESSO ---
+      function validarLogin() {
+        const user = document
+          .getElementById("loginUser")
+          .value.trim()
+          .toLowerCase();
+        const pass = document.getElementById("loginPass").value.trim();
+        const errorLabel = document.getElementById("loginError");
+
+        // 🔒 CREDENCIAIS DE ACESSO AQUI:
+        if (user === "custos" && pass === "mauroteodoro") {
+          errorLabel.style.opacity = "0";
+          let overlay = document.getElementById("login-overlay");
+          overlay.classList.add("hidden");
+          overlay.style.opacity = "0";
+          overlay.style.visibility = "hidden";
+
+          // Acorda o simulador após destravar a tela
+          setTimeout(onWindowResize, 400);
+        } else {
+          errorLabel.style.opacity = "1";
+          // Tremidinha de erro na caixa (Feedback visual)
+          let box = document.querySelector(".login-box");
+          box.animate(
+            [
+              { transform: "translateX(-5px)" },
+              { transform: "translateX(5px)" },
+              { transform: "translateX(-5px)" },
+              { transform: "translateX(0)" },
+            ],
+            { duration: 300 }
+          );
+        }
+      }
+
+      function fazerLogout() {
+        // Limpa os campos de digitação
+        document.getElementById("loginUser").value = "";
+        document.getElementById("loginPass").value = "";
+        document.getElementById("loginError").style.opacity = "0";
+
+        // Puxa a tela escura de bloqueio de volta
+        let overlay = document.getElementById("login-overlay");
+        overlay.classList.remove("hidden");
+        overlay.style.opacity = "1";
+        overlay.style.visibility = "visible";
+      }
+
+      // Navegação de Abas e Correção do 3D
+      function switchTab(tabId) {
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((t) => t.classList.remove("active"));
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((t) => t.classList.remove("active"));
+        document.getElementById(tabId + "-tab").classList.add("active");
+        event.target.classList.add("active");
+
+        // "Acorda" o 3D quando voltar para a aba do simulador, matando o bug da tela vazia!
+        if (tabId === "simulador") {
+          setTimeout(onWindowResize, 50);
+        }
+      }
+
+      // Função do Aviso Sutil Moderno
+      function showToast(msg, isExcel = false) {
+        let toast = document.getElementById("toast");
+        toast.innerText = msg;
+        toast.style.background = isExcel
+          ? "linear-gradient(135deg, #10b981, #059669)"
+          : "linear-gradient(135deg, #3b82f6, #2563eb)";
+        toast.style.boxShadow = isExcel
+          ? "0 10px 25px rgba(16, 185, 129, 0.4)"
+          : "0 10px 25px rgba(59, 130, 246, 0.4)";
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3000);
+      }
+
+      // LÓGICA DE TEMA (APLICADA NA RAIZ DO DOCUMENTO HTML)
+      function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute("data-theme");
+        const themeBtn = document.getElementById("themeToggle");
+
+        if (currentTheme === "dark") {
+          html.removeAttribute("data-theme");
+          themeBtn.innerHTML = "🌙 Dark Mode";
+          if (scene) scene.background = new THREE.Color(0xe2e8f0);
+        } else {
+          html.setAttribute("data-theme", "dark");
+          themeBtn.innerHTML = "☀️ Light Mode";
+          if (scene) scene.background = new THREE.Color(0x0f172a);
+        }
+      }
+
+      let scene, camera, renderer, controls, crateGroup;
+      let ambientLight, dirLight;
+      let isExploded = false;
+      let clock = new THREE.Clock();
+
+      // --- SISTEMA DE RAIO-X (INSPEÇÃO DE PEÇAS) ---
+      let isInspecting = false;
+      let raycaster = new THREE.Raycaster();
+      // O three.js usa por padrão uma "zona de tolerância" de 1 unidade (1 metro!) para detectar
+      // cliques em objetos do tipo Line/LineSegments. Como usamos linhas finas só para desenhar o
+      // contorno escuro das madeiras (mesh.add(line) dentro de addMesh), e nosso engradado inteiro
+      // mede poucos metros, esse valor gigante fazia o raio "acertar" essas linhas invisíveis antes
+      // da própria peça - e como as linhas não têm nome/medida guardados, nada aparecia. Zerando
+      // (praticamente) essa tolerância, o clique volta a acertar a peça de verdade.
+      raycaster.params.Line.threshold = 0.0001;
+      let mouse = new THREE.Vector2();
+      let highlightedMesh = null;
+      let originalMaterial = null;
+      let mouseDownPos = { x: 0, y: 0 };
+
+      // Guarda onde o botão do mouse foi pressionado, para diferenciar um clique real de um
+      // arraste (usado para girar a câmera com o OrbitControls) - assim girar a caixa nunca é
+      // confundido com um clique de inspeção.
+      window.addEventListener("pointerdown", function (event) {
+        mouseDownPos.x = event.clientX;
+        mouseDownPos.y = event.clientY;
+      });
+
+      function toggleInspector() {
+        isInspecting = !isInspecting;
+        const btn = document.getElementById("btnInspector");
+        const infoBox = document.getElementById("pieceInfoBox");
+
+        if (isInspecting) {
+          btn.innerText = "🔍 Inspeção: ON";
+          btn.classList.add("active"); // Usa a cor elegante do CSS
+          btn.style.background = ""; // Limpa qualquer sujeira de cor antiga
+        } else {
+          btn.innerText = "🔍 Inspecionar";
+          btn.classList.remove("active");
+          btn.style.background = ""; // Volta para o visual de vidro fosco
+          infoBox.classList.remove("visible");
+          clearHighlight();
+        }
+      }
+
+      function clearHighlight() {
+        if (highlightedMesh && originalMaterial) {
+          // Se a malha principal for um grupo (como o sextavado), restaura as texturas dos filhos
+          if (highlightedMesh.isGroup) {
+            highlightedMesh.children.forEach((child) => {
+              if (child.userData.origMat) {
+                child.material = child.userData.origMat;
+              }
+            });
+          } else {
+            highlightedMesh.material = originalMaterial;
+          }
+          highlightedMesh = null;
+          originalMaterial = null;
+        } else if (highlightedMesh && highlightedMesh.isGroup) {
+          // Grupos guardam o material original em cada filho (origMat), então tratamos separado
+          highlightedMesh.children.forEach((child) => {
+            if (child.userData.origMat) {
+              child.material = child.userData.origMat;
+            }
+          });
+          highlightedMesh = null;
+        }
+      }
+
+      // Detecta os cliques nas peças
+      window.addEventListener("click", function (event) {
+        if (!isInspecting) return;
+
+        // Se o mouse se moveu mais que alguns pixels entre o "down" e o "click", foi um
+        // arraste para girar a câmera (OrbitControls) - não deve contar como seleção de peça.
+        let dragDist = Math.hypot(
+          event.clientX - mouseDownPos.x,
+          event.clientY - mouseDownPos.y
+        );
+        if (dragDist > 6) return;
+
+        let canvasContainer = document.getElementById("canvas-container");
+        let canvasRect = canvasContainer.getBoundingClientRect();
+
+        // Só executa se o clique for dentro do quadro 3D
+        if (
+          event.clientX >= canvasRect.left &&
+          event.clientX <= canvasRect.right &&
+          event.clientY >= canvasRect.top &&
+          event.clientY <= canvasRect.bottom
+        ) {
+          // Evita conflito se clicar nos botões da tela
+          if (event.target.closest(".explode-controls")) return;
+
+          mouse.x =
+            ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
+          mouse.y =
+            -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
+
+          raycaster.setFromCamera(mouse, camera);
+          // Considera só peças reais (Mesh/Group), ignorando as linhas de contorno das madeiras
+          let rawIntersects = raycaster.intersectObjects(
+            crateGroup.children,
+            true
+          );
+          let intersects = rawIntersects.filter((hit) => hit.object.isMesh);
+
+          if (intersects.length > 0) {
+            clearHighlight(); // Limpa o brilho da peça anterior
+
+            let object = intersects[0].object;
+            let targetMesh =
+              object.parent &&
+              object.parent.isGroup &&
+              object.parent !== crateGroup
+                ? object.parent
+                : object;
+            let data = targetMesh.userData;
+
+            if (data && data.type && data.type !== "none") {
+              highlightedMesh = targetMesh;
+
+              // Aplica o material de holograma na peça selecionada
+              if (highlightedMesh.isGroup) {
+                highlightedMesh.children.forEach((child) => {
+                  if (child.isMesh && child.material !== undefined) {
+                    child.userData.origMat = child.material;
+                    child.material =
+                      data.type === "fixadores"
+                        ? hologramMetal.clone()
+                        : hologramWood.clone();
+                  }
+                });
+              } else {
+                originalMaterial = highlightedMesh.material;
+                highlightedMesh.material =
+                  data.type === "fixadores"
+                    ? hologramMetal.clone()
+                    : data.type === "eva"
+                    ? new THREE.MeshStandardMaterial({
+                        color: 0xef4444,
+                        emissive: 0x991b1b,
+                      })
+                    : hologramWood.clone();
+              }
+
+              // Preenche a Caixinha de Informações (Raio-X)
+              const infoBox = document.getElementById("pieceInfoBox");
+              const piTitle = document.getElementById("piTitle");
+              const piMat = document.getElementById("piMat");
+              const piDim = document.getElementById("piDim");
+              const piQtdBox = document.getElementById("piQtdBox");
+              const piQtd = document.getElementById("piQtd");
+
+              piTitle.innerText = data.name || "Componente Desconhecido";
+              piMat.innerText = data.materialName || "--";
+              piDim.innerText = data.dimensions || "--";
+
+              if (data.totalQtd) {
+                piQtdBox.style.display = "block";
+                piQtd.innerText = data.totalQtd;
+              } else {
+                piQtdBox.style.display = "none";
+              }
+
+              infoBox.classList.add("visible");
+            }
+          } else {
+            // Clicou no vazio, esconde a caixa
+            clearHighlight();
+            document.getElementById("pieceInfoBox").classList.remove("visible");
+          }
+        }
+      });
+
+      // MATERIAIS ORIGINAIS
+      const woodMat = new THREE.MeshStandardMaterial({
+        color: 0xd4a373,
+        roughness: 0.7,
+      });
+      const mdfMat = new THREE.MeshStandardMaterial({
+        color: 0x8d5b4c,
+        roughness: 0.8,
+      });
+      const evaMat = new THREE.MeshStandardMaterial({
+        color: 0x2b2b2b,
+        roughness: 0.9,
+      });
+      // Corrigido brilho do metal (evita ficar preto nas sombras)
+      const metalMat = new THREE.MeshStandardMaterial({
+        color: 0xb8c2cc,
+        roughness: 0.45,
+        metalness: 0.65,
+      });
+      const silverMat = new THREE.MeshStandardMaterial({
+        color: 0x888888,
+        roughness: 0.2,
+        metalness: 0.9,
+      });
+      // Novo material do Atarraxante: Aço Bicromatizado (Claro, muito mais metálico e brilhante)
+      const goldMat = new THREE.MeshStandardMaterial({
+        color: 0xe6c875,
+        roughness: 0.15,
+        metalness: 0.95,
+      });
+
+      // MATERIAIS PARA EFEITO HOLOGRAMA
+      const hologramWood = new THREE.MeshStandardMaterial({
+        color: 0x60a5fa,
+        transparent: true,
+        opacity: 0.55,
+        emissive: 0x3b82f6,
+        emissiveIntensity: 0.8,
+      });
+      const hologramMetal = new THREE.MeshStandardMaterial({
+        color: 0x60a5fa,
+        transparent: true,
+        opacity: 0.55,
+        emissive: 0x3b82f6,
+        emissiveIntensity: 0.8,
+        metalness: 0.9,
+      });
+      const glassMat = new THREE.MeshStandardMaterial({
+        color: 0x334155,
+        transparent: true,
+        opacity: 0.1,
+      });
+
+      function init3D() {
+        const container = document.getElementById("canvas-container");
+
+        scene = new THREE.Scene();
+        scene.background =
+          document.documentElement.getAttribute("data-theme") === "dark"
+            ? new THREE.Color(0x0f172a)
+            : new THREE.Color(0xe2e8f0);
+
+        // O valor "0.005" (5 milímetros) resolve o efeito Raio-X que cortava a madeira ao chegar perto
+        camera = new THREE.PerspectiveCamera(
+          45,
+          container.clientWidth / container.clientHeight,
+          0.005,
+          1000
+        );
+        camera.position.set(2, 1.5, 2);
+
+        // alpha: true permite fundo transparente; preserveDrawingBuffer permite capturar a imagem
+renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.enablePan = false;
+
+        ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 7);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 1024;
+        dirLight.shadow.mapSize.height = 1024;
+        dirLight.shadow.bias = -0.001;
+        scene.add(dirLight);
+
+        crateGroup = new THREE.Group();
+        scene.add(crateGroup);
+
+        window.addEventListener("resize", onWindowResize);
+        atualizarModelo();
+        animate();
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+
+        // --- CAMPO DE FORÇA RETANGULAR DINÂMICO ---
+        if (!isExploded && crateGroup && crateGroup.userData.ladoMaior) {
+          let lM = crateGroup.userData.ladoMaior / 2 + 0.15; // Folga de 15cm para ripas
+          let lm = crateGroup.userData.ladoMenor / 2 + 0.15;
+          let aI = crateGroup.userData.aInt / 2 + 0.15;
+
+          // Vetor direção da câmera em relação ao centro do engradado
+          let dir = new THREE.Vector3()
+            .subVectors(camera.position, controls.target)
+            .normalize();
+
+          // Calcula a distância exata até bater na "caixa de vidro" protetora retangular
+          let tX = Math.abs(lM / (dir.x !== 0 ? dir.x : 0.00001));
+          let tY = Math.abs(aI / (dir.y !== 0 ? dir.y : 0.00001));
+          let tZ = Math.abs(lm / (dir.z !== 0 ? dir.z : 0.00001));
+
+          // O limite do zoom se molda perfeitamente ao retângulo!
+          controls.minDistance = Math.min(tX, tY, tZ);
+        } else if (isExploded) {
+          controls.minDistance = 0.05; // Libera o zoom por dentro das peças se explodido
+        }
+
+        controls.update();
+
+        // Efeito de brilho pulsante na peça inspecionada, para destacá-la com um "respiro" de luz
+        if (highlightedMesh) {
+          let pulse = Math.sin(clock.getElapsedTime() * 4) * 0.4 + 0.9; // oscila suavemente
+          if (highlightedMesh.isGroup) {
+            highlightedMesh.children.forEach((child) => {
+              if (
+                child.material &&
+                child.material.emissiveIntensity !== undefined
+              ) {
+                child.material.emissiveIntensity = pulse;
+              }
+            });
+          } else if (
+            highlightedMesh.material &&
+            highlightedMesh.material.emissiveIntensity !== undefined
+          ) {
+            highlightedMesh.material.emissiveIntensity = pulse;
+          }
+        }
+
+        renderer.render(scene, camera);
+      }
+
+      function onWindowResize() {
+        const container = document.getElementById("canvas-container");
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+      }
+
+      function addMesh(
+        geometry,
+        material,
+        posX,
+        posY,
+        posZ,
+        expX = 0,
+        expY = 0,
+        expZ = 0,
+        partType = "none",
+        name = "",
+        matName = "",
+        dim = "",
+        totalQtd = ""
+      ) {
+        // Se for o sextavado, criamos um Grupo para que as 3 peças (cabeça, metal e borracha) viajem juntas na explosão
+        if (
+          geometry.type === "CylinderGeometry" &&
+          geometry.parameters.radialSegments === 6
+        ) {
+          let group = new THREE.Group();
+          group.position.set(posX, posY, posZ);
+
+          let head = new THREE.Mesh(geometry, material);
+          head.castShadow = true;
+          head.receiveShadow = true;
+          group.add(head);
+
+          let washerGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.001, 16);
+          let washer = new THREE.Mesh(washerGeo, material);
+          washer.position.y = posY > 0 ? -0.0035 : 0.0035;
+          washer.castShadow = true;
+          washer.receiveShadow = true;
+          group.add(washer);
+
+          let rubberGeo = new THREE.CylinderGeometry(0.0075, 0.0075, 0.001, 16);
+          let rubberMat = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.9,
+          });
+          let rubber = new THREE.Mesh(rubberGeo, rubberMat);
+          rubber.position.y = posY > 0 ? -0.0045 : 0.0045;
+          rubber.castShadow = true;
+          rubber.receiveShadow = true;
+          group.add(rubber);
+
+          // Elevação para a borracha não sumir na madeira
+          group.position.y += posY > 0 ? 0.0042 : -0.0042;
+
+          // SALVA A POSIÇÃO CORRETA COM O CLONE() - Evita afundar ao explodir
+          group.userData = {
+            origPos: group.position.clone(),
+            expDir: new THREE.Vector3(expX, expY, expZ),
+            type: partType,
+            name: name,
+            materialName: matName,
+            dimensions: dim,
+            totalQtd: totalQtd,
+          };
+          crateGroup.add(group);
+          return group;
+        }
+
+        // Para o restante das peças (madeira, atarraxantes, grampos, etc)
+        let mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(posX, posY, posZ);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+
+        // Desenha as bordas escuras das madeiras
+        if (
+          material !== metalMat &&
+          material !== goldMat &&
+          partType !== "mdf_topo"
+        ) {
+          let edges = new THREE.EdgesGeometry(geometry);
+          let lineMat = new THREE.LineBasicMaterial({
+            color: 0x4a3b2c,
+            transparent: true,
+            opacity: 0.25,
+          });
+          let line = new THREE.LineSegments(edges, lineMat);
+          mesh.add(line);
+        }
+
+        // SALVA A POSIÇÃO CORRETA COM O CLONE()
+        mesh.userData = {
+          origPos: mesh.position.clone(),
+          expDir: new THREE.Vector3(expX, expY, expZ),
+          type: partType,
+          name: name,
+          materialName: matName,
+          dimensions: dim,
+          totalQtd: totalQtd,
+        };
+        crateGroup.add(mesh);
+        return mesh;
+      }
+
+      function hologramPart(type) {
+        crateGroup.children.forEach((mesh) => {
+          if (mesh.userData.type === type) {
+            mesh.material =
+              mesh.userData.type === "fixadores" ? hologramMetal : hologramWood;
+            if (mesh.children[0]) mesh.children[0].visible = false;
+          } else {
+            mesh.material = glassMat;
+            if (mesh.children[0]) mesh.children[0].visible = false;
+          }
+        });
+      }
+
+      function restoreCrate() {
+        atualizarModelo();
+      }
+
+      function toggleExplosion() {
+        const btn = document.getElementById("btnExplode");
+        const sliderCont = document.getElementById("sliderContainer");
+        const slider = document.getElementById("rangeExplode");
+
+        isExploded = !isExploded;
+
+        if (isExploded) {
+          btn.innerText = "📦 Fechar";
+          btn.classList.add("active");
+          sliderCont.style.display = "flex";
+          updateExplosion(slider.value);
+        } else {
+          btn.innerText = "💥 Explodir";
+          btn.classList.remove("active");
+          sliderCont.style.display = "none";
+          updateExplosion(0);
+        }
+      }
+
+      function updateExplosion(val) {
+        let factor = parseFloat(val);
+        if (!isExploded) factor = 0;
+
+        if (factor > 0) {
+          dirLight.intensity = 0;
+          ambientLight.intensity = 1.2;
+        } else {
+          dirLight.intensity = 0.8;
+          ambientLight.intensity = 0.6;
+
+          // Defesa Anti-Claustrofobia: Se a câmera estiver lá dentro quando a caixa fechar, arremessa ela pra fora!
+          if (crateGroup && crateGroup.userData.ladoMaior) {
+            let lM = crateGroup.userData.ladoMaior / 2 + 0.15;
+            let lm = crateGroup.userData.ladoMenor / 2 + 0.15;
+            let aI = crateGroup.userData.aInt / 2 + 0.15;
+
+            let dir = new THREE.Vector3()
+              .subVectors(camera.position, controls.target)
+              .normalize();
+            let distToSurface = Math.min(
+              Math.abs(lM / (dir.x !== 0 ? dir.x : 0.00001)),
+              Math.abs(aI / (dir.y !== 0 ? dir.y : 0.00001)),
+              Math.abs(lm / (dir.z !== 0 ? dir.z : 0.00001))
+            );
+
+            if (camera.position.distanceTo(controls.target) < distToSurface) {
+              camera.position
+                .copy(controls.target)
+                .add(dir.multiplyScalar(distToSurface + 0.2));
+            }
+          }
+        }
+
+        crateGroup.children.forEach((mesh) => {
+          if (mesh.userData.origPos && mesh.userData.expDir) {
+            mesh.position
+              .copy(mesh.userData.origPos)
+              .addScaledVector(mesh.userData.expDir, factor);
+          }
+        });
+      }
+
+      let physicalCountFlatScrews = 0;
+      let physicalCountHexScrews = 0;
+      let physicalCount1440 = 0;
+      let physicalCount8012 = 0;
+
+      function construirEngradado(cExt, lExt, aInt, materialQuadro) {
+        while (crateGroup.children.length > 0) {
+          crateGroup.remove(crateGroup.children[0]);
+        }
+
+        physicalCountFlatScrews = 0;
+        physicalCountHexScrews = 0;
+        physicalCount1440 = 0;
+        physicalCount8012 = 0;
+
+        const eEsp = 0.035,
+          mdfEsp = 0.003,
+          ripaW = 0.06,
+          ripaH = 0.02;
+        let ladoMaior = Math.max(cExt, lExt);
+        let ladoMenor = Math.min(cExt, lExt);
+
+        let corDoQuadro = materialQuadro === "Tecplay" ? 0xe2b483 : 0xd4a373;
+        let frameMat = new THREE.MeshStandardMaterial({
+          color: corDoQuadro,
+          roughness: 0.7,
+        });
+
+        // Cabeça mais alta (0.006) e diâmetro menor (0.0045)
+        const hexGeo = new THREE.CylinderGeometry(0.0045, 0.0045, 0.006, 6);
+
+        // Geometrias do Atarraxante (Cone achatado). Uma virada pra frente (+Z) e outra pra trás (-Z)
+        const flatGeoFront = new THREE.CylinderGeometry(
+          0.005,
+          0.002,
+          0.003,
+          16
+        );
+        flatGeoFront.rotateX(Math.PI / 2);
+        const flatGeoBack = new THREE.CylinderGeometry(0.005, 0.002, 0.003, 16);
+        flatGeoBack.rotateX(-Math.PI / 2);
+
+        const s1440Geo = new THREE.BoxGeometry(0.01, 0.002, 0.002);
+        const s8012Geo = new THREE.BoxGeometry(0.008, 0.002, 0.002);
+
+        // --- VARIÁVEIS INTELIGENTES DO RAIO-X ---
+        let strQuadroLong = `${ladoMaior.toFixed(2).replace(".", ",")} x ${aInt
+          .toFixed(2)
+          .replace(".", ",")} x 0,035 m`;
+        let strQuadroCurt = `${(ladoMenor - 0.07)
+          .toFixed(2)
+          .replace(".", ",")} x ${aInt.toFixed(2).replace(".", ",")} x 0,035 m`;
+        let strRipa = `${ladoMenor
+          .toFixed(2)
+          .replace(".", ",")} x 0,06 x 0,02 m`;
+        let strRipaSup = `${ladoMaior
+          .toFixed(2)
+          .replace(".", ",")} x 0,06 x 0,02 m`;
+        let strMDF = `${ladoMaior.toFixed(2).replace(".", ",")} x ${ladoMenor
+          .toFixed(2)
+          .replace(".", ",")} x 0,003 m`;
+
+        // 1. QUADRO
+        const geomLonga = new THREE.BoxGeometry(ladoMaior, aInt, eEsp);
+        const geomCurta = new THREE.BoxGeometry(
+          eEsp,
+          aInt,
+          ladoMenor - 2 * eEsp
+        );
+
+        addMesh(
+          geomLonga,
+          frameMat,
+          0,
+          0,
+          ladoMenor / 2 - eEsp / 2,
+          0,
+          0,
+          0.4,
+          "quadro",
+          "Quadro Base (Peça Longa)",
+          materialQuadro,
+          strQuadroLong,
+          "2 un"
+        );
+        addMesh(
+          geomLonga,
+          frameMat,
+          0,
+          0,
+          -ladoMenor / 2 + eEsp / 2,
+          0,
+          0,
+          -0.4,
+          "quadro",
+          "Quadro Base (Peça Longa)",
+          materialQuadro,
+          strQuadroLong,
+          "2 un"
+        );
+        addMesh(
+          geomCurta,
+          frameMat,
+          ladoMaior / 2 - eEsp / 2,
+          0,
+          0,
+          0.4,
+          0,
+          0,
+          "quadro",
+          "Quadro Base (Peça Curta)",
+          materialQuadro,
+          strQuadroCurt,
+          "2 un"
+        );
+        addMesh(
+          geomCurta,
+          frameMat,
+          -ladoMaior / 2 + eEsp / 2,
+          0,
+          0,
+          -0.4,
+          0,
+          0,
+          "quadro",
+          "Quadro Base (Peça Curta)",
+          materialQuadro,
+          strQuadroCurt,
+          "2 un"
+        );
+
+        // PARAFUSOS ATARRAXANTES
+        let numAtarraxantesQuina = 2;
+        let offsetEdge = 0.02;
+
+        if (aInt > 0.3) {
+          numAtarraxantesQuina = 3;
+          offsetEdge = 0.03;
+        } else if (aInt > 0.18) {
+          numAtarraxantesQuina = 3;
+          offsetEdge = 0.03;
+        } else if (aInt >= 0.141) {
+          numAtarraxantesQuina = 3;
+          offsetEdge = 0.02;
+        } else if (aInt < 0.07) {
+          numAtarraxantesQuina = 2;
+          offsetEdge = 0.01;
+        } else {
+          numAtarraxantesQuina = 2;
+          offsetEdge = 0.02;
+        }
+
+        let scX = ladoMaior / 2 - eEsp / 2;
+        let startY = -aInt / 2 + offsetEdge;
+        let endY = aInt / 2 - offsetEdge;
+        let stepY =
+          numAtarraxantesQuina > 1
+            ? (endY - startY) / (numAtarraxantesQuina - 1)
+            : 0;
+
+        let crossMat = new THREE.MeshStandardMaterial({
+          color: 0x8b733a,
+          roughness: 0.9,
+          metalness: 0.2,
+        });
+        let crossGeo1 = new THREE.BoxGeometry(0.0055, 0.0012, 0.0001);
+        let crossGeo2 = new THREE.BoxGeometry(0.0012, 0.0055, 0.0001);
+        crossGeo1.rotateZ(Math.PI / 4);
+        crossGeo2.rotateZ(Math.PI / 4);
+
+        for (let i = 0; i < numAtarraxantesQuina; i++) {
+          let currY = startY + i * stepY;
+          let zFront = ladoMenor / 2 - 0.0012;
+
+          // CORREÇÃO DE ALINHAMENTO: Removido o recuo de 0.02, para o parafuso cravar exato no centro dos 35mm da madeira (scX)
+          let m1 = addMesh(
+            flatGeoFront,
+            goldMat,
+            scX,
+            currY,
+            zFront,
+            0,
+            0,
+            0.4,
+            "fixadores",
+            "Atarraxante Philips",
+            "Aço Bicromatizado",
+            "5,0 x 80 mm",
+            "--"
+          );
+          let m2 = addMesh(
+            flatGeoFront,
+            goldMat,
+            -scX,
+            currY,
+            zFront,
+            0,
+            0,
+            0.4,
+            "fixadores",
+            "Atarraxante Philips",
+            "Aço Bicromatizado",
+            "5,0 x 80 mm",
+            "--"
+          );
+
+          let zBack = -ladoMenor / 2 + 0.0012;
+          let m3 = addMesh(
+            flatGeoBack,
+            goldMat,
+            scX,
+            currY,
+            zBack,
+            0,
+            0,
+            -0.4,
+            "fixadores",
+            "Atarraxante Philips",
+            "Aço Bicromatizado",
+            "5,0 x 80 mm",
+            "--"
+          );
+          let m4 = addMesh(
+            flatGeoBack,
+            goldMat,
+            -scX,
+            currY,
+            zBack,
+            0,
+            0,
+            -0.4,
+            "fixadores",
+            "Atarraxante Philips",
+            "Aço Bicromatizado",
+            "5,0 x 80 mm",
+            "--"
+          );
+
+          [m1, m2].forEach((m) => {
+            let c1 = new THREE.Mesh(crossGeo1, crossMat);
+            c1.position.z = 0.0016;
+            m.add(c1);
+            let c2 = new THREE.Mesh(crossGeo2, crossMat);
+            c2.position.z = 0.0016;
+            m.add(c2);
+          });
+          [m3, m4].forEach((m) => {
+            let c1 = new THREE.Mesh(crossGeo1, crossMat);
+            c1.position.z = -0.0016;
+            m.add(c1);
+            let c2 = new THREE.Mesh(crossGeo2, crossMat);
+            c2.position.z = -0.0016;
+            m.add(c2);
+          });
+
+          physicalCountFlatScrews += 4;
+        }
+
+        // PRÉ-CÁLCULO DAS RIPAS INFERIORES (Para alinhar a emenda do MDF exatamente sobre a madeira)
+        let numVaosInf = Math.max(2, Math.ceil((ladoMaior - 0.12) / 0.5));
+        let numRipasInfFace = numVaosInf + 1;
+        let distVaoInf = (ladoMaior - numRipasInfFace * ripaW) / numVaosInf;
+        let passoInf = ripaW + distVaoInf;
+
+        let posXRipasInf = [];
+        for (let i = 0; i < numRipasInfFace; i++) {
+          posXRipasInf.push(-ladoMaior / 2 + ripaW / 2 + i * passoInf);
+        }
+
+        // 2. CHAPAS DE MDF (LÓGICA DE EMENDA E CONTAGEM PRECISA)
+        let maxMDF = 2.75,
+          maxMDFL = 1.85;
+        let splitX = false,
+          splitZ = false;
+
+        if (
+          !(
+            (ladoMaior <= maxMDF && ladoMenor <= maxMDFL) ||
+            (ladoMaior <= maxMDFL && ladoMenor <= maxMDF)
+          )
+        ) {
+          if (ladoMaior > maxMDF) splitX = true;
+          if (ladoMenor > maxMDFL) splitZ = true;
+          if (ladoMaior > maxMDFL && ladoMenor > maxMDFL) {
+            splitX = true;
+            splitZ = true;
+          }
+        }
+
+        let xBounds = [-ladoMaior / 2, ladoMaior / 2];
+        if (splitX) {
+          let bestX = 0,
+            minDiff = Infinity;
+          posXRipasInf.forEach((x) => {
+            if (Math.abs(x) < minDiff) {
+              minDiff = Math.abs(x);
+              bestX = x;
+            }
+          });
+          xBounds = [-ladoMaior / 2, bestX, ladoMaior / 2];
+        }
+
+        let zBounds = [-ladoMenor / 2, ladoMenor / 2];
+        if (splitZ) {
+          zBounds = [-ladoMenor / 2, 0, ladoMenor / 2];
+        }
+
+        let isEmendada = splitX || splitZ;
+
+        // Pré-conta os tamanhos idênticos para o Raio-X
+        let mapMDF = {};
+        for (let i = 0; i < xBounds.length - 1; i++) {
+          for (let j = 0; j < zBounds.length - 1; j++) {
+            let wX = xBounds[i + 1] - xBounds[i];
+            let wZ = zBounds[j + 1] - zBounds[j];
+            let dimKey = `${wX.toFixed(3)}x${wZ.toFixed(3)}`;
+            if (!mapMDF[dimKey]) mapMDF[dimKey] = { wX: wX, wZ: wZ, count: 0 };
+            mapMDF[dimKey].count += 2; // (Topo e base)
+          }
+        }
+
+        // Gera e desenha as frações do MDF
+        for (let i = 0; i < xBounds.length - 1; i++) {
+          for (let j = 0; j < zBounds.length - 1; j++) {
+            let xS = xBounds[i],
+              xE = xBounds[i + 1];
+            let zS = zBounds[j],
+              zE = zBounds[j + 1];
+            let cx = (xS + xE) / 2,
+              cz = (zS + zE) / 2;
+            let wX = xE - xS,
+              wZ = zE - zS;
+
+            let dimKey = `${wX.toFixed(3)}x${wZ.toFixed(3)}`;
+            let exactCount = mapMDF[dimKey].count;
+            let strMDFFinal =
+              `${wX.toFixed(3).replace(".", ",")} x ${wZ
+                .toFixed(3)
+                .replace(".", ",")} x 0,003 m` +
+              (isEmendada ? " (Emendada)" : "");
+
+            let geomMDFPanel = new THREE.BoxGeometry(wX, mdfEsp, wZ);
+            addMesh(
+              geomMDFPanel,
+              mdfMat,
+              cx,
+              aInt / 2 + mdfEsp / 2,
+              cz,
+              0,
+              0.3,
+              0,
+              "mdf",
+              "Chapa de Fechamento",
+              "MDF Cru",
+              strMDFFinal,
+              `${exactCount} un`
+            );
+            addMesh(
+              geomMDFPanel,
+              mdfMat,
+              cx,
+              -aInt / 2 - mdfEsp / 2,
+              cz,
+              0,
+              -0.3,
+              0,
+              "mdf",
+              "Chapa de Fechamento",
+              "MDF Cru",
+              strMDFFinal,
+              `${exactCount} un`
+            );
+          }
+        }
+
+        // 3. RIPAS INFERIORES E GRAMPOS 80/12
+        let yPosInfTop = aInt / 2 + mdfEsp + ripaH / 2;
+        let yPosInfBot = -aInt / 2 - mdfEsp - ripaH / 2;
+        const geomRipaInf = new THREE.BoxGeometry(ripaW, ripaH, ladoMenor);
+
+        for (let i = 0; i < numRipasInfFace; i++) {
+          let xPos = posXRipasInf[i];
+
+          addMesh(
+            geomRipaInf,
+            woodMat,
+            xPos,
+            yPosInfTop,
+            0,
+            0,
+            0.6,
+            0,
+            "ripas",
+            "Ripa Estrutural (Base/Tampa)",
+            "Pinus Aparelhado",
+            strRipa,
+            `${numRipasInfFace * 2} un`
+          );
+          addMesh(
+            geomRipaInf,
+            woodMat,
+            xPos,
+            yPosInfBot,
+            0,
+            0,
+            -0.6,
+            0,
+            "ripas",
+            "Ripa Estrutural (Base/Tampa)",
+            "Pinus Aparelhado",
+            strRipa,
+            `${numRipasInfFace * 2} un`
+          );
+
+          addMesh(
+            hexGeo,
+            metalMat,
+            xPos,
+            yPosInfTop + ripaH / 2 + 0.001,
+            ladoMenor / 2 - 0.03,
+            0,
+            0.6,
+            0,
+            "fixadores",
+            "Parafuso Sextavado",
+            "Aço Zincado + Vedação",
+            '5,5 mm x 2.1/4"',
+            "--"
+          );
+          addMesh(
+            hexGeo,
+            metalMat,
+            xPos,
+            yPosInfTop + ripaH / 2 + 0.001,
+            -ladoMenor / 2 + 0.03,
+            0,
+            0.6,
+            0,
+            "fixadores",
+            "Parafuso Sextavado",
+            "Aço Zincado + Vedação",
+            '5,5 mm x 2.1/4"',
+            "--"
+          );
+          addMesh(
+            hexGeo,
+            metalMat,
+            xPos,
+            yPosInfBot - ripaH / 2 - 0.001,
+            ladoMenor / 2 - 0.03,
+            0,
+            -0.6,
+            0,
+            "fixadores",
+            "Parafuso Sextavado",
+            "Aço Zincado + Vedação",
+            '5,5 mm x 2.1/4"',
+            "--"
+          );
+          addMesh(
+            hexGeo,
+            metalMat,
+            xPos,
+            yPosInfBot - ripaH / 2 - 0.001,
+            -ladoMenor / 2 + 0.03,
+            0,
+            -0.6,
+            0,
+            "fixadores",
+            "Parafuso Sextavado",
+            "Aço Zincado + Vedação",
+            '5,5 mm x 2.1/4"',
+            "--"
+          );
+          physicalCountHexScrews += 4;
+
+          let trechos10cm = Math.ceil((ladoMenor - 0.02) / 0.1);
+          let startZ = -ladoMenor / 2 + 0.01;
+          let endZ = ladoMenor / 2 - 0.01;
+          let isEdge = i === 0 || i === numRipasInfFace - 1; // Descobre se é beirada ou meio
+
+          for (let k = 0; k < trechos10cm; k++) {
+            let stZ =
+              trechos10cm === 1
+                ? 0
+                : startZ + k * ((endZ - startZ) / (trechos10cm - 1));
+
+            if (isEdge) {
+              // PARES NAS BEIRADAS (Fixa o MDF na tampa e na base)
+              addMesh(
+                s8012Geo,
+                metalMat,
+                xPos - 0.015,
+                aInt / 2 - 0.001,
+                stZ,
+                0,
+                0.3,
+                0,
+                "fixadores",
+                "Grampo 80/12",
+                "Aço",
+                "10cm (Duplo)",
+                "--"
+              );
+              addMesh(
+                s8012Geo,
+                metalMat,
+                xPos + 0.015,
+                aInt / 2 - 0.001,
+                stZ,
+                0,
+                0.3,
+                0,
+                "fixadores",
+                "Grampo 80/12",
+                "Aço",
+                "10cm (Duplo)",
+                "--"
+              );
+              addMesh(
+                s8012Geo,
+                metalMat,
+                xPos - 0.015,
+                -aInt / 2 + 0.001,
+                stZ,
+                0,
+                -0.3,
+                0,
+                "fixadores",
+                "Grampo 80/12",
+                "Aço",
+                "10cm (Duplo)",
+                "--"
+              );
+              addMesh(
+                s8012Geo,
+                metalMat,
+                xPos + 0.015,
+                -aInt / 2 + 0.001,
+                stZ,
+                0,
+                -0.3,
+                0,
+                "fixadores",
+                "Grampo 80/12",
+                "Aço",
+                "10cm (Duplo)",
+                "--"
+              );
+              physicalCount8012 += 4;
+            } else {
+              // SIMPLES NO MEIO (Fixa o MDF na tampa e na base)
+              addMesh(
+                s8012Geo,
+                metalMat,
+                xPos,
+                aInt / 2 - 0.001,
+                stZ,
+                0,
+                0.3,
+                0,
+                "fixadores",
+                "Grampo 80/12",
+                "Aço",
+                "10cm (Simples)",
+                "--"
+              );
+              addMesh(
+                s8012Geo,
+                metalMat,
+                xPos,
+                -aInt / 2 + 0.001,
+                stZ,
+                0,
+                -0.3,
+                0,
+                "fixadores",
+                "Grampo 80/12",
+                "Aço",
+                "10cm (Simples)",
+                "--"
+              );
+              physicalCount8012 += 2;
+            }
+          }
+        }
+
+        // 4. RIPAS SUPERIORES COM REFORÇO
+        let baseNumSup = Math.max(2, Math.ceil((ladoMenor - 0.51) / 0.5));
+        if (ladoMaior >= 2.0) {
+          if (ladoMenor < 1.2) {
+            baseNumSup = Math.max(baseNumSup, 3);
+          } else {
+            baseNumSup = Math.max(baseNumSup, 4);
+          }
+        }
+
+        let numVaosSup = baseNumSup + 1;
+        let distVaoSup = (ladoMenor - baseNumSup * ripaW) / numVaosSup;
+        let passoSup = ripaW + distVaoSup;
+
+        let yPosSupTop = aInt / 2 + mdfEsp + ripaH + ripaH / 2;
+        let yPosSupBot = -aInt / 2 - mdfEsp - ripaH - ripaH / 2;
+        const geomRipaSup = new THREE.BoxGeometry(ladoMaior, ripaH, ripaW);
+        s1440Geo.rotateY(Math.PI / 2);
+
+        let posZRipasSup = [];
+
+        for (let j = 0; j < baseNumSup; j++) {
+          let zPos = -ladoMenor / 2 + distVaoSup + ripaW / 2 + j * passoSup;
+          posZRipasSup.push(zPos);
+
+          addMesh(
+            geomRipaSup,
+            woodMat,
+            0,
+            yPosSupTop,
+            zPos,
+            0,
+            0.9,
+            0,
+            "ripas",
+            "Ripa Externa (Amarração)",
+            "Pinus Aparelhado",
+            strRipaSup,
+            `${baseNumSup * 2} un`
+          );
+          addMesh(
+            geomRipaSup,
+            woodMat,
+            0,
+            yPosSupBot,
+            zPos,
+            0,
+            -0.9,
+            0,
+            "ripas",
+            "Ripa Externa (Amarração)",
+            "Pinus Aparelhado",
+            strRipaSup,
+            `${baseNumSup * 2} un`
+          );
+
+          posXRipasInf.forEach((xPos) => {
+            let off = 0.015;
+            let cruzamentos = [
+              [xPos, zPos],
+              [xPos - off, zPos - off],
+              [xPos + off, zPos - off],
+              [xPos - off, zPos + off],
+              [xPos + off, zPos + off],
+            ];
+            cruzamentos.forEach((pos) => {
+              addMesh(
+                s1440Geo,
+                metalMat,
+                pos[0],
+                yPosSupTop + ripaH / 2 + 0.001,
+                pos[1],
+                0,
+                0.9,
+                0,
+                "fixadores",
+                "Grampo 14/40",
+                "Aço",
+                "5 un por junção",
+                "--"
+              );
+              addMesh(
+                s1440Geo,
+                metalMat,
+                pos[0],
+                yPosSupBot - ripaH / 2 - 0.001,
+                pos[1],
+                0,
+                -0.9,
+                0,
+                "fixadores",
+                "Grampo 14/40",
+                "Aço",
+                "5 un por junção",
+                "--"
+              );
+              physicalCount1440 += 2;
+            });
+          });
+        }
+
+        // ETAPA B: Parafusos Sextavados (Reforço no Meio dos Vãos)
+        let zMidpoints = [];
+        for (let k = 0; k < posZRipasSup.length - 1; k++) {
+          zMidpoints.push((posZRipasSup[k] + posZRipasSup[k + 1]) / 2);
+        }
+
+        let xLeft = posXRipasInf[0];
+        let xRight = posXRipasInf[posXRipasInf.length - 1];
+        let numVaos = zMidpoints.length;
+
+        // Funções de injeção separadas para permitir a inversão da base
+        const addSextavadoReforcoTopo = (xP, zP) => {
+          addMesh(
+            hexGeo,
+            metalMat,
+            xP,
+            yPosInfTop + ripaH / 2 + 0.001,
+            zP,
+            0,
+            0.6,
+            0,
+            "fixadores",
+            "Parafuso Sextavado (Reforço)",
+            "Aço Zincado",
+            '5,5 mm x 2.1/4"',
+            "--"
+          );
+          physicalCountHexScrews++;
+        };
+        const addSextavadoReforcoBase = (xP, zP) => {
+          addMesh(
+            hexGeo,
+            metalMat,
+            xP,
+            yPosInfBot - ripaH / 2 - 0.001,
+            zP,
+            0,
+            -0.6,
+            0,
+            "fixadores",
+            "Parafuso Sextavado (Reforço)",
+            "Aço Zincado",
+            '5,5 mm x 2.1/4"',
+            "--"
+          );
+          physicalCountHexScrews++;
+        };
+        const addSextavadoReforcoAmbos = (xP, zP) => {
+          addSextavadoReforcoTopo(xP, zP);
+          addSextavadoReforcoBase(xP, zP);
+        };
+
+        if (ladoMaior >= 1.3) {
+          if (distVaoSup < 0.2) {
+            // CENÁRIO 1: Vãos Curtos (< 20cm)
+            if (numVaos % 2 !== 0) {
+              let meio = Math.floor(numVaos / 2);
+              addSextavadoReforcoAmbos(xLeft, zMidpoints[meio]);
+              addSextavadoReforcoAmbos(xRight, zMidpoints[meio]);
+            } else {
+              // Ziguezague Oposto (O que entra no topo, não entra na base)
+              for (let v = 0; v < numVaos; v++) {
+                if (v % 2 === 0) {
+                  addSextavadoReforcoTopo(xLeft, zMidpoints[v]);
+                  addSextavadoReforcoBase(xRight, zMidpoints[v]);
+                } else {
+                  addSextavadoReforcoTopo(xRight, zMidpoints[v]);
+                  addSextavadoReforcoBase(xLeft, zMidpoints[v]);
+                }
+              }
+            }
+          } else if (distVaoSup <= 0.299) {
+            // CENÁRIO 2: Vãos Médios (20cm a 29cm) - Apenas nas pontas
+            addSextavadoReforcoAmbos(xLeft, zMidpoints[0]);
+            addSextavadoReforcoAmbos(xRight, zMidpoints[0]);
+            if (numVaos > 1) {
+              addSextavadoReforcoAmbos(xLeft, zMidpoints[numVaos - 1]);
+              addSextavadoReforcoAmbos(xRight, zMidpoints[numVaos - 1]);
+            }
+          } else {
+            // CENÁRIO 3: Vãos Largos (>= 30cm) - Todos os vãos
+            zMidpoints.forEach((zPos) => {
+              addSextavadoReforcoAmbos(xLeft, zPos);
+              addSextavadoReforcoAmbos(xRight, zPos);
+            });
+          }
+        } else {
+          // CAIXAS LEVES (< 1.30m): Apenas vãos largos
+          if (distVaoSup >= 0.3) {
+            zMidpoints.forEach((zPos) => {
+              addSextavadoReforcoAmbos(xLeft, zPos);
+              addSextavadoReforcoAmbos(xRight, zPos);
+            });
+          }
+        }
+
+        // 5. TIRAS SOLTAS INTERNAS DE EVA
+        let evaH_solta = Math.max(0.05, aInt - 0.04);
+        let fEvaH_solta = evaH_solta.toFixed(2).replace(".", ",");
+        const geomEvaSoltoX = new THREE.BoxGeometry(0.28, evaH_solta, 0.02);
+        const geomEvaSoltoZ = new THREE.BoxGeometry(0.02, evaH_solta, 0.28);
+
+        let zPosFront = ladoMenor / 2 - eEsp - 0.01;
+        let zPosBack = -ladoMenor / 2 + eEsp + 0.01;
+        let xPosRight = ladoMaior / 2 - eEsp - 0.01;
+        let xPosLeft = -ladoMaior / 2 + eEsp + 0.01;
+
+        addMesh(
+          geomEvaSoltoX,
+          evaMat,
+          0,
+          0,
+          zPosFront,
+          0,
+          0,
+          0.4,
+          "eva",
+          "Faixa de EVA (Interna)",
+          "EVA Marrom 20mm",
+          `0,28 x ${fEvaH_solta} x 0,02 m`,
+          "4 un"
+        );
+        addMesh(
+          geomEvaSoltoX,
+          evaMat,
+          0,
+          0,
+          zPosBack,
+          0,
+          0,
+          -0.4,
+          "eva",
+          "Faixa de EVA (Interna)",
+          "EVA Marrom 20mm",
+          `0,28 x ${fEvaH_solta} x 0,02 m`,
+          "4 un"
+        );
+        addMesh(
+          geomEvaSoltoZ,
+          evaMat,
+          xPosRight,
+          0,
+          0,
+          0.4,
+          0,
+          0,
+          "eva",
+          "Faixa de EVA (Interna)",
+          "EVA Marrom 20mm",
+          `0,28 x ${fEvaH_solta} x 0,02 m`,
+          "4 un"
+        );
+        addMesh(
+          geomEvaSoltoZ,
+          evaMat,
+          xPosLeft,
+          0,
+          0,
+          -0.4,
+          0,
+          0,
+          "eva",
+          "Faixa de EVA (Interna)",
+          "EVA Marrom 20mm",
+          `0,28 x ${fEvaH_solta} x 0,02 m`,
+          "4 un"
+        );
+
+        // 6. EVA EXTERNO COLADO
+        if (aInt <= 0.25) {
+          const evaEspessura = 0.02;
+          let evaZ = ladoMenor / 2 + evaEspessura / 2;
+          let qtdEva = 1,
+            compEva = 0.28;
+
+          if (ladoMaior < 0.9) {
+            qtdEva = 1;
+            compEva = Math.max(0.1, ladoMaior - 0.2);
+          } else if (ladoMaior < 2.0) {
+            qtdEva = 2;
+          } else if (ladoMaior <= 3.5) {
+            qtdEva = 3;
+          } else {
+            qtdEva = Math.max(4, Math.ceil((ladoMaior + 1.0) / 1.5));
+          }
+
+          let fCompEva = compEva.toFixed(2).replace(".", ",");
+
+          if (aInt >= 0.15) {
+            let evaH_ext = 0.05;
+            const geomEVA = new THREE.BoxGeometry(
+              compEva,
+              evaH_ext,
+              evaEspessura
+            );
+            let yTop = aInt / 2 - 0.01 - 0.025;
+            let yBot = -aInt / 2 + 0.01 + 0.025;
+
+            let drawEva = (xPos) => {
+              addMesh(
+                geomEVA,
+                evaMat,
+                xPos,
+                yTop,
+                evaZ,
+                0,
+                0,
+                0.6,
+                "eva",
+                "EVA Externo (Paralelo)",
+                "EVA Marrom 20mm",
+                `${fCompEva} x 0,05 x 0,02 m`,
+                `${qtdEva * 2} un`
+              );
+              addMesh(
+                geomEVA,
+                evaMat,
+                xPos,
+                yBot,
+                evaZ,
+                0,
+                0,
+                0.6,
+                "eva",
+                "EVA Externo (Paralelo)",
+                "EVA Marrom 20mm",
+                `${fCompEva} x 0,05 x 0,02 m`,
+                `${qtdEva * 2} un`
+              );
+            };
+
+            if (qtdEva === 1) {
+              drawEva(0);
+            } else {
+              let xStart = -ladoMaior / 2 + 0.15 + compEva / 2;
+              let xEnd = ladoMaior / 2 - 0.15 - compEva / 2;
+              let dist = (xEnd - xStart) / (qtdEva - 1);
+              for (let i = 0; i < qtdEva; i++) {
+                drawEva(xStart + i * dist);
+              }
+            }
+          } else {
+            let evaH_ext = Math.max(0.05, aInt - 0.02);
+            const geomEVA = new THREE.BoxGeometry(
+              compEva,
+              evaH_ext,
+              evaEspessura
+            );
+
+            let drawEva = (xPos) => {
+              addMesh(
+                geomEVA,
+                evaMat,
+                xPos,
+                0,
+                evaZ,
+                0,
+                0,
+                0.6,
+                "eva",
+                "EVA Externo (Inteiro)",
+                "EVA Marrom 20mm",
+                `${fCompEva} x ${evaH_ext
+                  .toFixed(2)
+                  .replace(".", ",")} x 0,02 m`,
+                `${qtdEva} un`
+              );
+            };
+
+            if (qtdEva === 1) {
+              drawEva(0);
+            } else {
+              let xStart = -ladoMaior / 2 + 0.15 + compEva / 2;
+              let xEnd = ladoMaior / 2 - 0.15 - compEva / 2;
+              let dist = (xEnd - xStart) / (qtdEva - 1);
+              for (let i = 0; i < qtdEva; i++) {
+                drawEva(xStart + i * dist);
+              }
+            }
+          }
+        }
+
+        // Agora que a contagem final de fixadores está pronta, atualizamos a Qtd. Total
+        // de cada peça (antes ficava fixa em "--", pois era escrita durante a montagem,
+        // antes do total ser conhecido).
+        crateGroup.children.forEach((obj) => {
+          if (obj.userData && obj.userData.type === "fixadores") {
+            if (obj.userData.name === "Atarraxante Philips") {
+              obj.userData.totalQtd = physicalCountFlatScrews + " un";
+            } else if (
+              obj.userData.name &&
+              obj.userData.name.indexOf("Parafuso Sextavado") === 0
+            ) {
+              obj.userData.totalQtd = physicalCountHexScrews + " un";
+            } else if (obj.userData.name === "Grampo 14/40") {
+              obj.userData.totalQtd = physicalCount1440 + " un";
+            } else if (obj.userData.name === "Grampo 80/12") {
+              obj.userData.totalQtd = physicalCount8012 + " un";
+            }
+          }
+        });
+
+        controls.target.set(0, 0, 0);
+
+        // PREPARAÇÃO DO CAMPO DE FORÇA RETANGULAR DINÂMICO
+        crateGroup.userData.ladoMaior = ladoMaior;
+        crateGroup.userData.ladoMenor = ladoMenor;
+        crateGroup.userData.aInt = aInt;
+
+        controls.maxDistance = ladoMaior * 4;
+
+        camera.position.set(
+          ladoMaior * 1.5,
+          Math.max(1, aInt * 4),
+          ladoMaior * 1.5
+        );
+        if (isExploded) {
+          updateExplosion(document.getElementById("rangeExplode").value);
+        }
+      }
+
+      // Formata automaticamente o input ao perder o foco (ex: "1,2" vira "1,200")
+      function formatarMedida(input) {
+        let val = input.value.trim().replace(",", ".");
+        if (val === "" || isNaN(val)) return;
+        input.value = parseFloat(val).toFixed(3).replace(".", ",");
+      }
+
+      // --- SISTEMA DE ATUALIZAÇÃO E MATEMÁTICA ---
+      function atualizarModelo(isUserClick = false) {
+        let cIntRaw = document.getElementById("cInt").value;
+        let lIntRaw = document.getElementById("lInt").value;
+        let aIntRaw = document.getElementById("aInt").value;
+
+        let cInt = parseFloat(cIntRaw.replace(",", "."));
+        let lInt = parseFloat(lIntRaw.replace(",", "."));
+        let aInt = parseFloat(aIntRaw.replace(",", "."));
+
+        let alertaHTML = "";
+        document.getElementById("alertaContainer").innerHTML = "";
+
+        if (
+          isNaN(cInt) ||
+          isNaN(lInt) ||
+          isNaN(aInt) ||
+          cInt === 0 ||
+          lInt === 0 ||
+          aInt === 0
+        ) {
+          return;
+        }
+
+        // Trava de Segurança: Limite de 10 metros para não travar o navegador
+        if (cInt > 10 || lInt > 10 || aInt > 10) {
+          document.getElementById("alertaContainer").innerHTML = `
+            <div class="alert-box" style="background:var(--danger-bg); border-color:var(--danger-border);">
+              <strong style="color:var(--danger-text);">❌ MEDIDA EXCEDIDA (> 10m)</strong>
+              <p style="color:var(--danger-text);">O tamanho máximo permitido para simulação é de 10 metros. Verifique se esqueceu de usar a vírgula (ex: use 3,00 ao invés de 300).</p>
+            </div>
+          `;
+          if (isUserClick) showToast("❌ Erro: Medida excede 10 metros!", false);
+          return; // Para o código aqui! Não processa e não trava o PC.
+        }
+
+        // Lógica de Troca de Medidas Silenciosa
+        if (lInt > cInt) {
+          let temp = cInt;
+          cInt = lInt;
+          lInt = temp;
+        }
+
+        if (aInt > 0.25) {
+          alertaHTML += `
+                    <div class="alert-box">
+                        <strong>⚠️ ALERTA DE MONTAGEM (EVA Externo)</strong>
+                        <p>Engradados com altura interna acima de 25 cm não recebem colagem de EVA externo. Apenas as faixas soltas internas.</p>
+                    </div>
+                `;
+        }
+        if (aInt > 0.3) {
+          alertaHTML += `
+                    <div class="alert-box" style="background:var(--danger-bg); border-color:#d97706;">
+                        <strong style="color:#b45309;">⚠️ ALERTA DE FIXAÇÃO (Parafusos laterais)</strong>
+                        <p style="color:#92400e;">Altura superior a 30 cm. Avalie a quantidade necessária e a segurança estrutural dos parafusos atarraxantes apontados.</p>
+                    </div>
+                `;
+          document.getElementById("alertaContainer").innerHTML = alertaHTML;
+        } else if (aInt > 0.25) {
+          document.getElementById("alertaContainer").innerHTML = alertaHTML;
+        }
+
+        let cExt = cInt + 0.07,
+          lExt = lInt + 0.07;
+        let material =
+          cExt <= 1 && lExt <= 1
+            ? "Tecplay"
+            : aInt <= 0.07
+            ? "Caxeta"
+            : "Tecplay";
+            let formatF3 = aInt.toFixed(2).replace(".", ","),
+          formatE6 = cExt.toFixed(2).replace(".", ","),
+          formatF6 = lExt.toFixed(2).replace(".", ",");
+        let ladoMaior = Math.max(cExt, lExt),
+          ladoMenor = Math.min(cExt, lExt);
+
+        // HELPER DESATIVADO (Texto simples sem negrito ou brilho)
+        const spanOr = (val) => val;
+        let formatCompCurta = (Math.min(cExt, lExt) - 0.07).toFixed(2).replace(".", ",");
+        // Novo formato unificado do Quadro (E8 assume longas e curtas) e removemos a variável E9
+        let textoE8 = `${spanOr(formatE6 + " x " + formatF3 + " x 0,035")} - ${spanOr("2 un")}<br>${spanOr(formatCompCurta + " x " + formatF3 + " x 0,035")} - ${spanOr("2 un")}`;
+        // --- LÓGICA DE CORTE DO MDF (TEMPO E TEXTOS EXATOS) ---
+        let numVaosInfCalc = Math.max(2, Math.ceil((ladoMaior - 0.12) / 0.5));
+        let numRipasInfFaceCalc = numVaosInfCalc + 1;
+        let distVaoInfCalc =
+          (ladoMaior - numRipasInfFaceCalc * 0.06) / numVaosInfCalc;
+        let passoInfCalc = 0.06 + distVaoInfCalc;
+
+        let posXRipasInfCalc = [];
+        for (let i = 0; i < numRipasInfFaceCalc; i++) {
+          posXRipasInfCalc.push(-ladoMaior / 2 + 0.06 / 2 + i * passoInfCalc);
+        }
+
+        let maxMDF = 2.75,
+          maxMDFL = 1.85;
+        let splitX = false,
+          splitZ = false;
+        if (
+          !(
+            (ladoMaior <= maxMDF && ladoMenor <= maxMDFL) ||
+            (ladoMaior <= maxMDFL && ladoMenor <= maxMDF)
+          )
+        ) {
+          if (ladoMaior > maxMDF) splitX = true;
+          if (ladoMenor > maxMDFL) splitZ = true;
+          if (ladoMaior > maxMDFL && ladoMenor > maxMDFL) {
+            splitX = true;
+            splitZ = true;
+          }
+        }
+
+        let xBoundsCalc = [-ladoMaior / 2, ladoMaior / 2];
+        if (splitX) {
+          let bestX = 0,
+            minDiff = Infinity;
+          posXRipasInfCalc.forEach((x) => {
+            if (Math.abs(x) < minDiff) {
+              minDiff = Math.abs(x);
+              bestX = x;
+            }
+          });
+          xBoundsCalc = [-ladoMaior / 2, bestX, ladoMaior / 2];
+        }
+        let zBoundsCalc = [-ladoMenor / 2, ladoMenor / 2];
+        if (splitZ) {
+          zBoundsCalc = [-ladoMenor / 2, 0, ladoMenor / 2];
+        }
+
+        let mapMDFCalc = {};
+        for (let i = 0; i < xBoundsCalc.length - 1; i++) {
+          for (let j = 0; j < zBoundsCalc.length - 1; j++) {
+            let wX = xBoundsCalc[i + 1] - xBoundsCalc[i];
+            let wZ = zBoundsCalc[j + 1] - zBoundsCalc[j];
+            let dimKey = `${wX.toFixed(3)}x${wZ.toFixed(3)}`;
+            if (!mapMDFCalc[dimKey])
+              mapMDFCalc[dimKey] = { wX: wX, wZ: wZ, count: 0 };
+            mapMDFCalc[dimKey].count += 2;
+          }
+        }
+
+        // --- NOVA LÓGICA DE CORTE (SERRA CIRCULAR) ---
+        const getTempoCorteNovo = (comp) => {
+          if (comp <= 0.6) return 15;
+          if (comp <= 1.0) return 25;
+          if (comp <= 2.0) return 45;
+          if (comp <= 3.0) return 55;
+          return 65;
+        };
+
+        let partesTextoE10 = [];
+        let rawSheets = 0;
+        let perimetroTotal = 0;
+        let tempoCortesMDF = 0;
+
+        for (let key in mapMDFCalc) {
+          let p = mapMDFCalc[key];
+          partesTextoE10.push(
+            `${spanOr(p.wX.toFixed(3).replace(".", ",") + " x " + p.wZ.toFixed(3).replace(".", ",") + " m")} - ${spanOr(p.count + " un")}`
+          );
+
+          let f2L = p.wX * 2 + 0.003 <= 2.75 && p.wZ <= 1.85;
+          let f2W = p.wX <= 2.75 && p.wZ * 2 + 0.003 <= 1.85;
+          let f2RL = p.wZ * 2 + 0.003 <= 2.75 && p.wX <= 1.85;
+          let f2RW = p.wZ <= 2.75 && p.wX * 2 + 0.003 <= 1.85;
+          let fits2 = f2L || f2W || f2RL || f2RW;
+          rawSheets += fits2 ? Math.ceil(p.count / 2) : p.count;
+
+          perimetroTotal += p.count * ((p.wX + p.wZ) * 2);
+          tempoCortesMDF +=
+            p.count *
+            (2 * getTempoCorteNovo(p.wX) + 2 * getTempoCorteNovo(p.wZ));
+        }
+
+        let isEmendada = splitX || splitZ;
+        let textoE10 = partesTextoE10.join("<br>") + (isEmendada ? " <small>(Emendadas)</small>" : "");
+
+        // Variáveis originais das ripas (não quebra as referências)
+        let numVaosInf = Math.max(2, Math.ceil((ladoMaior - 0.12) / 0.5));
+        let numRipasInfFace = numVaosInf + 1,
+          numRipasInfTotal = numRipasInfFace * 2;
+        
+        let vaoInfTamanho = ((ladoMaior - numRipasInfFace * 0.06) / numVaosInf).toFixed(2).replace(".", ",");
+        let textoE11 = `${spanOr(ladoMenor.toFixed(2).replace(".", ",") + " x 0,06 x 0,02")} - ${spanOr(numRipasInfTotal + " un")}`;
+
+        let baseNumSup = Math.max(2, Math.ceil((ladoMenor - 0.51) / 0.5));
+        if (ladoMaior >= 2.0) {
+          if (ladoMenor < 1.2) {
+            baseNumSup = Math.max(baseNumSup, 3);
+          } else {
+            baseNumSup = Math.max(baseNumSup, 4);
+          }
+        }
+        let numRipasSupTotal = baseNumSup * 2,
+          numVaosSup = baseNumSup + 1;
+        let distVaoSup = (ladoMenor - baseNumSup * 0.06) / numVaosSup;
+        
+        // Junta a ripa superior na mesma variável do textoE11
+        textoE11 += `<br>${spanOr(ladoMaior.toFixed(2).replace(".", ",") + " x 0,06 x 0,02")} - ${spanOr(numRipasSupTotal + " un")}`;
+
+        construirEngradado(cExt, lExt, aInt, material);
+
+        let textoE14 = aInt > 0.3 ? `APONTAR (${spanOr(physicalCountFlatScrews + " un")})` : spanOr(physicalCountFlatScrews + " un");
+        let textoE15 = spanOr(physicalCountHexScrews + " un");
+        let textoE16 = spanOr((physicalCount1440 / 1000).toFixed(3).replace(".", ","));
+        let textoE17 = spanOr((physicalCount8012 / 1000).toFixed(3).replace(".", ","));
+
+        let cColaParte1 = 0; // Zerado: Interseções
+        let cColaParte2 = 0; // Zerado: Quadro
+        let cColaParte3 = numRipasInfFace * (3 * ladoMenor + 0.12) * 12; 
+        let calcColaB = Math.ceil(cColaParte1 + cColaParte2 + cColaParte3);
+        let textoE18 = spanOr((calcColaB / 1000).toFixed(3).replace(".", ",") + " kg");
+
+        let textoE19 = "",
+          textoE20 = "",
+          totalMetrosEVA = 0;
+        let evaH_solta = Math.max(0.05, aInt - 0.04);
+        let fEvaH_solta = evaH_solta.toFixed(2).replace(".", ",");
+        let areaInternaEVA = 4 * (0.28 * evaH_solta);
+
+        if (aInt > 0.25) {
+          totalMetrosEVA = 4 * 0.28;
+          let calcPesoEVA = Math.ceil(areaInternaEVA * 1666.67);
+          let formPesoEVA = (calcPesoEVA / 1000).toFixed(3).replace(".", ",");
+          textoE19 = `${spanOr(formPesoEVA + " kg")}<br><small>Ext: Sem colagem<br>Int: ${spanOr("4 un")} de ${spanOr("0,28 x " + fEvaH_solta + " x 0,02 m")}</small>`;
+          textoE20 = spanOr("0,000 kg") + " <small>(Sem colagem)</small>";
+        } else {
+          let qtdEva = 1,
+            compEva = 0.28;
+          if (ladoMaior < 0.9) {
+            qtdEva = 1;
+            compEva = Math.max(0.1, ladoMaior - 0.2);
+          } else if (ladoMaior < 2.0) {
+            qtdEva = 2;
+          } else if (ladoMaior <= 3.5) {
+            qtdEva = 3;
+          } else {
+            qtdEva = Math.max(4, Math.ceil((ladoMaior + 1.0) / 1.5));
+          }
+
+          let fCompEva = compEva.toFixed(2).replace(".", ",");
+
+          if (aInt >= 0.15) {
+            let evaH_ext = 0.05;
+            let areaExternaEVA = qtdEva * compEva * evaH_ext * 2;
+            totalMetrosEVA = qtdEva * compEva * 2 + 4 * 0.28;
+            
+            let calcPesoEVA = Math.ceil((areaExternaEVA + areaInternaEVA) * 1666.67);
+            let formPesoEVA = (calcPesoEVA / 1000).toFixed(3).replace(".", ",");
+            textoE19 = `${spanOr(formPesoEVA + " kg")}<br><small>Ext: ${spanOr((qtdEva * 2) + " un")} de ${spanOr(fCompEva + " x 0,05 x 0,02 m")}<br>Int: ${spanOr("4 un")} de ${spanOr("0,28 x " + fEvaH_solta + " x 0,02 m")}</small>`;
+            
+            let calcColaC = Math.ceil(areaExternaEVA * (10 / 0.024));
+            textoE20 = spanOr((calcColaC / 1000).toFixed(3).replace(".", ",") + " kg");
+          } else {
+            let evaH_ext = Math.max(0.05, aInt - 0.02);
+            let areaExternaEVA = qtdEva * compEva * evaH_ext;
+            totalMetrosEVA = qtdEva * compEva + 4 * 0.28;
+            
+            let calcPesoEVA = Math.ceil((areaExternaEVA + areaInternaEVA) * 1666.67);
+            let formPesoEVA = (calcPesoEVA / 1000).toFixed(3).replace(".", ",");
+            textoE19 = `${spanOr(formPesoEVA + " kg")}<br><small>Ext: ${spanOr(qtdEva + " un")} de ${spanOr(fCompEva + " x " + evaH_ext.toFixed(2).replace(".", ",") + " x 0,02 m")}<br>Int: ${spanOr("4 un")} de ${spanOr("0,28 x " + fEvaH_solta + " x 0,02 m")}</small>`;
+            
+            let calcColaC = Math.ceil(areaExternaEVA * (10 / 0.024));
+            textoE20 = spanOr((calcColaC / 1000).toFixed(3).replace(".", ",") + " kg");
+          }
+        }
+
+        // --- NOVA LÓGICA DE USINAGEM BRUTA (CAXETA) ---
+        let totalSegundosH9 = material === "Caxeta" ? 60 + ladoMaior * 90 : 0;
+        let minH9 = Math.floor(totalSegundosH9 / 60);
+        let secH9 = Math.round(totalSegundosH9 % 60);
+        if (secH9 === 60) {
+          minH9++;
+          secH9 = 0;
+        }
+        let textoH9 =
+          material === "Caxeta"
+            ? String(minH9).padStart(2, "0") +
+              ":" +
+              String(secH9).padStart(2, "0")
+            : "--";
+
+        let totalSegundosH10 = material === "Caxeta" ? 40 + ladoMaior * 50 : 0;
+        let minH10 = Math.floor(totalSegundosH10 / 60);
+        let secH10 = Math.round(totalSegundosH10 % 60);
+        if (secH10 === 60) {
+          minH10++;
+          secH10 = 0;
+        }
+        let textoH10 =
+          material === "Caxeta"
+            ? String(minH10).padStart(2, "0") +
+              ":" +
+              String(secH10).padStart(2, "0")
+            : "--";
+
+        // Serra Circular da Estrutura (Quadro e Ripas continuam aqui)
+        let tempoSerraEstrutura =
+          360 +
+          (material === "Tecplay" ? 120 : 0) +
+          2 * getTempoCorteNovo(ladoMaior) +
+          2 * getTempoCorteNovo(ladoMenor - 0.07) +
+          numRipasInfTotal * getTempoCorteNovo(ladoMenor) +
+          numRipasSupTotal * getTempoCorteNovo(ladoMaior);
+
+        let metodoCorteMdf = document.getElementById("metodoCorteMdf").value;
+        let tMdfSerra = 0;
+        let tRouterSetup = 0;
+        let tRouterUsinagem = 0;
+        let circMin = 0;
+
+        if (metodoCorteMdf === "router") {
+          circMin = Math.ceil(tempoSerraEstrutura / 60);
+          tRouterUsinagem = perimetroTotal * 30;
+          tRouterSetup = rawSheets * 180; // 3 minutos (180s) por chapa bruta
+
+          document.getElementById("rowRouter").style.display = "flex";
+          document.getElementById("rowSetup").style.display = "flex";
+
+          let minR = Math.floor(tRouterUsinagem / 60);
+          let secR = Math.round(tRouterUsinagem % 60);
+          if (secR === 60) {
+            minR++;
+            secR = 0;
+          }
+          document.getElementById("outRouter").innerText =
+            String(minR).padStart(2, "0") + ":" + String(secR).padStart(2, "0");
+
+          let minSetup = Math.floor(tRouterSetup / 60);
+          let secSetup = Math.round(tRouterSetup % 60);
+          if (secSetup === 60) {
+            minSetup++;
+            secSetup = 0;
+          }
+          document.getElementById("outSetup").innerText =
+            String(minSetup).padStart(2, "0") +
+            ":" +
+            String(secSetup).padStart(2, "0");
+        } else {
+          let tempoManuseioMDF = rawSheets * 120;
+          let tempoAjusteMDF = isEmendada
+            ? 60
+            : xBoundsCalc[1] - xBoundsCalc[0] ===
+              zBoundsCalc[1] - zBoundsCalc[0]
+            ? 30
+            : 60;
+          tMdfSerra = tempoManuseioMDF + tempoAjusteMDF + tempoCortesMDF;
+          circMin = Math.ceil((tempoSerraEstrutura + tMdfSerra) / 60);
+
+          document.getElementById("rowRouter").style.display = "none";
+          document.getElementById("rowSetup").style.display = "none";
+        }
+
+        let totalSegundosH11 = tempoSerraEstrutura + tMdfSerra;
+        let minH11 = Math.floor(totalSegundosH11 / 60);
+        let secH11 = Math.round(totalSegundosH11 % 60);
+        if (secH11 === 60) {
+          minH11++;
+          secH11 = 0;
+        }
+        let textoH11 =
+          String(minH11).padStart(2, "0") +
+          ":" +
+          String(secH11).padStart(2, "0");
+
+        // --- NOVO TEMPO DA SERRA FITA (EVA) ---
+        let totalSegundosH12 = 150 + totalMetrosEVA * 70;
+        let minH12 = Math.floor(totalSegundosH12 / 60);
+        let secH12 = Math.round(totalSegundosH12 % 60);
+        if (secH12 === 60) {
+          minH12++;
+          secH12 = 0;
+        }
+        let textoH12 =
+          String(minH12).padStart(2, "0") +
+          ":" +
+          String(secH12).padStart(2, "0");
+
+        // --- NOVA LÓGICA DE TEMPO DE MONTAGEM (CRONOANÁLISE CHÃO DE FÁBRICA) ---
+        let tFuros = (physicalCountFlatScrews + physicalCountHexScrews) * 15;
+        let tAtarraxantes = physicalCountFlatScrews * 30;
+        let tSextavados = physicalCountHexScrews * 40;
+        let tSextavadosSoltura = physicalCountHexScrews * 10;
+        let tGrampo1440 = (physicalCount1440 / 5) * 15;
+
+        let numChapasMDF = 0;
+        for (let k in mapMDFCalc) {
+          numChapasMDF += mapMDFCalc[k].count;
+        }
+        let tMdfManuseio = numChapasMDF * 120;
+
+        // Cola Branca: aplicada apenas no contato MDF x Ripa (Base e Tampa)
+        let metrosLinearesCola = numRipasInfTotal * ladoMenor;
+        let tColaBranca = metrosLinearesCola * 20;
+
+        // Grampo 80/12: Tempo 100% amarrado à contagem física real da tela!
+        // 3 segundos por grampo físico atirado. Se os grampos caíram, o tempo cai na mesma proporção.
+        let tGrampo8012 = physicalCount8012 * 3;
+
+        let areaEvaCalculada = 0;
+        if (aInt <= 0.25) {
+          let qtdEva = 1,
+            compEva = 0.28;
+          if (ladoMaior < 0.9) {
+            qtdEva = 1;
+            compEva = Math.max(0.1, ladoMaior - 0.2);
+          } else if (ladoMaior < 2.0) {
+            qtdEva = 2;
+          } else if (ladoMaior <= 3.5) {
+            qtdEva = 3;
+          } else {
+            qtdEva = Math.max(4, Math.ceil((ladoMaior + 1.0) / 1.5));
+          }
+          let evaH_ext = aInt >= 0.15 ? 0.05 : Math.max(0.05, aInt - 0.02);
+          areaEvaCalculada =
+            aInt >= 0.15
+              ? qtdEva * compEva * evaH_ext * 2
+              : qtdEva * compEva * evaH_ext;
+        }
+        let tEva = (areaEvaCalculada / 0.024) * 30;
+
+        let mult =
+          ladoMaior > 3.5
+            ? 1.4
+            : ladoMaior >= 2.5
+            ? 1.3
+            : ladoMaior >= 1.8
+            ? 1.15
+            : 1.0;
+        let totalSegundosH13 =
+          (tFuros +
+            tAtarraxantes +
+            tSextavados +
+            tSextavadosSoltura +
+            tGrampo1440 +
+            tMdfManuseio +
+            tColaBranca +
+            tGrampo8012 +
+            tEva) *
+          mult;
+
+        let minH13 = Math.floor(totalSegundosH13 / 60);
+        let secH13 = Math.round(totalSegundosH13 % 60);
+        if (secH13 === 60) {
+          minH13++;
+          secH13 = 0;
+        }
+        let textoH13 =
+          String(minH13).padStart(2, "0") +
+          ":" +
+          String(secH13).padStart(2, "0");
+
+          let minTotal =
+          Math.ceil(totalSegundosH9 / 60) +
+          Math.ceil(totalSegundosH10 / 60) +
+          Math.ceil(totalSegundosH11 / 60) +
+          Math.ceil(totalSegundosH12 / 60) +
+          Math.ceil(totalSegundosH13 / 60) +
+          Math.ceil(tRouterSetup / 60) +
+          Math.ceil(tRouterUsinagem / 60);
+
+        // Define a exibição em minutos
+        let textoH15 = minTotal + " min";
+        
+        // Calcula as horas para o Hover (Tooltip)
+        let hr = Math.floor(minTotal / 60);
+        let mt = minTotal % 60;
+        let tooltipHover = hr > 0 ? `Equivale a ${hr}h e ${mt}m` : `${mt} minutos`;
+
+        // Imprimindo na tela de forma limpa, com peso de fonte consistente.
+        document.getElementById("outComp").innerText = cExt.toFixed(3).replace(".", ",") + " m";
+        document.getElementById("outLarg").innerText = lExt.toFixed(3).replace(".", ",") + " m";
+        
+        document.getElementById("lblMadQuadro").innerText = material + ":";
+        
+        document.getElementById("outE8").innerHTML = textoE8;
+        // Removendo o "m" do MDF para padronizar com as outras madeiras
+        document.getElementById("outE10").innerHTML = textoE10.replace(" m", ""); 
+        document.getElementById("outE11").innerHTML = textoE11;
+        
+        document.getElementById("outE14").innerHTML = textoE14;
+        document.getElementById("outE15").innerHTML = textoE15;
+        document.getElementById("outE16").innerHTML = textoE16;
+        // Removendo os "m" do EVA para limpar o visual
+        document.getElementById("outE17").innerHTML = textoE17.replace(/ m/g, ""); 
+        document.getElementById("outE18").innerHTML = textoE18;
+        document.getElementById("outE19").innerHTML = textoE19;
+        document.getElementById("outE20").innerHTML = textoE20;
+
+        document.getElementById("outH9").innerHTML = textoH9;
+        document.getElementById("outH10").innerHTML = textoH10;
+        document.getElementById("outH11").innerHTML = textoH11;
+        document.getElementById("outH12").innerHTML = textoH12;
+        document.getElementById("outH13").innerHTML = textoH13;
+        document.getElementById("outH15").innerHTML = textoH15;
+        document.getElementById("outH15").title = tooltipHover;
+        
+
+        // Mostra o botão de exportar
+        document.getElementById("btnExport").style.display = "block";
+
+        // Força o motor 3D a ler a nova altura da coluna e reajustar a resolução
+        setTimeout(onWindowResize, 50);
+
+        // Chama o aviso estiloso SÓ SE foi um clique real no botão
+        if (isUserClick) {
+          showToast("⚙️ Produção processada com sucesso!", false);
+        }
+      }
+      // FUNÇÃO DE EXPORTAÇÃO EXCEL - APENAS RELATÓRIO DE ASSINATURA LIMPO E IDÊNTICO À MATRIZ
+      function exportarExcel() {
+        // --- 1. RESGATE DOS DADOS E CÁLCULOS GERAIS ---
+        let cIntRaw = document.getElementById("cInt").value;
+        let lIntRaw = document.getElementById("lInt").value;
+        let aIntRaw = document.getElementById("aInt").value;
+        let cInt = parseFloat(cIntRaw.replace(",", "."));
+        let lInt = parseFloat(lIntRaw.replace(",", "."));
+        let aInt = parseFloat(aIntRaw.replace(",", "."));
+        if (lInt > cInt) { let temp = cInt; cInt = lInt; lInt = temp; }
+
+        let cExt = cInt + 0.07, lExt = lInt + 0.07;
+        let ladoMaior = Math.max(cExt, lExt), ladoMenor = Math.min(cExt, lExt);
+        let maiorInt = Math.max(cInt, lInt), menorInt = Math.min(cInt, lInt);
+        let material = cExt <= 1 && lExt <= 1 ? "Tecplay" : aInt <= 0.07 ? "Caxeta" : "Tecplay";
+
+        // Quantidades
+        let qtdeMadeiraQuadro = ladoMaior * aInt * 2 + (ladoMenor - 0.07) * aInt * 2;
+        let numVaosInf = Math.max(2, Math.ceil((ladoMaior - 0.12) / 0.5));
+        let numRipasInfTotal = (numVaosInf + 1) * 2;
+        let baseNumSup = Math.max(2, Math.ceil((ladoMenor - 0.51) / 0.5));
+        if (ladoMaior >= 2.0) {
+          baseNumSup = ladoMenor < 1.2 ? Math.max(baseNumSup, 3) : Math.max(baseNumSup, 4);
+        }
+        let numRipasSupTotal = baseNumSup * 2;
+
+        let qtdePinus = (ladoMenor * 0.06 * 0.02 * numRipasInfTotal) + (ladoMaior * 0.06 * 0.02 * numRipasSupTotal);
+        let qtdeMDF = ladoMaior * ladoMenor * 2;
+        let qtdeAtarraxante = physicalCountFlatScrews;
+        let qtdeSextavado = physicalCountHexScrews;
+        let qtde1440 = physicalCount1440 / 1000;
+        let qtde8012 = physicalCount8012 / 1000;
+
+        let numRipasInfFace = numVaosInf + 1;
+        let cColaParte3 = numRipasInfFace * (3 * ladoMenor + 0.12) * 12;
+        let qtdeColaB = Math.ceil(cColaParte3) / 1000;
+        
+        // CORREÇÃO DO EVA E COLA (Sincronizado perfeitamente com a Tela)
+        let areaEvaCalculada = 0;
+        let qtdEva = 1, compEva = 0.28; // Padrão agora é 0.28
+        if (aInt <= 0.25) {
+          if (ladoMaior < 0.9) { qtdEva = 1; compEva = Math.max(0.1, ladoMaior - 0.2); }
+          else if (ladoMaior < 2.0) { qtdEva = 2; }
+          else if (ladoMaior <= 3.5) { qtdEva = 3; }
+          else { qtdEva = Math.max(4, Math.ceil((ladoMaior + 1.0) / 1.5)); }
+          let evaH_ext = aInt >= 0.15 ? 0.05 : Math.max(0.05, aInt - 0.02);
+          areaEvaCalculada = aInt >= 0.15 ? qtdEva * compEva * evaH_ext * 2 : qtdEva * compEva * evaH_ext;
+        }
+        let evaH_solta = Math.max(0.05, aInt - 0.04);
+        let areaInternaEVA = 4 * (0.28 * evaH_solta);
+        
+        // Se a caixa for maior que 25cm, NÃO tem cola de contato e usa só EVA interno
+        let calcPesoEVA = aInt > 0.25 ? Math.ceil(areaInternaEVA * 1666.67) : Math.ceil((areaEvaCalculada + areaInternaEVA) * 1666.67);
+        let qtdeColaC = aInt > 0.25 ? 0 : Math.ceil(areaEvaCalculada * (10 / 0.024)) / 1000;
+        let qtdeEVA = calcPesoEVA / 1000;
+
+        // Identificação Dinâmica da Madeira do Quadro
+        let isCaxeta = material === "Caxeta";
+        let codQuadro = isCaxeta ? "34013207" : "34013519";
+        let descQuadro = isCaxeta ? "CAXETA PRANCHADO 04 CM ESP" : "CHAPA TECPLAY HDF 35 MM - 2.75 X 1.83 M";
+        let umQuadro = isCaxeta ? "m3" : "m2";
+
+        // --- 2. INICIALIZAÇÃO DO EXCELJS ---
+        let workbook = new ExcelJS.Workbook();
+        let grayFill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9D9D9" } };
+        let borderStyle = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
+        let fontBold = { bold: true, name: "Cambria", size: 11 };
+        let fontNorm = { name: "Cambria", size: 11 };
+
+        // =========================================================================
+        // ABA ÚNICA: RELATÓRIO DE ASSINATURA (O PAINEL VISUAL EXATO)
+        // =========================================================================
+        let wsRel = workbook.addWorksheet("RELATÓRIO DE ASSINATURA");
+        wsRel.getColumn("A").width = 16;
+        wsRel.getColumn("B").width = 70;
+        wsRel.getColumn("C").width = 12;
+        wsRel.getColumn("D").width = 15;
+        wsRel.getColumn("E").width = 3;  
+        wsRel.getColumn("F").width = 22; 
+        wsRel.getColumn("G").width = 10;
+        wsRel.getColumn("H").width = 10;
+        wsRel.getColumn("I").width = 10;
+        wsRel.getColumn("J").width = 10;
+
+        wsRel.getCell("B2").value = "APONTAMENTO DE MARCENARIA"; 
+        wsRel.getCell("B2").font = { bold: true, size: 14, name: "Cambria" };
+
+        wsRel.getCell("B4").value = "PRODUTO:"; 
+        wsRel.getCell("B4").font = fontBold;
+        wsRel.getCell("B5").value = `ENGRADADO DE MADEIRA ${maiorInt.toFixed(2).replace(".",",")}M X ${menorInt.toFixed(2).replace(".",",")}M X ${aInt.toFixed(2).replace(".",",")}H MEDIDA INTERNA`;
+        wsRel.getCell("B5").font = fontNorm;
+
+        let dataHoje = new Date();
+        let dia = String(dataHoje.getDate()).padStart(2, '0');
+        let mes = String(dataHoje.getMonth() + 1).padStart(2, '0');
+        let ano = dataHoje.getFullYear();
+        let dataStr = `${dia}/${mes}/${ano}`;
+
+        wsRel.getCell("C4").value = "Data Início:";
+        wsRel.getCell("C5").value = "Data Final:";
+        wsRel.getCell("D4").value = dataStr;
+        wsRel.getCell("D5").value = dataStr;
+        wsRel.getCell("C4").font = fontNorm; wsRel.getCell("C5").font = fontNorm;
+        wsRel.getCell("D4").font = fontNorm; wsRel.getCell("D5").font = fontNorm;
+        wsRel.getCell("D4").alignment = { horizontal: "right" };
+        wsRel.getCell("D5").alignment = { horizontal: "right" };
+
+        let headersRel = ["CÓDIGO", "DESCRIÇÃO", "U/M", "QT. USADA"];
+        headersRel.forEach((h, i) => {
+          let cell = wsRel.getCell(7, i + 1); 
+          cell.value = h; cell.font = fontBold; cell.fill = grayFill; cell.border = borderStyle; 
+          cell.alignment = { horizontal: "center", vertical: "middle" };
+        });
+
+        let matDataRel = [
+          [codQuadro, descQuadro, umQuadro, qtdeMadeiraQuadro],
+          ["34013099", "PINUS APARELHADO 04 FACES - 20 MM X 195 MM X 3000 MM", "m3", qtdePinus],
+          ["34013230", "CHAPA MDF 03 MM - 2.75 X 1.85 - EUCALIPTUS - DURATEX", "m2", qtdeMDF],
+          ["33010796", "PARAFUSO A. ATARRAXANTE CAB. CHATA FENDA PHILIPS - 5.0 X 80 MM", "PECA", qtdeAtarraxante],
+          ["33010O71", 'PARAFUSO SEXTAVADO PONTA OGIVADA 5,5MM X 2.1/4"', "UN", qtdeSextavado],
+          ["33014I46", "GRAMPO 14/40", "MILH", qtde1440],
+          ["33014815", "GRAMPO 80/12", "MILH", qtde8012],
+          ["33009190", "COLA CASCOREZ EXTRA C/ 5 KG - HENKEL", "KG", qtdeColaB],
+          ["33009A50", "CHAPA DE EVA DE ESPESSURA 20 MM. MACIO MARROM", "KG", qtdeEVA],
+          ["33009A51", "COLA DE CONTATO - COVULFIX - BRASCOLA", "KG", qtdeColaC]
+        ];
+
+        let rIdx = 8;
+        matDataRel.forEach((d) => {
+          let row = wsRel.getRow(rIdx);
+          row.getCell("A").value = d[0]; row.getCell("B").value = d[1]; row.getCell("C").value = d[2]; row.getCell("D").value = d[3];
+          
+          row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+            if(colNumber <= 4) {
+               cell.font = fontNorm; cell.border = borderStyle;
+               cell.alignment = colNumber === 2 ? { horizontal: "left" } : { horizontal: "center" };
+            }
+          });
+          row.getCell("D").numFmt = "0.000";
+          rIdx++;
+        });
+
+        // --- MÃO DE OBRA ---
+        wsRel.getCell("A19").value = "MÃO DE OBRA"; 
+        wsRel.getCell("A19").font = fontBold;
+
+        wsRel.getCell("A20").value = "PROCESSO";
+        wsRel.getCell("A20").font = fontBold; wsRel.getCell("A20").fill = grayFill; wsRel.getCell("A20").border = borderStyle; wsRel.getCell("A20").alignment = { horizontal: "center" };
+
+        wsRel.getCell("B20").value = "MÃO DE OBRA (MINUTOS)";
+        wsRel.getCell("B20").font = fontBold; wsRel.getCell("B20").fill = grayFill; wsRel.getCell("B20").border = borderStyle; wsRel.getCell("B20").alignment = { horizontal: "center" };
+
+        let moMin = {
+          "PLAINA": parseInt(document.getElementById("outH10").innerText) || 0,
+          "DESENGROSSADEIRA": parseInt(document.getElementById("outH9").innerText) || 0,
+          "SERRA FITA": parseInt(document.getElementById("outH12").innerText) || 0,
+          "SERRA CIRCULAR": parseInt(document.getElementById("outH11").innerText) || 0,
+          "MONTAGEM": parseInt(document.getElementById("outH13").innerText) || 0,
+          "ROUTER CNC": parseInt(document.getElementById("outRouter").innerText) || 0,
+          "SETUP ROUTER": parseInt(document.getElementById("outSetup").innerText) || 0
+        };
+
+        let moIdx = 21;
+        for (let proc in moMin) {
+          if(moMin[proc] > 0 || proc === "PLAINA" || proc === "DESENGROSSADEIRA" || proc === "SERRA FITA" || proc === "SERRA CIRCULAR" || proc === "MONTAGEM") {
+              let row = wsRel.getRow(moIdx);
+              row.getCell("A").value = proc;
+              row.getCell("A").font = fontNorm; row.getCell("A").border = borderStyle; row.getCell("A").alignment = { horizontal: "left" };
+              
+              row.getCell("B").value = moMin[proc];
+              row.getCell("B").font = fontNorm; row.getCell("B").border = borderStyle; row.getCell("B").alignment = { horizontal: "center" };
+              
+              moIdx++;
+          }
+        }
+
+        // --- TABELAS DA DIREITA (MEDIDAS DE CORTE) ---
+        let headerRight = ["C (m)", "L (m)", "E (m)", "Qtd."];
+        headerRight.forEach((h, i) => {
+           let cell = wsRel.getCell(7, 7 + i); 
+           cell.value = h; cell.font = fontBold; cell.fill = grayFill; cell.border = borderStyle; cell.alignment = { horizontal: "center" };
+        });
+        
+        wsRel.mergeCells("F7:F9");
+        let f7 = wsRel.getCell("F7");
+        f7.value = "Pinus (Base/Tampa)"; f7.font = fontBold; f7.border = borderStyle; f7.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+        [7,8,9].forEach(r => wsRel.getCell(`F${r}`).border = borderStyle);
+
+        wsRel.getCell("G8").value = ladoMaior; wsRel.getCell("H8").value = 0.06; wsRel.getCell("I8").value = 0.02; wsRel.getCell("J8").value = numRipasSupTotal;
+        wsRel.getCell("G9").value = ladoMenor; wsRel.getCell("H9").value = 0.06; wsRel.getCell("I9").value = 0.02; wsRel.getCell("J9").value = numRipasInfTotal;
+
+        [8,9].forEach(r => {
+           [7,8,9,10].forEach(c => {
+               let cell = wsRel.getCell(r, c);
+               cell.font = fontNorm; cell.border = borderStyle; cell.alignment = { horizontal: "center" };
+               if(c < 10) cell.numFmt = "0.000";
+           });
+        });
+
+        headerRight.forEach((h, i) => {
+           let cell = wsRel.getCell(11, 7 + i); 
+           cell.value = h; cell.font = fontBold; cell.fill = grayFill; cell.border = borderStyle; cell.alignment = { horizontal: "center" };
+        });
+        
+        wsRel.mergeCells("F11:F13");
+        let f11 = wsRel.getCell("F11");
+        f11.value = material; f11.font = fontBold; f11.border = borderStyle; f11.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+        [11,12,13].forEach(r => wsRel.getCell(`F${r}`).border = borderStyle);
+
+        wsRel.getCell("G12").value = ladoMaior; wsRel.getCell("H12").value = aInt; wsRel.getCell("I12").value = 0.035; wsRel.getCell("J12").value = 2;
+        wsRel.getCell("G13").value = ladoMenor - 0.07; wsRel.getCell("H13").value = aInt; wsRel.getCell("I13").value = 0.035; wsRel.getCell("J13").value = 2;
+
+        [12,13].forEach(r => {
+           [7,8,9,10].forEach(c => {
+               let cell = wsRel.getCell(r, c);
+               cell.font = fontNorm; cell.border = borderStyle; cell.alignment = { horizontal: "center" };
+               if(c < 10) cell.numFmt = "0.000";
+           });
+        });
+
+        let headerMDF = ["C (m)", "L (m)", "Qtd."];
+        headerMDF.forEach((h, i) => {
+           let cell = wsRel.getCell(15, 7 + i); 
+           cell.value = h; cell.font = fontBold; cell.fill = grayFill; cell.border = borderStyle; cell.alignment = { horizontal: "center" };
+        });
+        
+        wsRel.mergeCells("F15:F17");
+        let f15 = wsRel.getCell("F15");
+        f15.value = "MDF 03mm\n(Fechamento)"; f15.font = fontBold; f15.border = borderStyle; f15.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+        [15,16,17].forEach(r => wsRel.getCell(`F${r}`).border = borderStyle);
+
+        wsRel.getCell("G16").value = ladoMaior; wsRel.getCell("H16").value = ladoMenor; wsRel.getCell("I16").value = 2; 
+        wsRel.getCell("G17").value = ""; wsRel.getCell("H17").value = ""; wsRel.getCell("I17").value = ""; 
+
+        [16,17].forEach(r => {
+           [7,8,9].forEach(c => {
+               let cell = wsRel.getCell(r, c);
+               cell.font = fontNorm; cell.border = borderStyle; cell.alignment = { horizontal: "center" };
+               if (cell.value !== "" && c < 9) cell.numFmt = "0.000";
+           });
+        });
+
+        workbook.xlsx.writeBuffer().then(function (buffer) {
+          let blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+          let link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          
+          let hh = String(dataHoje.getHours()).padStart(2, '0');
+          let mm = String(dataHoje.getMinutes()).padStart(2, '0');
+          link.download = `Engradado_Relatorio_${hh}h${mm}.xlsx`;
+          link.click();
+
+          showToast("📥 Relatório de Assinatura gerado com sucesso!", true);
+        });
+      }
+// ============================================================================
+    // --- SEÇÃO DE CONFIGURAÇÃO DA CÂMERA EXCEL ---
+    // Proporção baseada em: Altura 72 (96px) x Largura 33.86 (242px). 
+    // Multiplicado por 4x para garantir altíssima resolução sem peso extra.
+    // ============================================================================
+    const CONF_EXCEL_FOTO_LARGURA = 968; 
+    const CONF_EXCEL_FOTO_ALTURA = 384;  
+    const CONF_EXCEL_FOTO_MARGIN = 0.85; // 15% de folga nas bordas para as quinas respirarem
+    // ============================================================================
+
+    // --- FUNÇÃO PARA TIRAR FOTO PNG TRANSPARENTE E ENQUADRADA PARA EXCEL ---
+    function tirarFotoExcel() {
+      if (!crateGroup || !scene || !camera) return;
+
+      // 1. EFEITO VISUAL DE FLASH
+      const flash = document.getElementById("cameraFlash");
+      flash.style.opacity = "1";
+      setTimeout(() => { flash.style.opacity = "0"; }, 150);
+
+      // 2. SALVAR ESTADO ATUAL
+      const originalAspect = camera.aspect;
+      const originalBg = scene.background;
+      const originalCamPos = camera.position.clone();
+      const originalCamRot = camera.rotation.clone();
+      const originalTarget = controls.target.clone();
+
+      // 3. PREPARAR CENA PARA CAPTURA (Tamanho do Excel x4)
+      renderer.setSize(CONF_EXCEL_FOTO_LARGURA, CONF_EXCEL_FOTO_ALTURA);
+      camera.aspect = CONF_EXCEL_FOTO_LARGURA / CONF_EXCEL_FOTO_ALTURA;
+      camera.updateProjectionMatrix();
+      scene.background = null; 
+
+      // 4. NOVA LÓGICA DE ENQUADRAMENTO (Esfera Envolvente)
+      // Cria uma esfera imaginária que engloba 100% do engradado, evitando cortes nas quinas
+      const box = new THREE.Box3().setFromObject(crateGroup);
+      const sphere = box.getBoundingSphere(new THREE.Sphere());
+      const center = sphere.center;
+      const radius = sphere.radius;
+
+      controls.target.copy(center);
+
+      // Calcula a distância usando trigonometria com base no raio da esfera
+      const fov = camera.fov * (Math.PI / 180);
+      let cameraDistance = radius / Math.sin(fov / 2);
+
+      // Compensa se a proporção da tela for mais fechada que a do campo de visão
+      if (camera.aspect < 1) {
+        cameraDistance = cameraDistance / camera.aspect;
+      }
+
+      // Aplica a margem de respiração para não colar na borda da célula
+      cameraDistance = cameraDistance / CONF_EXCEL_FOTO_MARGIN;
+
+      // Posiciona a câmera na nova distância, na exata mesma diagonal que o usuário deixou
+      const direction = originalCamPos.clone().sub(originalTarget).normalize();
+      camera.position.copy(center).add(direction.multiplyScalar(cameraDistance));
+      camera.lookAt(center);
+
+      // 5. RENDERIZAR E CAPTURAR
+      renderer.render(scene, camera);
+      const imgData = renderer.domElement.toDataURL("image/png");
+
+      // 6. BAIXAR O ARQUIVO PNG
+      const dataAtual = new Date();
+      const nomeArquivo = `Engradado_FotoExcel_${dataAtual.getHours()}h${dataAtual.getMinutes()}m.png`;
+      const link = document.createElement('a');
+      link.download = nomeArquivo;
+      link.href = imgData;
+      link.click();
+
+      // 7. RESTAURAR ESTADO ORIGINAL DA TELA
+      scene.background = originalBg;
+      camera.aspect = originalAspect;
+      camera.position.copy(originalCamPos);
+      camera.rotation.copy(originalCamRot);
+      camera.updateProjectionMatrix();
+      controls.target.copy(originalTarget);
+      onWindowResize(); 
+
+      showToast("📷 Foto PNG para Excel salva!", false);
+    }
+
+// ============================================================================
+      window.onload = init3D;
+    </script>
+  </body>
+</html>
