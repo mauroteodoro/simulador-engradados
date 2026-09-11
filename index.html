@@ -13,9 +13,9 @@
         --bg-panel: rgba(255, 255, 255, 0.7);
         --text-main: #1f2937;
         --text-muted: #6b7280;
-        --border-light: rgba(0, 0, 0, 0.08); /* Cinza sutil para aparecer no fundo claro */
+        --border-light: rgba(0, 0, 0, 0.08);
         --border-edge: rgba(255, 255, 255, 0.8);
-        --primary: #0071e3; /* Azul Clássico Apple */
+        --primary: #0071e3;
         --primary-hover: #0077ed;
         --canvas-bg: #e5e7eb;
         --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
@@ -28,13 +28,12 @@
         --text-muted: #a8a8b3;
         --border-light: rgba(255, 255, 255, 0.08);
         --border-edge: rgba(255, 255, 255, 0.03);
-        --primary: #0a84ff; /* Azul vibrante para Dark Mode */
+        --primary: #0a84ff;
         --primary-hover: #409cff;
         --canvas-bg: #09090a;
         --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
       }
 
-      /* BASE STYLES */
       * {
         box-sizing: border-box;
         transition: background-color 0.3s, color 0.3s, border-color 0.3s;
@@ -50,7 +49,6 @@
         -moz-osx-font-smoothing: grayscale;
       }
 
-      /* HEADER & TABS */
       .app-header {
         display: flex;
         justify-content: space-between;
@@ -100,14 +98,14 @@
         max-width: 1400px;
         margin: 0 auto 20px auto;
         display: flex;
-        gap: 12px; /* Espaço entre os botões */
+        gap: 12px;
       }
       .tab-btn {
         background: transparent;
         color: var(--text-muted);
         border: 1px solid var(--border-light);
         padding: 10px 24px;
-        border-radius: 980px; /* Formato pílula arredondada */
+        border-radius: 980px;
         cursor: pointer;
         font-weight: 500;
         font-size: 0.95rem;
@@ -121,7 +119,7 @@
         background: var(--primary);
         color: #ffffff;
         border-color: var(--primary);
-        box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3); /* Brilho sutil ao redor */
+        box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3);
       }
       .tab-content {
         display: none;
@@ -130,7 +128,6 @@
         display: block;
       }
 
-      /* GRID LAYOUT (SIMULADOR) */
       .dashboard-container {
         display: grid;
         grid-template-columns: 320px minmax(0, 1fr);
@@ -139,15 +136,12 @@
         margin: 0 auto;
       }
 
-      /* PANELS */
       .panel {
         background: var(--bg-panel);
         border-radius: 20px;
         padding: 24px;
-        /* Efeito Liquid Glass: Desfoque + Saturação */
         backdrop-filter: blur(16px) saturate(180%);
         -webkit-backdrop-filter: blur(16px) saturate(180%);
-        /* Brilho interno simulando a borda do vidro */
         box-shadow: inset 0 1px 1px var(--border-edge), var(--card-shadow);
         border: 1px solid var(--border-light);
       }
@@ -160,7 +154,6 @@
         color: var(--text-main);
       }
 
-      /* INPUTS */
       .input-group {
         margin-bottom: 16px;
       }
@@ -194,7 +187,6 @@
         box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
       }
 
-      /* BUTTONS & TOAST */
       .btn-calc, .btn-export {
         width: 100%;
         border: none;
@@ -218,7 +210,7 @@
         opacity: 0.9;
       }
       .btn-export {
-        background: #34c759; /* Verde autêntico do iOS */
+        background: #34c759;
         margin-top: 15px;
       }
       .btn-export:hover {
@@ -243,7 +235,6 @@
         bottom: 30px;
       }
 
-      /* 3D CANVAS AREA */
       .main-content {
         display: flex;
         flex-direction: column;
@@ -270,7 +261,6 @@
         margin-top: 10px;
       }
 
-      /* EXPLODE CONTROLS */
       .explode-controls {
         position: absolute;
         top: 20px;
@@ -303,7 +293,7 @@
         transform: scale(0.95);
       }
       .btn-explode.active {
-        background: #007AFF; /* Azul clássico da Apple */
+        background: #007AFF;
         color: white;
         border-color: #007AFF;
       }
@@ -324,7 +314,6 @@
         font-size: 0.75rem;
       }
 
-      /* CAIXA DE INSPEÇÃO (RAIO-X) - Efeito de entrada suave */
       .piece-info-box {
         opacity: 0;
         transform: translateY(-8px) scale(0.98);
@@ -335,7 +324,6 @@
         transform: translateY(0) scale(1);
       }
 
-      /* RESULTS GRID */
       .results-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -365,9 +353,8 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        /* Adicionamos padding lateral e margem negativa para o fundo não "esmagar" o texto */
         padding: 12px 12px;
-        margin: 0 -12px; 
+        margin: 0 -12px;
         border-bottom: 1px solid var(--border-light);
         font-size: 0.95rem;
         cursor: default;
@@ -375,7 +362,6 @@
         transition: background-color 0.2s ease;
       }
       .result-row:hover {
-        /* Ao passar o mouse, a linha acende usando a própria cor translúcida da borda */
         background-color: var(--border-light);
       }
       .result-row:last-child {
@@ -383,10 +369,10 @@
       }
       .result-row strong {
         color: var(--text-muted);
-        font-weight: 400; /* Apple usa fonte normal para rótulos */
+        font-weight: 400;
       }
       .result-row span {
-        font-weight: 500; /* Leve destaque para o valor (medium) */
+        font-weight: 500;
         text-align: right;
         line-height: 1.4;
         color: var(--text-main);
@@ -397,7 +383,6 @@
         color: #10b981 !important;
       }
 
-      /* ALERTS */
       .alert-box {
         background: var(--danger-bg);
         border-left: 4px solid var(--danger-border);
@@ -418,7 +403,6 @@
         opacity: 0.9;
       }
 
-      /* MANUAL STYLES */
       .manual-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -494,7 +478,6 @@
         #canvas-container {
           min-height: 400px;
         }
-        /* Reposiciona a caixa de Raio-X no celular para não cobrir tudo */
         .piece-info-box {
           top: auto;
           bottom: 15px;
@@ -503,7 +486,6 @@
           min-width: auto;
         }
       }
-      /* TELA DE LOGIN */
       #login-overlay {
         position: fixed;
         top: 0;
@@ -655,11 +637,9 @@
         </h1>
       </div>
       <div style="display: flex; gap: 10px; align-items: center">
-        <!-- BOTÃO DARK MODE / LIGHT MODE -->
         <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
           🌙 Dark Mode
         </button>
-        <!-- BOTÃO SAIR (Estilo Destrutivo Apple) -->
         <button class="theme-toggle" style="color: #ff3b30;" onclick="fazerLogout()">
           Sair
         </button>
@@ -718,7 +698,6 @@
             Processar Produção
           </button>
 
-          <!-- BOTÃO DE EXPORTAÇÃO EXCEL -->
           <button
             class="btn-export"
             onclick="exportarExcel()"
@@ -735,10 +714,8 @@
         <div class="main-content">
           <div class="panel" style="padding: 15px">
             <div id="canvas-container">
-              <!-- Efeito visual de Flash (aparece via JS) -->
               <div id="cameraFlash" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; z-index: 9999; pointer-events: none; transition: opacity 0.15s ease-out;"></div>
-          
-              <!-- CAIXA DE INFORMAÇÕES DA PEÇA (RAIO-X) -->
+
               <div
                 id="pieceInfoBox"
                 class="piece-info-box"
@@ -794,42 +771,52 @@
               </div>
 
               <div class="explode-controls">
-                <!-- BOTÃO DE CÂMERA (PRINT PARA EXCEL) -->
-<!-- BOTÃO DE CÂMERA MINIMALISTA -->
-<!-- BOTÃO DE CÂMERA (SÓ O ÍCONE COM DEGRADÊ E GLOW) -->
-<!-- BOTÃO DE CÂMERA (SÓ O ÍCONE COM DEGRADÊ E GLOW) -->
-<!-- BOTÃO DE CÂMERA (Estilo iOS) -->
-<button
-id="btnCameraPrint"
-class="btn-explode"
-onclick="tirarFotoExcel()"
-title="Tirar Foto PNG"
-style="width: 44px; height: 44px; padding: 0; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; margin-left: auto;"
->
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-  <circle cx="12" cy="13" r="4"></circle>
-</svg>
-</button>
+                <button
+                  id="btnCameraPrint"
+                  class="btn-explode"
+                  onclick="tirarFotoExcel()"
+                  title="Tirar Foto PNG"
+                  style="width: 44px; height: 44px; padding: 0; display: flex; align-items: center; justify-content: center; margin-left: auto;"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                </button>
 
-<!-- BOTÃO DE RAIO-X -->
-<button
-id="btnInspector"
-class="btn-explode"
-onclick="toggleInspector()"
-style="margin-bottom: 8px;"
->
-🔍 Inspecionar
-</button>
+                <button
+                  id="btnInspector"
+                  class="btn-explode"
+                  onclick="toggleInspector()"
+                >
+                  🔍 Inspecionar
+                </button>
 
-<!-- BOTÃO EXPLODIR -->
-<button
-id="btnExplode"
-class="btn-explode"
-onclick="toggleExplosion()"
->
-💥 Explodir
-</button>
+                <button
+                  id="btnExplode"
+                  class="btn-explode"
+                  onclick="toggleExplosion()"
+                >
+                  💥 Explodir
+                </button>
+
+                <button
+                  id="btnRecenter"
+                  class="btn-explode"
+                  onclick="recentrarCamera()"
+                  title="Recentralizar câmera"
+                  style="width: 44px; height: 44px; padding: 0; display: flex; align-items: center; justify-content: center; margin-left: auto;"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <circle cx="12" cy="12" r="8"></circle>
+                    <line x1="12" y1="1" x2="12" y2="4"></line>
+                    <line x1="12" y1="20" x2="12" y2="23"></line>
+                    <line x1="1" y1="12" x2="4" y2="12"></line>
+                    <line x1="20" y1="12" x2="23" y2="12"></line>
+                  </svg>
+                </button>
+
                 <div
                   id="sliderContainer"
                   class="slider-wrapper"
@@ -850,16 +837,11 @@ onclick="toggleExplosion()"
               </div>
             </div>
             <div class="canvas-hint">
-              💡 Use o mouse: Botão esquerdo para girar e scroll para zoom.
+              💡 Use o mouse: Botão esquerdo para girar, botão direito para mover e scroll para zoom.
             </div>
           </div>
         </div>
-        <!-- Fecha a coluna da direita aqui! -->
 
-        <!-- TÍTULO DINÂMICO DO ENGRADADO (COM MINIATURA 3D) -->
-        
-
-        <!-- RESULTS GRID (Agora span largura total) -->
         <div class="results-grid" style="grid-column: 1 / -1; margin-top: 0">
           <div class="result-card">
             <h3>📏 Estrutura & Madeira</h3>
@@ -936,15 +918,13 @@ onclick="toggleExplosion()"
               <span id="outH15" class="highlight-total" style="cursor: help;">--</span>
             </div>
           </div>
-
-        </div> <!-- Fecha results-grid -->
-      </div> <!-- Fecha dashboard-container -->
-    </div> <!-- Fecha simulador-tab -->
+        </div>
+      </div>
+    </div>
 
     <!-- ABA 2: MANUAL DE ENGENHARIA & PRODUÇÃO -->
     <div id="manual-tab" class="tab-content" style="max-width: 1400px; margin: 0 auto; padding-bottom: 50px;">
-      
-      <!-- CABEÇALHO DO MANUAL -->
+
       <div class="panel" style="margin-bottom: 24px; text-align: left;">
         <h2 style="color: var(--primary); font-size: 1.35rem; margin-bottom: 8px;">
           📚 Manual de Engenharia, Dimensionamento & Custos Industriais
@@ -955,8 +935,7 @@ onclick="toggleExplosion()"
       </div>
 
       <div class="results-grid" style="margin-top: 0;">
-        
-        <!-- CARD 1: QUADRO ESTRUTURAL -->
+
         <div class="manual-card" onmouseenter="hologramPart('quadro')" onmouseleave="restoreCrate()">
           <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">📦 1. Quadro Estrutural & Madeira</h3>
           <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
@@ -980,7 +959,6 @@ onclick="toggleExplosion()"
           </div>
         </div>
 
-        <!-- CARD 2: MALHA DE RIPAS -->
         <div class="manual-card" onmouseenter="hologramPart('ripas')" onmouseleave="restoreCrate()">
           <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">🌲 2. Malha de Ripas (Pinus 60x20 mm)</h3>
           <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
@@ -1000,7 +978,6 @@ onclick="toggleExplosion()"
           </div>
         </div>
 
-        <!-- CARD 3: FECHAMENTO EM MDF -->
         <div class="manual-card" onmouseenter="hologramPart('mdf')" onmouseleave="restoreCrate()">
           <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">📐 3. Fechamento em MDF Cru (03 mm)</h3>
           <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
@@ -1020,7 +997,6 @@ onclick="toggleExplosion()"
           </div>
         </div>
 
-        <!-- CARD 4: FIXADORES E AMARRAÇÃO -->
         <div class="manual-card" onmouseenter="hologramPart('fixadores')" onmouseleave="restoreCrate()">
           <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">🔩 4. Lógica de Fixação & Ferragens</h3>
           <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
@@ -1044,7 +1020,6 @@ onclick="toggleExplosion()"
           </div>
         </div>
 
-        <!-- CARD 5: AMORTECIMENTO EM EVA -->
         <div class="manual-card" onmouseenter="hologramPart('eva')" onmouseleave="restoreCrate()">
           <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">🛡️ 5. Proteção & Amortecimento em EVA</h3>
           <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
@@ -1064,13 +1039,12 @@ onclick="toggleExplosion()"
           </div>
         </div>
 
-        <!-- CARD 6: CRONOANÁLISE E TEMPOS DE PROCESSO -->
         <div class="manual-card" style="grid-column: 1 / -1;">
           <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">⏱️ 6. Roteiro de Fabricação (Cronoanálise)</h3>
           <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
             Os tempos de fabricação não são estimativas, mas sim fórmulas paramétricas extraídas de cronoanálise real no chão de fábrica:
           </p>
-          
+
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 15px;">
             <div style="background: var(--canvas-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border-light);">
               <strong style="color: var(--text-main); display: block; margin-bottom: 6px;">1. Usinagem Bruta da Caxeta</strong>
@@ -1122,7 +1096,6 @@ onclick="toggleExplosion()"
         const pass = document.getElementById("loginPass").value.trim();
         const errorLabel = document.getElementById("loginError");
 
-        // 🔒 CREDENCIAIS DE ACESSO AQUI:
         if (user === "custos" && pass === "mauroteodoro") {
           errorLabel.style.opacity = "0";
           let overlay = document.getElementById("login-overlay");
@@ -1130,11 +1103,9 @@ onclick="toggleExplosion()"
           overlay.style.opacity = "0";
           overlay.style.visibility = "hidden";
 
-          // Acorda o simulador após destravar a tela
           setTimeout(onWindowResize, 400);
         } else {
           errorLabel.style.opacity = "1";
-          // Tremidinha de erro na caixa (Feedback visual)
           let box = document.querySelector(".login-box");
           box.animate(
             [
@@ -1149,19 +1120,16 @@ onclick="toggleExplosion()"
       }
 
       function fazerLogout() {
-        // Limpa os campos de digitação
         document.getElementById("loginUser").value = "";
         document.getElementById("loginPass").value = "";
         document.getElementById("loginError").style.opacity = "0";
 
-        // Puxa a tela escura de bloqueio de volta
         let overlay = document.getElementById("login-overlay");
         overlay.classList.remove("hidden");
         overlay.style.opacity = "1";
         overlay.style.visibility = "visible";
       }
 
-      // Navegação de Abas e Correção do 3D
       function switchTab(tabId) {
         document
           .querySelectorAll(".tab-content")
@@ -1172,13 +1140,11 @@ onclick="toggleExplosion()"
         document.getElementById(tabId + "-tab").classList.add("active");
         event.target.classList.add("active");
 
-        // "Acorda" o 3D quando voltar para a aba do simulador, matando o bug da tela vazia!
         if (tabId === "simulador") {
           setTimeout(onWindowResize, 50);
         }
       }
 
-      // Função do Aviso Sutil Moderno
       function showToast(msg, isExcel = false) {
         let toast = document.getElementById("toast");
         toast.innerText = msg;
@@ -1192,7 +1158,6 @@ onclick="toggleExplosion()"
         setTimeout(() => toast.classList.remove("show"), 3000);
       }
 
-      // LÓGICA DE TEMA (APLICADA NA RAIZ DO DOCUMENTO HTML)
       function toggleTheme() {
         const html = document.documentElement;
         const currentTheme = html.getAttribute("data-theme");
@@ -1214,24 +1179,14 @@ onclick="toggleExplosion()"
       let isExploded = false;
       let clock = new THREE.Clock();
 
-      // --- SISTEMA DE RAIO-X (INSPEÇÃO DE PEÇAS) ---
       let isInspecting = false;
       let raycaster = new THREE.Raycaster();
-      // O three.js usa por padrão uma "zona de tolerância" de 1 unidade (1 metro!) para detectar
-      // cliques em objetos do tipo Line/LineSegments. Como usamos linhas finas só para desenhar o
-      // contorno escuro das madeiras (mesh.add(line) dentro de addMesh), e nosso engradado inteiro
-      // mede poucos metros, esse valor gigante fazia o raio "acertar" essas linhas invisíveis antes
-      // da própria peça - e como as linhas não têm nome/medida guardados, nada aparecia. Zerando
-      // (praticamente) essa tolerância, o clique volta a acertar a peça de verdade.
       raycaster.params.Line.threshold = 0.0001;
       let mouse = new THREE.Vector2();
       let highlightedMesh = null;
       let originalMaterial = null;
       let mouseDownPos = { x: 0, y: 0 };
 
-      // Guarda onde o botão do mouse foi pressionado, para diferenciar um clique real de um
-      // arraste (usado para girar a câmera com o OrbitControls) - assim girar a caixa nunca é
-      // confundido com um clique de inspeção.
       window.addEventListener("pointerdown", function (event) {
         mouseDownPos.x = event.clientX;
         mouseDownPos.y = event.clientY;
@@ -1244,12 +1199,12 @@ onclick="toggleExplosion()"
 
         if (isInspecting) {
           btn.innerText = "🔍 Inspeção: ON";
-          btn.classList.add("active"); // Usa a cor elegante do CSS
-          btn.style.background = ""; // Limpa qualquer sujeira de cor antiga
+          btn.classList.add("active");
+          btn.style.background = "";
         } else {
           btn.innerText = "🔍 Inspecionar";
           btn.classList.remove("active");
-          btn.style.background = ""; // Volta para o visual de vidro fosco
+          btn.style.background = "";
           infoBox.classList.remove("visible");
           clearHighlight();
         }
@@ -1257,7 +1212,6 @@ onclick="toggleExplosion()"
 
       function clearHighlight() {
         if (highlightedMesh && originalMaterial) {
-          // Se a malha principal for um grupo (como o sextavado), restaura as texturas dos filhos
           if (highlightedMesh.isGroup) {
             highlightedMesh.children.forEach((child) => {
               if (child.userData.origMat) {
@@ -1270,7 +1224,6 @@ onclick="toggleExplosion()"
           highlightedMesh = null;
           originalMaterial = null;
         } else if (highlightedMesh && highlightedMesh.isGroup) {
-          // Grupos guardam o material original em cada filho (origMat), então tratamos separado
           highlightedMesh.children.forEach((child) => {
             if (child.userData.origMat) {
               child.material = child.userData.origMat;
@@ -1280,12 +1233,9 @@ onclick="toggleExplosion()"
         }
       }
 
-      // Detecta os cliques nas peças
       window.addEventListener("click", function (event) {
         if (!isInspecting) return;
 
-        // Se o mouse se moveu mais que alguns pixels entre o "down" e o "click", foi um
-        // arraste para girar a câmera (OrbitControls) - não deve contar como seleção de peça.
         let dragDist = Math.hypot(
           event.clientX - mouseDownPos.x,
           event.clientY - mouseDownPos.y
@@ -1295,14 +1245,12 @@ onclick="toggleExplosion()"
         let canvasContainer = document.getElementById("canvas-container");
         let canvasRect = canvasContainer.getBoundingClientRect();
 
-        // Só executa se o clique for dentro do quadro 3D
         if (
           event.clientX >= canvasRect.left &&
           event.clientX <= canvasRect.right &&
           event.clientY >= canvasRect.top &&
           event.clientY <= canvasRect.bottom
         ) {
-          // Evita conflito se clicar nos botões da tela
           if (event.target.closest(".explode-controls")) return;
 
           mouse.x =
@@ -1311,7 +1259,6 @@ onclick="toggleExplosion()"
             -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
 
           raycaster.setFromCamera(mouse, camera);
-          // Considera só peças reais (Mesh/Group), ignorando as linhas de contorno das madeiras
           let rawIntersects = raycaster.intersectObjects(
             crateGroup.children,
             true
@@ -1319,7 +1266,7 @@ onclick="toggleExplosion()"
           let intersects = rawIntersects.filter((hit) => hit.object.isMesh);
 
           if (intersects.length > 0) {
-            clearHighlight(); // Limpa o brilho da peça anterior
+            clearHighlight();
 
             let object = intersects[0].object;
             let targetMesh =
@@ -1333,7 +1280,6 @@ onclick="toggleExplosion()"
             if (data && data.type && data.type !== "none") {
               highlightedMesh = targetMesh;
 
-              // Aplica o material de holograma na peça selecionada
               if (highlightedMesh.isGroup) {
                 highlightedMesh.children.forEach((child) => {
                   if (child.isMesh && child.material !== undefined) {
@@ -1357,7 +1303,6 @@ onclick="toggleExplosion()"
                     : hologramWood.clone();
               }
 
-              // Preenche a Caixinha de Informações (Raio-X)
               const infoBox = document.getElementById("pieceInfoBox");
               const piTitle = document.getElementById("piTitle");
               const piMat = document.getElementById("piMat");
@@ -1379,14 +1324,12 @@ onclick="toggleExplosion()"
               infoBox.classList.add("visible");
             }
           } else {
-            // Clicou no vazio, esconde a caixa
             clearHighlight();
             document.getElementById("pieceInfoBox").classList.remove("visible");
           }
         }
       });
 
-      // MATERIAIS ORIGINAIS
       const woodMat = new THREE.MeshStandardMaterial({
         color: 0xd4a373,
         roughness: 0.7,
@@ -1399,7 +1342,6 @@ onclick="toggleExplosion()"
         color: 0x2b2b2b,
         roughness: 0.9,
       });
-      // Corrigido brilho do metal (evita ficar preto nas sombras)
       const metalMat = new THREE.MeshStandardMaterial({
         color: 0xb8c2cc,
         roughness: 0.45,
@@ -1410,14 +1352,12 @@ onclick="toggleExplosion()"
         roughness: 0.2,
         metalness: 0.9,
       });
-      // Novo material do Atarraxante: Aço Bicromatizado (Claro, muito mais metálico e brilhante)
       const goldMat = new THREE.MeshStandardMaterial({
         color: 0xe6c875,
         roughness: 0.15,
         metalness: 0.95,
       });
 
-      // MATERIAIS PARA EFEITO HOLOGRAMA
       const hologramWood = new THREE.MeshStandardMaterial({
         color: 0x60a5fa,
         transparent: true,
@@ -1448,7 +1388,6 @@ onclick="toggleExplosion()"
             ? new THREE.Color(0x0f172a)
             : new THREE.Color(0xe2e8f0);
 
-        // O valor "0.005" (5 milímetros) resolve o efeito Raio-X que cortava a madeira ao chegar perto
         camera = new THREE.PerspectiveCamera(
           45,
           container.clientWidth / container.clientHeight,
@@ -1457,8 +1396,7 @@ onclick="toggleExplosion()"
         );
         camera.position.set(2, 1.5, 2);
 
-        // alpha: true permite fundo transparente; preserveDrawingBuffer permite capturar a imagem
-renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -1466,7 +1404,11 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
 
         controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.enablePan = false;
+        controls.enablePan = true;
+        // Botão direito do mouse = arrastar (pan). O OrbitControls já mapeia isso por padrão.
+        renderer.domElement.addEventListener("contextmenu", (e) => e.preventDefault());
+        // Zoom mínimo: 3 mm do alvo (deixa aproximar muito, mas a trava por bounding box abaixo impede de entrar na madeira)
+        controls.minDistance = 0.003;
 
         ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
@@ -1490,33 +1432,37 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
       function animate() {
         requestAnimationFrame(animate);
 
-        // --- CAMPO DE FORÇA RETANGULAR DINÂMICO ---
-        if (!isExploded && crateGroup && crateGroup.userData.ladoMaior) {
-          let lM = crateGroup.userData.ladoMaior / 2 + 0.15; // Folga de 15cm para ripas
-          let lm = crateGroup.userData.ladoMenor / 2 + 0.15;
-          let aI = crateGroup.userData.aInt / 2 + 0.15;
-
-          // Vetor direção da câmera em relação ao centro do engradado
-          let dir = new THREE.Vector3()
-            .subVectors(camera.position, controls.target)
-            .normalize();
-
-          // Calcula a distância exata até bater na "caixa de vidro" protetora retangular
-          let tX = Math.abs(lM / (dir.x !== 0 ? dir.x : 0.00001));
-          let tY = Math.abs(aI / (dir.y !== 0 ? dir.y : 0.00001));
-          let tZ = Math.abs(lm / (dir.z !== 0 ? dir.z : 0.00001));
-
-          // O limite do zoom se molda perfeitamente ao retângulo!
-          controls.minDistance = Math.min(tX, tY, tZ);
-        } else if (isExploded) {
-          controls.minDistance = 0.05; // Libera o zoom por dentro das peças se explodido
-        }
-
         controls.update();
 
-        // Efeito de brilho pulsante na peça inspecionada, para destacá-la com um "respiro" de luz
+        // --- TRAVA DE ZOOM POR BOUNDING BOX ---
+        // Se a câmera entrou dentro do volume do engradado, empurra para a face mais próxima.
+        // O usuário pode chegar a 8mm da superfície, mas não atravessa a madeira.
+        if (!isExploded && crateGroup && crateGroup.userData.bBoxZoom) {
+          const bb = crateGroup.userData.bBoxZoom;
+          const margem = 0.008; // 8 mm
+          const xMin = bb.min.x - margem, xMax = bb.max.x + margem;
+          const yMin = bb.min.y - margem, yMax = bb.max.y + margem;
+          const zMin = bb.min.z - margem, zMax = bb.max.z + margem;
+
+          const cx = camera.position.x, cy = camera.position.y, cz = camera.position.z;
+
+          if (cx > xMin && cx < xMax && cy > yMin && cy < yMax && cz > zMin && cz < zMax) {
+            const dXpos = xMax - cx, dXneg = cx - xMin;
+            const dYpos = yMax - cy, dYneg = cy - yMin;
+            const dZpos = zMax - cz, dZneg = cz - zMin;
+            const menor = Math.min(dXpos, dXneg, dYpos, dYneg, dZpos, dZneg);
+
+            if (menor === dXpos) camera.position.x = xMax;
+            else if (menor === dXneg) camera.position.x = xMin;
+            else if (menor === dYpos) camera.position.y = yMax;
+            else if (menor === dYneg) camera.position.y = yMin;
+            else if (menor === dZpos) camera.position.z = zMax;
+            else camera.position.z = zMin;
+          }
+        }
+
         if (highlightedMesh) {
-          let pulse = Math.sin(clock.getElapsedTime() * 4) * 0.4 + 0.9; // oscila suavemente
+          let pulse = Math.sin(clock.getElapsedTime() * 4) * 0.4 + 0.9;
           if (highlightedMesh.isGroup) {
             highlightedMesh.children.forEach((child) => {
               if (
@@ -1535,6 +1481,20 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         }
 
         renderer.render(scene, camera);
+      }
+
+      function recentrarCamera() {
+        if (!camera || !controls || !crateGroup) return;
+        const ladoMaior = crateGroup.userData.ladoMaior || 1;
+        const aInt = crateGroup.userData.aInt || 0.1;
+        controls.target.set(0, 0, 0);
+        camera.position.set(
+          ladoMaior * 1.5,
+          Math.max(1, aInt * 4),
+          ladoMaior * 1.5
+        );
+        camera.lookAt(0, 0, 0);
+        controls.update();
       }
 
       function onWindowResize() {
@@ -1559,7 +1519,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         dim = "",
         totalQtd = ""
       ) {
-        // Se for o sextavado, criamos um Grupo para que as 3 peças (cabeça, metal e borracha) viajem juntas na explosão
         if (
           geometry.type === "CylinderGeometry" &&
           geometry.parameters.radialSegments === 6
@@ -1590,10 +1549,8 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           rubber.receiveShadow = true;
           group.add(rubber);
 
-          // Elevação para a borracha não sumir na madeira
           group.position.y += posY > 0 ? 0.0042 : -0.0042;
 
-          // SALVA A POSIÇÃO CORRETA COM O CLONE() - Evita afundar ao explodir
           group.userData = {
             origPos: group.position.clone(),
             expDir: new THREE.Vector3(expX, expY, expZ),
@@ -1607,13 +1564,11 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           return group;
         }
 
-        // Para o restante das peças (madeira, atarraxantes, grampos, etc)
         let mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(posX, posY, posZ);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
 
-        // Desenha as bordas escuras das madeiras
         if (
           material !== metalMat &&
           material !== goldMat &&
@@ -1629,7 +1584,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           mesh.add(line);
         }
 
-        // SALVA A POSIÇÃO CORRETA COM O CLONE()
         mesh.userData = {
           origPos: mesh.position.clone(),
           expDir: new THREE.Vector3(expX, expY, expZ),
@@ -1691,7 +1645,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           dirLight.intensity = 0.8;
           ambientLight.intensity = 0.6;
 
-          // Defesa Anti-Claustrofobia: Se a câmera estiver lá dentro quando a caixa fechar, arremessa ela pra fora!
           if (crateGroup && crateGroup.userData.ladoMaior) {
             let lM = crateGroup.userData.ladoMaior / 2 + 0.15;
             let lm = crateGroup.userData.ladoMenor / 2 + 0.15;
@@ -1751,10 +1704,8 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           roughness: 0.7,
         });
 
-        // Cabeça mais alta (0.006) e diâmetro menor (0.0045)
         const hexGeo = new THREE.CylinderGeometry(0.0045, 0.0045, 0.006, 6);
 
-        // Geometrias do Atarraxante (Cone achatado). Uma virada pra frente (+Z) e outra pra trás (-Z)
         const flatGeoFront = new THREE.CylinderGeometry(
           0.005,
           0.002,
@@ -1768,7 +1719,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         const s1440Geo = new THREE.BoxGeometry(0.01, 0.002, 0.002);
         const s8012Geo = new THREE.BoxGeometry(0.008, 0.002, 0.002);
 
-        // --- VARIÁVEIS INTELIGENTES DO RAIO-X ---
         let strQuadroLong = `${ladoMaior.toFixed(2).replace(".", ",")} x ${aInt
           .toFixed(2)
           .replace(".", ",")} x 0,035 m`;
@@ -1778,7 +1728,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         let strRipa = `${ladoMenor
           .toFixed(2)
           .replace(".", ",")} x 0,06 x 0,02 m`;
-        let strRipaSup = `${ladoMaior
+        let strRipaSup = `${Math.min(ladoMaior, 3.0)
           .toFixed(2)
           .replace(".", ",")} x 0,06 x 0,02 m`;
         let strMDF = `${ladoMaior.toFixed(2).replace(".", ",")} x ${ladoMenor
@@ -1897,7 +1847,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           let currY = startY + i * stepY;
           let zFront = ladoMenor / 2 - 0.0012;
 
-          // CORREÇÃO DE ALINHAMENTO: Removido o recuo de 0.02, para o parafuso cravar exato no centro dos 35mm da madeira (scX)
           let m1 = addMesh(
             flatGeoFront,
             goldMat,
@@ -1981,7 +1930,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           physicalCountFlatScrews += 4;
         }
 
-        // PRÉ-CÁLCULO DAS RIPAS INFERIORES (Para alinhar a emenda do MDF exatamente sobre a madeira)
+        // PRÉ-CÁLCULO DAS RIPAS INFERIORES
         let numVaosInf = Math.max(2, Math.ceil((ladoMaior - 0.12) / 0.5));
         let numRipasInfFace = numVaosInf + 1;
         let distVaoInf = (ladoMaior - numRipasInfFace * ripaW) / numVaosInf;
@@ -1989,17 +1938,15 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
 
         let posXRipasInf = [];
         const usaRipaReforcada = ladoMaior >= 3.0;
-        console.log("DEBUG → ladoMaior:", ladoMaior, "| usaRipaReforcada:", usaRipaReforcada);
         for (let i = 0; i < numRipasInfFace; i++) {
           let xCentro = -ladoMaior / 2 + ripaW / 2 + i * passoInf;
-          // Nas pontas, desloca o centro 3cm para dentro para a borda externa continuar alinhada ao quadro
           if (usaRipaReforcada && (i === 0 || i === numRipasInfFace - 1)) {
             xCentro += (i === 0 ? +0.03 : -0.03);
           }
           posXRipasInf.push(xCentro);
         }
 
-        // 2. CHAPAS DE MDF (LÓGICA DE EMENDA E CONTAGEM PRECISA)
+        // 2. CHAPAS DE MDF
         let maxMDF = 2.75,
           maxMDFL = 1.85;
         let splitX = false,
@@ -2039,7 +1986,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
 
         let isEmendada = splitX || splitZ;
 
-        // Pré-conta os tamanhos idênticos para o Raio-X
         let mapMDF = {};
         for (let i = 0; i < xBounds.length - 1; i++) {
           for (let j = 0; j < zBounds.length - 1; j++) {
@@ -2047,11 +1993,10 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
             let wZ = zBounds[j + 1] - zBounds[j];
             let dimKey = `${wX.toFixed(3)}x${wZ.toFixed(3)}`;
             if (!mapMDF[dimKey]) mapMDF[dimKey] = { wX: wX, wZ: wZ, count: 0 };
-            mapMDF[dimKey].count += 2; // (Topo e base)
+            mapMDF[dimKey].count += 2;
           }
         }
 
-        // Gera e desenha as frações do MDF
         for (let i = 0; i < xBounds.length - 1; i++) {
           for (let j = 0; j < zBounds.length - 1; j++) {
             let xS = xBounds[i],
@@ -2109,7 +2054,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         let yPosInfTop = aInt / 2 + mdfEsp + ripaH / 2;
         let yPosInfBot = -aInt / 2 - mdfEsp - ripaH / 2;
         const geomRipaInf = new THREE.BoxGeometry(ripaW, ripaH, ladoMenor);
-        // NOVO: geometria reforçada (120mm) para as ripas das pontas em engradados >= 3,00m
         const geomRipaInfEnd = new THREE.BoxGeometry(0.12, ripaH, ladoMenor);
         const strRipaRef = `${ladoMenor.toFixed(2).replace(".", ",")} x 0,12 x 0,02 m`;
 
@@ -2117,6 +2061,8 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           let isPonta = i === 0 || i === numRipasInfFace - 1;
           let isReforcada = usaRipaReforcada && isPonta;
           let xPos = posXRipasInf[i];
+          // Parafuso sextavado volta para o centro do quadro (±scX) nas ripas reforçadas
+          let xPosParafuso = isReforcada ? (i === 0 ? -scX : scX) : xPos;
           let geomRipa = isReforcada ? geomRipaInfEnd : geomRipaInf;
           let nomeRipa = isReforcada ? "Ripa Estrutural Reforçada (Ponta)" : "Ripa Estrutural (Base/Tampa)";
           let dimRipa  = isReforcada ? strRipaRef : strRipa;
@@ -2156,7 +2102,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           addMesh(
             hexGeo,
             metalMat,
-            xPos,
+            xPosParafuso,
             yPosInfTop + ripaH / 2 + 0.001,
             ladoMenor / 2 - 0.03,
             0,
@@ -2171,7 +2117,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           addMesh(
             hexGeo,
             metalMat,
-            xPos,
+            xPosParafuso,
             yPosInfTop + ripaH / 2 + 0.001,
             -ladoMenor / 2 + 0.03,
             0,
@@ -2186,7 +2132,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           addMesh(
             hexGeo,
             metalMat,
-            xPos,
+            xPosParafuso,
             yPosInfBot - ripaH / 2 - 0.001,
             ladoMenor / 2 - 0.03,
             0,
@@ -2201,7 +2147,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           addMesh(
             hexGeo,
             metalMat,
-            xPos,
+            xPosParafuso,
             yPosInfBot - ripaH / 2 - 0.001,
             -ladoMenor / 2 + 0.03,
             0,
@@ -2218,8 +2164,8 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           let trechos10cm = Math.ceil((ladoMenor - 0.02) / 0.1);
           let startZ = -ladoMenor / 2 + 0.01;
           let endZ = ladoMenor / 2 - 0.01;
-          let isEdge = i === 0 || i === numRipasInfFace - 1; // Descobre se é beirada ou meio
-          let offGra = isReforcada ? 0.045 : 0.015; // Par de grampos abre mais em ripa reforçada
+          let isEdge = i === 0 || i === numRipasInfFace - 1;
+          let offGra = isReforcada ? 0.045 : 0.015;
 
           for (let k = 0; k < trechos10cm; k++) {
             let stZ =
@@ -2228,7 +2174,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
                 : startZ + k * ((endZ - startZ) / (trechos10cm - 1));
 
             if (isEdge) {
-              // PARES NAS BEIRADAS (Fixa o MDF na tampa e na base)
               addMesh(
                 s8012Geo,
                 metalMat,
@@ -2291,7 +2236,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
               );
               physicalCount8012 += 4;
             } else {
-              // SIMPLES NO MEIO (Fixa o MDF na tampa e na base)
               addMesh(
                 s8012Geo,
                 metalMat,
@@ -2343,7 +2287,8 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
 
         let yPosSupTop = aInt / 2 + mdfEsp + ripaH + ripaH / 2;
         let yPosSupBot = -aInt / 2 - mdfEsp - ripaH - ripaH / 2;
-        const geomRipaSup = new THREE.BoxGeometry(ladoMaior, ripaH, ripaW);
+        const comprimentoRipaSup = Math.min(ladoMaior, 3.0);
+        const geomRipaSup = new THREE.BoxGeometry(comprimentoRipaSup, ripaH, ripaW);
         s1440Geo.rotateY(Math.PI / 2);
 
         let posZRipasSup = [];
@@ -2385,14 +2330,22 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
 
           posXRipasInf.forEach((xPos) => {
             let off = 0.015;
+            let isPontaSup = usaRipaReforcada && (xPos === posXRipasInf[0] || xPos === posXRipasInf[posXRipasInf.length - 1]);
+            let xCentroGra = xPos;
+            if (isPontaSup) {
+              let xIntMin = Math.max(-comprimentoRipaSup / 2 + 0.005, xPos - 0.06);
+              let xIntMax = Math.min( comprimentoRipaSup / 2 - 0.005, xPos + 0.06);
+              xCentroGra = (xIntMin + xIntMax) / 2;
+            }
             let cruzamentos = [
-              [xPos, zPos],
-              [xPos - off, zPos - off],
-              [xPos + off, zPos - off],
-              [xPos - off, zPos + off],
-              [xPos + off, zPos + off],
+              [xCentroGra, zPos],
+              [xCentroGra - off, zPos - off],
+              [xCentroGra + off, zPos - off],
+              [xCentroGra - off, zPos + off],
+              [xCentroGra + off, zPos + off],
             ];
             cruzamentos.forEach((pos) => {
+              if (!isPontaSup && Math.abs(pos[0]) > comprimentoRipaSup / 2) return;
               addMesh(
                 s1440Geo,
                 metalMat,
@@ -2434,11 +2387,11 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           zMidpoints.push((posZRipasSup[k] + posZRipasSup[k + 1]) / 2);
         }
 
-        let xLeft = posXRipasInf[0];
-        let xRight = posXRipasInf[posXRipasInf.length - 1];
+        // Parafusos de reforço cravam no quadro curto (±scX), não na ripa
+        let xLeft = -scX;
+        let xRight = scX;
         let numVaos = zMidpoints.length;
 
-        // Funções de injeção separadas para permitir a inversão da base
         const addSextavadoReforcoTopo = (xP, zP) => {
           addMesh(
             hexGeo,
@@ -2482,13 +2435,11 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
 
         if (ladoMaior >= 1.3) {
           if (distVaoSup < 0.2) {
-            // CENÁRIO 1: Vãos Curtos (< 20cm)
             if (numVaos % 2 !== 0) {
               let meio = Math.floor(numVaos / 2);
               addSextavadoReforcoAmbos(xLeft, zMidpoints[meio]);
               addSextavadoReforcoAmbos(xRight, zMidpoints[meio]);
             } else {
-              // Ziguezague Oposto (O que entra no topo, não entra na base)
               for (let v = 0; v < numVaos; v++) {
                 if (v % 2 === 0) {
                   addSextavadoReforcoTopo(xLeft, zMidpoints[v]);
@@ -2500,7 +2451,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
               }
             }
           } else if (distVaoSup <= 0.299) {
-            // CENÁRIO 2: Vãos Médios (20cm a 29cm) - Apenas nas pontas
             addSextavadoReforcoAmbos(xLeft, zMidpoints[0]);
             addSextavadoReforcoAmbos(xRight, zMidpoints[0]);
             if (numVaos > 1) {
@@ -2508,14 +2458,12 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
               addSextavadoReforcoAmbos(xRight, zMidpoints[numVaos - 1]);
             }
           } else {
-            // CENÁRIO 3: Vãos Largos (>= 30cm) - Todos os vãos
             zMidpoints.forEach((zPos) => {
               addSextavadoReforcoAmbos(xLeft, zPos);
               addSextavadoReforcoAmbos(xRight, zPos);
             });
           }
         } else {
-          // CAIXAS LEVES (< 1.30m): Apenas vãos largos
           if (distVaoSup >= 0.3) {
             zMidpoints.forEach((zPos) => {
               addSextavadoReforcoAmbos(xLeft, zPos);
@@ -2710,9 +2658,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           }
         }
 
-        // Agora que a contagem final de fixadores está pronta, atualizamos a Qtd. Total
-        // de cada peça (antes ficava fixa em "--", pois era escrita durante a montagem,
-        // antes do total ser conhecido).
         crateGroup.children.forEach((obj) => {
           if (obj.userData && obj.userData.type === "fixadores") {
             if (obj.userData.name === "Atarraxante Philips") {
@@ -2732,10 +2677,13 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
 
         controls.target.set(0, 0, 0);
 
-        // PREPARAÇÃO DO CAMPO DE FORÇA RETANGULAR DINÂMICO
         crateGroup.userData.ladoMaior = ladoMaior;
         crateGroup.userData.ladoMenor = ladoMenor;
         crateGroup.userData.aInt = aInt;
+
+        // Bounding box para a trava de zoom (com as peças na posição original, antes de explodir)
+        crateGroup.updateMatrixWorld(true);
+        crateGroup.userData.bBoxZoom = new THREE.Box3().setFromObject(crateGroup);
 
         controls.maxDistance = ladoMaior * 4;
 
@@ -2749,7 +2697,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         }
       }
 
-      // Formata automaticamente o input ao perder o foco (ex: "1,2" vira "1,200")
       function formatarMedida(input) {
         let val = input.value.trim().replace(",", ".");
         if (val === "" || isNaN(val)) return;
@@ -2780,7 +2727,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           return;
         }
 
-        // Trava de Segurança: Limite de 10 metros para não travar o navegador
         if (cInt > 10 || lInt > 10 || aInt > 10) {
           document.getElementById("alertaContainer").innerHTML = `
             <div class="alert-box" style="background:var(--danger-bg); border-color:var(--danger-border);">
@@ -2789,10 +2735,9 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
             </div>
           `;
           if (isUserClick) showToast("❌ Erro: Medida excede 10 metros!", false);
-          return; // Para o código aqui! Não processa e não trava o PC.
+          return;
         }
 
-        // Lógica de Troca de Medidas Silenciosa
         if (lInt > cInt) {
           let temp = cInt;
           cInt = lInt;
@@ -2821,24 +2766,45 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
 
         let cExt = Math.round((cInt + 0.07) * 1000) / 1000,
           lExt = Math.round((lInt + 0.07) * 1000) / 1000;
-        let material =
-          cExt <= 1 && lExt <= 1
-            ? "Tecplay"
-            : aInt <= 0.07
-            ? "Caxeta"
-            : "Tecplay";
-            let formatF3 = aInt.toFixed(2).replace(".", ","),
+          let formatF3 = aInt.toFixed(2).replace(".", ","),
           formatE6 = cExt.toFixed(2).replace(".", ","),
           formatF6 = lExt.toFixed(2).replace(".", ",");
         let ladoMaior = Math.max(cExt, lExt),
           ladoMenor = Math.min(cExt, lExt);
 
-        // HELPER DESATIVADO (Texto simples sem negrito ou brilho)
+        // BLOQUEIO DE PRODUÇÃO: > 2,50 m de comprimento E altura > 0,20 m
+        if (ladoMaior > 2.50 && aInt > 0.20) {
+          document.getElementById("alertaContainer").innerHTML = `
+            <div class="alert-box" style="background:#fee2e2; border-left-color:#dc2626;">
+              <strong style="color:#991b1b;">🚫 PRODUÇÃO BLOQUEADA</strong>
+              <p style="color:#7f1d1d;">Engradados com mais de 2,50 m de comprimento e altura interna acima de 0,20 m exigirão compensado (regra ainda não habilitada). Reduza a altura ou aguarde nova diretriz da engenharia.</p>
+            </div>
+          `;
+          if (isUserClick) showToast("🚫 Bloqueado: aguardando regra para compensado", false);
+          while (crateGroup.children.length > 0) {
+            crateGroup.remove(crateGroup.children[0]);
+          }
+          document.getElementById("btnExport").style.display = "none";
+          return;
+        }
+
+        // REGRA DE MATERIAL DO QUADRO
+        let material;
+        if (ladoMaior > 2.50) {
+          material = "Caxeta";
+        } else if (cExt <= 1.00 && lExt <= 1.00) {
+          material = "Tecplay";
+        } else if (aInt <= 0.07) {
+          material = "Caxeta";
+        } else {
+          material = "Tecplay";
+        }
+
         const spanOr = (val) => val;
         let formatCompCurta = (Math.min(cExt, lExt) - 0.07).toFixed(2).replace(".", ",");
-        // Novo formato unificado do Quadro (E8 assume longas e curtas) e removemos a variável E9
         let textoE8 = `${spanOr(formatE6 + " x " + formatF3 + " x 0,035")} - ${spanOr("2 un")}<br>${spanOr(formatCompCurta + " x " + formatF3 + " x 0,035")} - ${spanOr("2 un")}`;
-        // --- LÓGICA DE CORTE DO MDF (TEMPO E TEXTOS EXATOS) ---
+
+        // --- LÓGICA DE CORTE DO MDF ---
         let numVaosInfCalc = Math.max(2, Math.ceil((ladoMaior - 0.12) / 0.5));
         let numRipasInfFaceCalc = numVaosInfCalc + 1;
         let distVaoInfCalc =
@@ -2897,7 +2863,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           }
         }
 
-        // --- NOVA LÓGICA DE CORTE (SERRA CIRCULAR) ---
         const getTempoCorteNovo = (comp) => {
           if (comp <= 0.6) return 15;
           if (comp <= 1.0) return 25;
@@ -2933,12 +2898,11 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         let isEmendada = splitX || splitZ;
         let textoE10 = partesTextoE10.join("<br>") + (isEmendada ? " <small>(Emendadas)</small>" : "");
 
-        // Variáveis originais das ripas (não quebra as referências)
         let numVaosInf = Math.max(2, Math.ceil((ladoMaior - 0.12) / 0.5));
         let numRipasInfFace = numVaosInf + 1,
           numRipasInfTotal = numRipasInfFace * 2;
-        
-          let vaoInfTamanho = ((ladoMaior - numRipasInfFace * 0.06) / numVaosInf).toFixed(2).replace(".", ",");
+
+        let vaoInfTamanho = ((ladoMaior - numRipasInfFace * 0.06) / numVaosInf).toFixed(2).replace(".", ",");
         let textoE11;
         if (ladoMaior >= 3.0) {
           textoE11 = `${spanOr(ladoMenor.toFixed(2).replace(".", ",") + " x 0,12 x 0,02")} - ${spanOr("4 un")}`;
@@ -2958,9 +2922,9 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         let numRipasSupTotal = baseNumSup * 2,
           numVaosSup = baseNumSup + 1;
         let distVaoSup = (ladoMenor - baseNumSup * 0.06) / numVaosSup;
-        
-        // Junta a ripa superior na mesma variável do textoE11
-        textoE11 += `<br>${spanOr(ladoMaior.toFixed(2).replace(".", ",") + " x 0,06 x 0,02")} - ${spanOr(numRipasSupTotal + " un")}`;
+
+        let comprimentoRipaSupCalc = Math.min(ladoMaior, 3.0);
+        textoE11 += `<br>${spanOr(comprimentoRipaSupCalc.toFixed(2).replace(".", ",") + " x 0,06 x 0,02")} - ${spanOr(numRipasSupTotal + " un")}`;
 
         construirEngradado(cExt, lExt, aInt, material);
 
@@ -2969,9 +2933,9 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         let textoE16 = spanOr((physicalCount1440 / 1000).toFixed(3).replace(".", ","));
         let textoE17 = spanOr((physicalCount8012 / 1000).toFixed(3).replace(".", ","));
 
-        let cColaParte1 = 0; // Zerado: Interseções
-        let cColaParte2 = 0; // Zerado: Quadro
-        let cColaParte3 = numRipasInfFace * (3 * ladoMenor + 0.12) * 12; 
+        let cColaParte1 = 0;
+        let cColaParte2 = 0;
+        let cColaParte3 = numRipasInfFace * (3 * ladoMenor + 0.12) * 12;
         let calcColaB = Math.ceil(cColaParte1 + cColaParte2 + cColaParte3);
         let textoE18 = spanOr((calcColaB / 1000).toFixed(3).replace(".", ",") + " kg");
 
@@ -3008,28 +2972,27 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
             let evaH_ext = 0.05;
             let areaExternaEVA = qtdEva * compEva * evaH_ext * 2;
             totalMetrosEVA = qtdEva * compEva * 2 + 4 * 0.28;
-            
+
             let calcPesoEVA = Math.ceil((areaExternaEVA + areaInternaEVA) * 1666.67);
             let formPesoEVA = (calcPesoEVA / 1000).toFixed(3).replace(".", ",");
             textoE19 = `${spanOr(formPesoEVA + " kg")}<br><small>Ext: ${spanOr((qtdEva * 2) + " un")} de ${spanOr(fCompEva + " x 0,05 x 0,02 m")}<br>Int: ${spanOr("4 un")} de ${spanOr("0,28 x " + fEvaH_solta + " x 0,02 m")}</small>`;
-            
+
             let calcColaC = Math.ceil(areaExternaEVA * (10 / 0.024));
             textoE20 = spanOr((calcColaC / 1000).toFixed(3).replace(".", ",") + " kg");
           } else {
             let evaH_ext = Math.max(0.05, aInt - 0.02);
             let areaExternaEVA = qtdEva * compEva * evaH_ext;
             totalMetrosEVA = qtdEva * compEva + 4 * 0.28;
-            
+
             let calcPesoEVA = Math.ceil((areaExternaEVA + areaInternaEVA) * 1666.67);
             let formPesoEVA = (calcPesoEVA / 1000).toFixed(3).replace(".", ",");
             textoE19 = `${spanOr(formPesoEVA + " kg")}<br><small>Ext: ${spanOr(qtdEva + " un")} de ${spanOr(fCompEva + " x " + evaH_ext.toFixed(2).replace(".", ",") + " x 0,02 m")}<br>Int: ${spanOr("4 un")} de ${spanOr("0,28 x " + fEvaH_solta + " x 0,02 m")}</small>`;
-            
+
             let calcColaC = Math.ceil(areaExternaEVA * (10 / 0.024));
             textoE20 = spanOr((calcColaC / 1000).toFixed(3).replace(".", ",") + " kg");
           }
         }
 
-        // --- NOVA LÓGICA DE USINAGEM BRUTA (CAXETA) ---
         let totalSegundosH9 = material === "Caxeta" ? 60 + ladoMaior * 90 : 0;
         let minH9 = Math.floor(totalSegundosH9 / 60);
         let secH9 = Math.round(totalSegundosH9 % 60);
@@ -3058,14 +3021,14 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
               String(secH10).padStart(2, "0")
             : "--";
 
-        // Serra Circular da Estrutura (Quadro e Ripas continuam aqui)
+        let comprimentoRipaSupH11 = Math.min(ladoMaior, 3.0);
         let tempoSerraEstrutura =
           360 +
           (material === "Tecplay" ? 120 : 0) +
           2 * getTempoCorteNovo(ladoMaior) +
           2 * getTempoCorteNovo(ladoMenor - 0.07) +
           numRipasInfTotal * getTempoCorteNovo(ladoMenor) +
-          numRipasSupTotal * getTempoCorteNovo(ladoMaior);
+          numRipasSupTotal * getTempoCorteNovo(comprimentoRipaSupH11);
 
         let metodoCorteMdf = document.getElementById("metodoCorteMdf").value;
         let tMdfSerra = 0;
@@ -3076,7 +3039,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         if (metodoCorteMdf === "router") {
           circMin = Math.ceil(tempoSerraEstrutura / 60);
           tRouterUsinagem = perimetroTotal * 30;
-          tRouterSetup = rawSheets * 180; // 3 minutos (180s) por chapa bruta
+          tRouterSetup = rawSheets * 180;
 
           document.getElementById("rowRouter").style.display = "flex";
           document.getElementById("rowSetup").style.display = "flex";
@@ -3127,7 +3090,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           ":" +
           String(secH11).padStart(2, "0");
 
-        // --- NOVO TEMPO DA SERRA FITA (EVA) ---
         let totalSegundosH12 = 150 + totalMetrosEVA * 70;
         let minH12 = Math.floor(totalSegundosH12 / 60);
         let secH12 = Math.round(totalSegundosH12 % 60);
@@ -3140,7 +3102,6 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           ":" +
           String(secH12).padStart(2, "0");
 
-        // --- NOVA LÓGICA DE TEMPO DE MONTAGEM (CRONOANÁLISE CHÃO DE FÁBRICA) ---
         let tFuros = (physicalCountFlatScrews + physicalCountHexScrews) * 15;
         let tAtarraxantes = physicalCountFlatScrews * 30;
         let tSextavados = physicalCountHexScrews * 40;
@@ -3153,12 +3114,9 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         }
         let tMdfManuseio = numChapasMDF * 120;
 
-        // Cola Branca: aplicada apenas no contato MDF x Ripa (Base e Tampa)
         let metrosLinearesCola = numRipasInfTotal * ladoMenor;
         let tColaBranca = metrosLinearesCola * 20;
 
-        // Grampo 80/12: Tempo 100% amarrado à contagem física real da tela!
-        // 3 segundos por grampo físico atirado. Se os grampos caíram, o tempo cai na mesma proporção.
         let tGrampo8012 = physicalCount8012 * 3;
 
         let areaEvaCalculada = 0;
@@ -3214,7 +3172,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           ":" +
           String(secH13).padStart(2, "0");
 
-          let minTotal =
+        let minTotal =
           Math.ceil(totalSegundosH9 / 60) +
           Math.ceil(totalSegundosH10 / 60) +
           Math.ceil(totalSegundosH11 / 60) +
@@ -3223,30 +3181,25 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           Math.ceil(tRouterSetup / 60) +
           Math.ceil(tRouterUsinagem / 60);
 
-        // Define a exibição em minutos
         let textoH15 = minTotal + " min";
-        
-        // Calcula as horas para o Hover (Tooltip)
+
         let hr = Math.floor(minTotal / 60);
         let mt = minTotal % 60;
         let tooltipHover = hr > 0 ? `Equivale a ${hr}h e ${mt}m` : `${mt} minutos`;
 
-        // Imprimindo na tela de forma limpa, com peso de fonte consistente.
         document.getElementById("outComp").innerText = cExt.toFixed(3).replace(".", ",") + " m";
         document.getElementById("outLarg").innerText = lExt.toFixed(3).replace(".", ",") + " m";
-        
+
         document.getElementById("lblMadQuadro").innerText = material + ":";
-        
+
         document.getElementById("outE8").innerHTML = textoE8;
-        // Removendo o "m" do MDF para padronizar com as outras madeiras
-        document.getElementById("outE10").innerHTML = textoE10.replace(" m", ""); 
+        document.getElementById("outE10").innerHTML = textoE10.replace(" m", "");
         document.getElementById("outE11").innerHTML = textoE11;
-        
+
         document.getElementById("outE14").innerHTML = textoE14;
         document.getElementById("outE15").innerHTML = textoE15;
         document.getElementById("outE16").innerHTML = textoE16;
-        // Removendo os "m" do EVA para limpar o visual
-        document.getElementById("outE17").innerHTML = textoE17.replace(/ m/g, ""); 
+        document.getElementById("outE17").innerHTML = textoE17.replace(/ m/g, "");
         document.getElementById("outE18").innerHTML = textoE18;
         document.getElementById("outE19").innerHTML = textoE19;
         document.getElementById("outE20").innerHTML = textoE20;
@@ -3258,22 +3211,18 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         document.getElementById("outH13").innerHTML = textoH13;
         document.getElementById("outH15").innerHTML = textoH15;
         document.getElementById("outH15").title = tooltipHover;
-        
 
-        // Mostra o botão de exportar
         document.getElementById("btnExport").style.display = "block";
 
-        // Força o motor 3D a ler a nova altura da coluna e reajustar a resolução
         setTimeout(onWindowResize, 50);
 
-        // Chama o aviso estiloso SÓ SE foi um clique real no botão
         if (isUserClick) {
           showToast("⚙️ Produção processada com sucesso!", false);
         }
       }
-      // FUNÇÃO DE EXPORTAÇÃO EXCEL - APENAS RELATÓRIO DE ASSINATURA LIMPO E IDÊNTICO À MATRIZ
+
+      // FUNÇÃO DE EXPORTAÇÃO EXCEL
       function exportarExcel() {
-        // --- 1. RESGATE DOS DADOS E CÁLCULOS GERAIS ---
         let cIntRaw = document.getElementById("cInt").value;
         let lIntRaw = document.getElementById("lInt").value;
         let aIntRaw = document.getElementById("aInt").value;
@@ -3285,9 +3234,18 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         let cExt = Math.round((cInt + 0.07) * 1000) / 1000, lExt = Math.round((lInt + 0.07) * 1000) / 1000;
         let ladoMaior = Math.max(cExt, lExt), ladoMenor = Math.min(cExt, lExt);
         let maiorInt = Math.max(cInt, lInt), menorInt = Math.min(cInt, lInt);
-        let material = cExt <= 1 && lExt <= 1 ? "Tecplay" : aInt <= 0.07 ? "Caxeta" : "Tecplay";
 
-        // Quantidades
+        if (ladoMaior > 2.50 && aInt > 0.20) {
+          showToast("🚫 Produção bloqueada: aguardando regra para compensado", false);
+          return;
+        }
+
+        let material;
+        if (ladoMaior > 2.50) material = "Caxeta";
+        else if (cExt <= 1.00 && lExt <= 1.00) material = "Tecplay";
+        else if (aInt <= 0.07) material = "Caxeta";
+        else material = "Tecplay";
+
         let qtdeMadeiraQuadro = ladoMaior * aInt * 2 + (ladoMenor - 0.07) * aInt * 2;
         let numVaosInf = Math.max(2, Math.ceil((ladoMaior - 0.12) / 0.5));
         let numRipasInfTotal = (numVaosInf + 1) * 2;
@@ -3299,9 +3257,10 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
 
         let usaRipaReforcadaExp = ladoMaior >= 3.0;
         let qtdePinusReforcada = usaRipaReforcadaExp ? (ladoMenor * 0.12 * 0.02 * 4) : 0;
+        let comprimentoRipaSupExp = Math.min(ladoMaior, 3.0);
         let qtdePinusNormal = usaRipaReforcadaExp
-          ? (ladoMenor * 0.06 * 0.02 * (numRipasInfTotal - 4)) + (ladoMaior * 0.06 * 0.02 * numRipasSupTotal)
-          : (ladoMenor * 0.06 * 0.02 * numRipasInfTotal) + (ladoMaior * 0.06 * 0.02 * numRipasSupTotal);
+          ? (ladoMenor * 0.06 * 0.02 * (numRipasInfTotal - 4)) + (comprimentoRipaSupExp * 0.06 * 0.02 * numRipasSupTotal)
+          : (ladoMenor * 0.06 * 0.02 * numRipasInfTotal) + (comprimentoRipaSupExp * 0.06 * 0.02 * numRipasSupTotal);
         let qtdePinus = qtdePinusNormal + qtdePinusReforcada;
         let qtdeMDF = ladoMaior * ladoMenor * 2;
         let qtdeAtarraxante = physicalCountFlatScrews;
@@ -3312,10 +3271,9 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         let numRipasInfFace = numVaosInf + 1;
         let cColaParte3 = numRipasInfFace * (3 * ladoMenor + 0.12) * 12;
         let qtdeColaB = Math.ceil(cColaParte3) / 1000;
-        
-        // CORREÇÃO DO EVA E COLA (Sincronizado perfeitamente com a Tela)
+
         let areaEvaCalculada = 0;
-        let qtdEva = 1, compEva = 0.28; // Padrão agora é 0.28
+        let qtdEva = 1, compEva = 0.28;
         if (aInt <= 0.25) {
           if (ladoMaior < 0.9) { qtdEva = 1; compEva = Math.max(0.1, ladoMaior - 0.2); }
           else if (ladoMaior < 2.0) { qtdEva = 2; }
@@ -3326,44 +3284,38 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         }
         let evaH_solta = Math.max(0.05, aInt - 0.04);
         let areaInternaEVA = 4 * (0.28 * evaH_solta);
-        
-        // Se a caixa for maior que 25cm, NÃO tem cola de contato e usa só EVA interno
+
         let calcPesoEVA = aInt > 0.25 ? Math.ceil(areaInternaEVA * 1666.67) : Math.ceil((areaEvaCalculada + areaInternaEVA) * 1666.67);
         let qtdeColaC = aInt > 0.25 ? 0 : Math.ceil(areaEvaCalculada * (10 / 0.024)) / 1000;
         let qtdeEVA = calcPesoEVA / 1000;
 
-        // Identificação Dinâmica da Madeira do Quadro
         let isCaxeta = material === "Caxeta";
         let codQuadro = isCaxeta ? "34013207" : "34013519";
         let descQuadro = isCaxeta ? "CAXETA PRANCHADO 04 CM ESP" : "CHAPA TECPLAY HDF 35 MM - 2.75 X 1.83 M";
         let umQuadro = isCaxeta ? "m3" : "m2";
 
-        // --- 2. INICIALIZAÇÃO DO EXCELJS ---
         let workbook = new ExcelJS.Workbook();
         let grayFill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9D9D9" } };
         let borderStyle = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
         let fontBold = { bold: true, name: "Cambria", size: 11 };
         let fontNorm = { name: "Cambria", size: 11 };
 
-        // =========================================================================
-        // ABA ÚNICA: RELATÓRIO DE ASSINATURA (O PAINEL VISUAL EXATO)
-        // =========================================================================
         let wsRel = workbook.addWorksheet("RELATÓRIO DE ASSINATURA");
         wsRel.getColumn("A").width = 16;
         wsRel.getColumn("B").width = 70;
         wsRel.getColumn("C").width = 12;
         wsRel.getColumn("D").width = 15;
-        wsRel.getColumn("E").width = 3;  
-        wsRel.getColumn("F").width = 22; 
+        wsRel.getColumn("E").width = 3;
+        wsRel.getColumn("F").width = 22;
         wsRel.getColumn("G").width = 10;
         wsRel.getColumn("H").width = 10;
         wsRel.getColumn("I").width = 10;
         wsRel.getColumn("J").width = 10;
 
-        wsRel.getCell("B2").value = "APONTAMENTO DE MARCENARIA"; 
+        wsRel.getCell("B2").value = "APONTAMENTO DE MARCENARIA";
         wsRel.getCell("B2").font = { bold: true, size: 14, name: "Cambria" };
 
-        wsRel.getCell("B4").value = "PRODUTO:"; 
+        wsRel.getCell("B4").value = "PRODUTO:";
         wsRel.getCell("B4").font = fontBold;
         wsRel.getCell("B5").value = `ENGRADADO DE MADEIRA ${maiorInt.toFixed(2).replace(".",",")}M X ${menorInt.toFixed(2).replace(".",",")}M X ${aInt.toFixed(2).replace(".",",")}H MEDIDA INTERNA`;
         wsRel.getCell("B5").font = fontNorm;
@@ -3385,8 +3337,8 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
 
         let headersRel = ["CÓDIGO", "DESCRIÇÃO", "U/M", "QT. USADA"];
         headersRel.forEach((h, i) => {
-          let cell = wsRel.getCell(7, i + 1); 
-          cell.value = h; cell.font = fontBold; cell.fill = grayFill; cell.border = borderStyle; 
+          let cell = wsRel.getCell(7, i + 1);
+          cell.value = h; cell.font = fontBold; cell.fill = grayFill; cell.border = borderStyle;
           cell.alignment = { horizontal: "center", vertical: "middle" };
         });
 
@@ -3408,7 +3360,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         matDataRel.forEach((d) => {
           let row = wsRel.getRow(rIdx);
           row.getCell("A").value = d[0]; row.getCell("B").value = d[1]; row.getCell("C").value = d[2]; row.getCell("D").value = d[3];
-          
+
           row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
             if(colNumber <= 4) {
                cell.font = fontNorm; cell.border = borderStyle;
@@ -3419,10 +3371,9 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           rIdx++;
         });
 
-        // --- MÃO DE OBRA (posição dinâmica — se a lista de materiais crescer, isso acompanha) ---
         let moTitleRow = rIdx + 1;
         let moHeadRow  = moTitleRow + 1;
-        wsRel.getCell(`A${moTitleRow}`).value = "MÃO DE OBRA"; 
+        wsRel.getCell(`A${moTitleRow}`).value = "MÃO DE OBRA";
         wsRel.getCell(`A${moTitleRow}`).font = fontBold;
 
         wsRel.getCell(`A${moHeadRow}`).value = "PROCESSO";
@@ -3447,27 +3398,26 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
               let row = wsRel.getRow(moIdx);
               row.getCell("A").value = proc;
               row.getCell("A").font = fontNorm; row.getCell("A").border = borderStyle; row.getCell("A").alignment = { horizontal: "left" };
-              
+
               row.getCell("B").value = moMin[proc];
               row.getCell("B").font = fontNorm; row.getCell("B").border = borderStyle; row.getCell("B").alignment = { horizontal: "center" };
-              
+
               moIdx++;
           }
         }
 
-        // --- TABELAS DA DIREITA (MEDIDAS DE CORTE) ---
         let headerRight = ["C (m)", "L (m)", "E (m)", "Qtd."];
         headerRight.forEach((h, i) => {
-           let cell = wsRel.getCell(7, 7 + i); 
+           let cell = wsRel.getCell(7, 7 + i);
            cell.value = h; cell.font = fontBold; cell.fill = grayFill; cell.border = borderStyle; cell.alignment = { horizontal: "center" };
         });
-        
+
         wsRel.mergeCells("F7:F9");
         let f7 = wsRel.getCell("F7");
         f7.value = "Pinus (Base/Tampa)"; f7.font = fontBold; f7.border = borderStyle; f7.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
         [7,8,9].forEach(r => wsRel.getCell(`F${r}`).border = borderStyle);
 
-        wsRel.getCell("G8").value = ladoMaior; wsRel.getCell("H8").value = 0.06; wsRel.getCell("I8").value = 0.02; wsRel.getCell("J8").value = numRipasSupTotal;
+        wsRel.getCell("G8").value = Math.min(ladoMaior, 3.0); wsRel.getCell("H8").value = 0.06; wsRel.getCell("I8").value = 0.02; wsRel.getCell("J8").value = numRipasSupTotal;
         wsRel.getCell("G9").value = ladoMenor; wsRel.getCell("H9").value = 0.06; wsRel.getCell("I9").value = 0.02; wsRel.getCell("J9").value = numRipasInfTotal;
 
         [8,9].forEach(r => {
@@ -3479,10 +3429,10 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         });
 
         headerRight.forEach((h, i) => {
-           let cell = wsRel.getCell(11, 7 + i); 
+           let cell = wsRel.getCell(11, 7 + i);
            cell.value = h; cell.font = fontBold; cell.fill = grayFill; cell.border = borderStyle; cell.alignment = { horizontal: "center" };
         });
-        
+
         wsRel.mergeCells("F11:F13");
         let f11 = wsRel.getCell("F11");
         f11.value = material; f11.font = fontBold; f11.border = borderStyle; f11.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
@@ -3501,17 +3451,17 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
 
         let headerMDF = ["C (m)", "L (m)", "Qtd."];
         headerMDF.forEach((h, i) => {
-           let cell = wsRel.getCell(15, 7 + i); 
+           let cell = wsRel.getCell(15, 7 + i);
            cell.value = h; cell.font = fontBold; cell.fill = grayFill; cell.border = borderStyle; cell.alignment = { horizontal: "center" };
         });
-        
+
         wsRel.mergeCells("F15:F17");
         let f15 = wsRel.getCell("F15");
         f15.value = "MDF 03mm\n(Fechamento)"; f15.font = fontBold; f15.border = borderStyle; f15.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
         [15,16,17].forEach(r => wsRel.getCell(`F${r}`).border = borderStyle);
 
-        wsRel.getCell("G16").value = ladoMaior; wsRel.getCell("H16").value = ladoMenor; wsRel.getCell("I16").value = 2; 
-        wsRel.getCell("G17").value = ""; wsRel.getCell("H17").value = ""; wsRel.getCell("I17").value = ""; 
+        wsRel.getCell("G16").value = ladoMaior; wsRel.getCell("H16").value = ladoMenor; wsRel.getCell("I16").value = 2;
+        wsRel.getCell("G17").value = ""; wsRel.getCell("H17").value = ""; wsRel.getCell("I17").value = "";
 
         [16,17].forEach(r => {
            [7,8,9].forEach(c => {
@@ -3525,7 +3475,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           let blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
           let link = document.createElement("a");
           link.href = URL.createObjectURL(blob);
-          
+
           let hh = String(dataHoje.getHours()).padStart(2, '0');
           let mm = String(dataHoje.getMinutes()).padStart(2, '0');
           link.download = `Engradado_Relatorio_${hh}h${mm}.xlsx`;
@@ -3534,89 +3484,71 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           showToast("📥 Relatório de Assinatura gerado com sucesso!", true);
         });
       }
-// ============================================================================
-    // --- SEÇÃO DE CONFIGURAÇÃO DA CÂMERA EXCEL ---
-    // Proporção baseada em: Altura 72 (96px) x Largura 33.86 (242px). 
-    // Multiplicado por 4x para garantir altíssima resolução sem peso extra.
-    // ============================================================================
-    const CONF_EXCEL_FOTO_LARGURA = 968; 
-    const CONF_EXCEL_FOTO_ALTURA = 384;  
-    const CONF_EXCEL_FOTO_MARGIN = 0.85; // 15% de folga nas bordas para as quinas respirarem
-    // ============================================================================
 
-    // --- FUNÇÃO PARA TIRAR FOTO PNG TRANSPARENTE E ENQUADRADA PARA EXCEL ---
-    function tirarFotoExcel() {
-      if (!crateGroup || !scene || !camera) return;
+      // --- SEÇÃO DE CONFIGURAÇÃO DA CÂMERA EXCEL ---
+      const CONF_EXCEL_FOTO_LARGURA = 968;
+      const CONF_EXCEL_FOTO_ALTURA = 384;
+      const CONF_EXCEL_FOTO_MARGIN = 0.85;
 
-      // 1. EFEITO VISUAL DE FLASH
-      const flash = document.getElementById("cameraFlash");
-      flash.style.opacity = "1";
-      setTimeout(() => { flash.style.opacity = "0"; }, 150);
+      function tirarFotoExcel() {
+        if (!crateGroup || !scene || !camera) return;
 
-      // 2. SALVAR ESTADO ATUAL
-      const originalAspect = camera.aspect;
-      const originalBg = scene.background;
-      const originalCamPos = camera.position.clone();
-      const originalCamRot = camera.rotation.clone();
-      const originalTarget = controls.target.clone();
+        const flash = document.getElementById("cameraFlash");
+        flash.style.opacity = "1";
+        setTimeout(() => { flash.style.opacity = "0"; }, 150);
 
-      // 3. PREPARAR CENA PARA CAPTURA (Tamanho do Excel x4)
-      renderer.setSize(CONF_EXCEL_FOTO_LARGURA, CONF_EXCEL_FOTO_ALTURA);
-      camera.aspect = CONF_EXCEL_FOTO_LARGURA / CONF_EXCEL_FOTO_ALTURA;
-      camera.updateProjectionMatrix();
-      scene.background = null; 
+        const originalAspect = camera.aspect;
+        const originalBg = scene.background;
+        const originalCamPos = camera.position.clone();
+        const originalCamRot = camera.rotation.clone();
+        const originalTarget = controls.target.clone();
 
-      // 4. NOVA LÓGICA DE ENQUADRAMENTO (Esfera Envolvente)
-      // Cria uma esfera imaginária que engloba 100% do engradado, evitando cortes nas quinas
-      const box = new THREE.Box3().setFromObject(crateGroup);
-      const sphere = box.getBoundingSphere(new THREE.Sphere());
-      const center = sphere.center;
-      const radius = sphere.radius;
+        renderer.setSize(CONF_EXCEL_FOTO_LARGURA, CONF_EXCEL_FOTO_ALTURA);
+        camera.aspect = CONF_EXCEL_FOTO_LARGURA / CONF_EXCEL_FOTO_ALTURA;
+        camera.updateProjectionMatrix();
+        scene.background = null;
 
-      controls.target.copy(center);
+        const box = new THREE.Box3().setFromObject(crateGroup);
+        const sphere = box.getBoundingSphere(new THREE.Sphere());
+        const center = sphere.center;
+        const radius = sphere.radius;
 
-      // Calcula a distância usando trigonometria com base no raio da esfera
-      const fov = camera.fov * (Math.PI / 180);
-      let cameraDistance = radius / Math.sin(fov / 2);
+        controls.target.copy(center);
 
-      // Compensa se a proporção da tela for mais fechada que a do campo de visão
-      if (camera.aspect < 1) {
-        cameraDistance = cameraDistance / camera.aspect;
+        const fov = camera.fov * (Math.PI / 180);
+        let cameraDistance = radius / Math.sin(fov / 2);
+
+        if (camera.aspect < 1) {
+          cameraDistance = cameraDistance / camera.aspect;
+        }
+
+        cameraDistance = cameraDistance / CONF_EXCEL_FOTO_MARGIN;
+
+        const direction = originalCamPos.clone().sub(originalTarget).normalize();
+        camera.position.copy(center).add(direction.multiplyScalar(cameraDistance));
+        camera.lookAt(center);
+
+        renderer.render(scene, camera);
+        const imgData = renderer.domElement.toDataURL("image/png");
+
+        const dataAtual = new Date();
+        const nomeArquivo = `Engradado_FotoExcel_${dataAtual.getHours()}h${dataAtual.getMinutes()}m.png`;
+        const link = document.createElement('a');
+        link.download = nomeArquivo;
+        link.href = imgData;
+        link.click();
+
+        scene.background = originalBg;
+        camera.aspect = originalAspect;
+        camera.position.copy(originalCamPos);
+        camera.rotation.copy(originalCamRot);
+        camera.updateProjectionMatrix();
+        controls.target.copy(originalTarget);
+        onWindowResize();
+
+        showToast("📷 Foto PNG para Excel salva!", false);
       }
 
-      // Aplica a margem de respiração para não colar na borda da célula
-      cameraDistance = cameraDistance / CONF_EXCEL_FOTO_MARGIN;
-
-      // Posiciona a câmera na nova distância, na exata mesma diagonal que o usuário deixou
-      const direction = originalCamPos.clone().sub(originalTarget).normalize();
-      camera.position.copy(center).add(direction.multiplyScalar(cameraDistance));
-      camera.lookAt(center);
-
-      // 5. RENDERIZAR E CAPTURAR
-      renderer.render(scene, camera);
-      const imgData = renderer.domElement.toDataURL("image/png");
-
-      // 6. BAIXAR O ARQUIVO PNG
-      const dataAtual = new Date();
-      const nomeArquivo = `Engradado_FotoExcel_${dataAtual.getHours()}h${dataAtual.getMinutes()}m.png`;
-      const link = document.createElement('a');
-      link.download = nomeArquivo;
-      link.href = imgData;
-      link.click();
-
-      // 7. RESTAURAR ESTADO ORIGINAL DA TELA
-      scene.background = originalBg;
-      camera.aspect = originalAspect;
-      camera.position.copy(originalCamPos);
-      camera.rotation.copy(originalCamRot);
-      camera.updateProjectionMatrix();
-      controls.target.copy(originalTarget);
-      onWindowResize(); 
-
-      showToast("📷 Foto PNG para Excel salva!", false);
-    }
-
-// ============================================================================
       window.onload = init3D;
     </script>
   </body>
