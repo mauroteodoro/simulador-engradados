@@ -1988,8 +1988,15 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         let passoInf = ripaW + distVaoInf;
 
         let posXRipasInf = [];
+        const usaRipaReforcada = ladoMaior >= 3.0;
+        console.log("DEBUG → ladoMaior:", ladoMaior, "| usaRipaReforcada:", usaRipaReforcada);
         for (let i = 0; i < numRipasInfFace; i++) {
-          posXRipasInf.push(-ladoMaior / 2 + ripaW / 2 + i * passoInf);
+          let xCentro = -ladoMaior / 2 + ripaW / 2 + i * passoInf;
+          // Nas pontas, desloca o centro 3cm para dentro para a borda externa continuar alinhada ao quadro
+          if (usaRipaReforcada && (i === 0 || i === numRipasInfFace - 1)) {
+            xCentro += (i === 0 ? +0.03 : -0.03);
+          }
+          posXRipasInf.push(xCentro);
         }
 
         // 2. CHAPAS DE MDF (LÓGICA DE EMENDA E CONTAGEM PRECISA)
@@ -2102,12 +2109,21 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         let yPosInfTop = aInt / 2 + mdfEsp + ripaH / 2;
         let yPosInfBot = -aInt / 2 - mdfEsp - ripaH / 2;
         const geomRipaInf = new THREE.BoxGeometry(ripaW, ripaH, ladoMenor);
+        // NOVO: geometria reforçada (120mm) para as ripas das pontas em engradados >= 3,00m
+        const geomRipaInfEnd = new THREE.BoxGeometry(0.12, ripaH, ladoMenor);
+        const strRipaRef = `${ladoMenor.toFixed(2).replace(".", ",")} x 0,12 x 0,02 m`;
 
         for (let i = 0; i < numRipasInfFace; i++) {
+          let isPonta = i === 0 || i === numRipasInfFace - 1;
+          let isReforcada = usaRipaReforcada && isPonta;
           let xPos = posXRipasInf[i];
+          let geomRipa = isReforcada ? geomRipaInfEnd : geomRipaInf;
+          let nomeRipa = isReforcada ? "Ripa Estrutural Reforçada (Ponta)" : "Ripa Estrutural (Base/Tampa)";
+          let dimRipa  = isReforcada ? strRipaRef : strRipa;
+          let qtdRipa  = isReforcada ? "4 un" : `${(numRipasInfFace - 2) * 2} un`;
 
           addMesh(
-            geomRipaInf,
+            geomRipa,
             woodMat,
             xPos,
             yPosInfTop,
@@ -2116,13 +2132,13 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
             0.6,
             0,
             "ripas",
-            "Ripa Estrutural (Base/Tampa)",
+            nomeRipa,
             "Pinus Aparelhado",
-            strRipa,
-            `${numRipasInfFace * 2} un`
+            dimRipa,
+            qtdRipa
           );
           addMesh(
-            geomRipaInf,
+            geomRipa,
             woodMat,
             xPos,
             yPosInfBot,
@@ -2131,10 +2147,10 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
             -0.6,
             0,
             "ripas",
-            "Ripa Estrutural (Base/Tampa)",
+            nomeRipa,
             "Pinus Aparelhado",
-            strRipa,
-            `${numRipasInfFace * 2} un`
+            dimRipa,
+            qtdRipa
           );
 
           addMesh(
@@ -2203,6 +2219,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           let startZ = -ladoMenor / 2 + 0.01;
           let endZ = ladoMenor / 2 - 0.01;
           let isEdge = i === 0 || i === numRipasInfFace - 1; // Descobre se é beirada ou meio
+          let offGra = isReforcada ? 0.045 : 0.015; // Par de grampos abre mais em ripa reforçada
 
           for (let k = 0; k < trechos10cm; k++) {
             let stZ =
@@ -2215,7 +2232,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
               addMesh(
                 s8012Geo,
                 metalMat,
-                xPos - 0.015,
+                xPos - offGra,
                 aInt / 2 - 0.001,
                 stZ,
                 0,
@@ -2230,7 +2247,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
               addMesh(
                 s8012Geo,
                 metalMat,
-                xPos + 0.015,
+                xPos + offGra,
                 aInt / 2 - 0.001,
                 stZ,
                 0,
@@ -2245,7 +2262,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
               addMesh(
                 s8012Geo,
                 metalMat,
-                xPos - 0.015,
+                xPos - offGra,
                 -aInt / 2 + 0.001,
                 stZ,
                 0,
@@ -2260,7 +2277,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
               addMesh(
                 s8012Geo,
                 metalMat,
-                xPos + 0.015,
+                xPos + offGra,
                 -aInt / 2 + 0.001,
                 stZ,
                 0,
@@ -2802,8 +2819,8 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           document.getElementById("alertaContainer").innerHTML = alertaHTML;
         }
 
-        let cExt = cInt + 0.07,
-          lExt = lInt + 0.07;
+        let cExt = Math.round((cInt + 0.07) * 1000) / 1000,
+          lExt = Math.round((lInt + 0.07) * 1000) / 1000;
         let material =
           cExt <= 1 && lExt <= 1
             ? "Tecplay"
@@ -2921,8 +2938,14 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         let numRipasInfFace = numVaosInf + 1,
           numRipasInfTotal = numRipasInfFace * 2;
         
-        let vaoInfTamanho = ((ladoMaior - numRipasInfFace * 0.06) / numVaosInf).toFixed(2).replace(".", ",");
-        let textoE11 = `${spanOr(ladoMenor.toFixed(2).replace(".", ",") + " x 0,06 x 0,02")} - ${spanOr(numRipasInfTotal + " un")}`;
+          let vaoInfTamanho = ((ladoMaior - numRipasInfFace * 0.06) / numVaosInf).toFixed(2).replace(".", ",");
+        let textoE11;
+        if (ladoMaior >= 3.0) {
+          textoE11 = `${spanOr(ladoMenor.toFixed(2).replace(".", ",") + " x 0,12 x 0,02")} - ${spanOr("4 un")}`;
+          textoE11 += `<br>${spanOr(ladoMenor.toFixed(2).replace(".", ",") + " x 0,06 x 0,02")} - ${spanOr((numRipasInfTotal - 4) + " un")}`;
+        } else {
+          textoE11 = `${spanOr(ladoMenor.toFixed(2).replace(".", ",") + " x 0,06 x 0,02")} - ${spanOr(numRipasInfTotal + " un")}`;
+        }
 
         let baseNumSup = Math.max(2, Math.ceil((ladoMenor - 0.51) / 0.5));
         if (ladoMaior >= 2.0) {
@@ -3259,7 +3282,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         let aInt = parseFloat(aIntRaw.replace(",", "."));
         if (lInt > cInt) { let temp = cInt; cInt = lInt; lInt = temp; }
 
-        let cExt = cInt + 0.07, lExt = lInt + 0.07;
+        let cExt = Math.round((cInt + 0.07) * 1000) / 1000, lExt = Math.round((lInt + 0.07) * 1000) / 1000;
         let ladoMaior = Math.max(cExt, lExt), ladoMenor = Math.min(cExt, lExt);
         let maiorInt = Math.max(cInt, lInt), menorInt = Math.min(cInt, lInt);
         let material = cExt <= 1 && lExt <= 1 ? "Tecplay" : aInt <= 0.07 ? "Caxeta" : "Tecplay";
@@ -3274,7 +3297,12 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
         }
         let numRipasSupTotal = baseNumSup * 2;
 
-        let qtdePinus = (ladoMenor * 0.06 * 0.02 * numRipasInfTotal) + (ladoMaior * 0.06 * 0.02 * numRipasSupTotal);
+        let usaRipaReforcadaExp = ladoMaior >= 3.0;
+        let qtdePinusReforcada = usaRipaReforcadaExp ? (ladoMenor * 0.12 * 0.02 * 4) : 0;
+        let qtdePinusNormal = usaRipaReforcadaExp
+          ? (ladoMenor * 0.06 * 0.02 * (numRipasInfTotal - 4)) + (ladoMaior * 0.06 * 0.02 * numRipasSupTotal)
+          : (ladoMenor * 0.06 * 0.02 * numRipasInfTotal) + (ladoMaior * 0.06 * 0.02 * numRipasSupTotal);
+        let qtdePinus = qtdePinusNormal + qtdePinusReforcada;
         let qtdeMDF = ladoMaior * ladoMenor * 2;
         let qtdeAtarraxante = physicalCountFlatScrews;
         let qtdeSextavado = physicalCountHexScrews;
@@ -3364,7 +3392,8 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
 
         let matDataRel = [
           [codQuadro, descQuadro, umQuadro, qtdeMadeiraQuadro],
-          ["34013099", "PINUS APARELHADO 04 FACES - 20 MM X 195 MM X 3000 MM", "m3", qtdePinus],
+          ["34013099", "PINUS APARELHADO 04 FACES - 20 MM X 195 MM X 3000 MM", "m3", qtdePinusNormal],
+          ...(usaRipaReforcadaExp ? [["34013099", "PINUS APARELHADO 04 FACES (RIPA REFORÇADA 120MM) - 20 X 120 X 3000 MM", "m3", qtdePinusReforcada]] : []),
           ["34013230", "CHAPA MDF 03 MM - 2.75 X 1.85 - EUCALIPTUS - DURATEX", "m2", qtdeMDF],
           ["33010796", "PARAFUSO A. ATARRAXANTE CAB. CHATA FENDA PHILIPS - 5.0 X 80 MM", "PECA", qtdeAtarraxante],
           ["33010O71", 'PARAFUSO SEXTAVADO PONTA OGIVADA 5,5MM X 2.1/4"', "UN", qtdeSextavado],
@@ -3390,15 +3419,17 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           rIdx++;
         });
 
-        // --- MÃO DE OBRA ---
-        wsRel.getCell("A19").value = "MÃO DE OBRA"; 
-        wsRel.getCell("A19").font = fontBold;
+        // --- MÃO DE OBRA (posição dinâmica — se a lista de materiais crescer, isso acompanha) ---
+        let moTitleRow = rIdx + 1;
+        let moHeadRow  = moTitleRow + 1;
+        wsRel.getCell(`A${moTitleRow}`).value = "MÃO DE OBRA"; 
+        wsRel.getCell(`A${moTitleRow}`).font = fontBold;
 
-        wsRel.getCell("A20").value = "PROCESSO";
-        wsRel.getCell("A20").font = fontBold; wsRel.getCell("A20").fill = grayFill; wsRel.getCell("A20").border = borderStyle; wsRel.getCell("A20").alignment = { horizontal: "center" };
+        wsRel.getCell(`A${moHeadRow}`).value = "PROCESSO";
+        wsRel.getCell(`A${moHeadRow}`).font = fontBold; wsRel.getCell(`A${moHeadRow}`).fill = grayFill; wsRel.getCell(`A${moHeadRow}`).border = borderStyle; wsRel.getCell(`A${moHeadRow}`).alignment = { horizontal: "center" };
 
-        wsRel.getCell("B20").value = "MÃO DE OBRA (MINUTOS)";
-        wsRel.getCell("B20").font = fontBold; wsRel.getCell("B20").fill = grayFill; wsRel.getCell("B20").border = borderStyle; wsRel.getCell("B20").alignment = { horizontal: "center" };
+        wsRel.getCell(`B${moHeadRow}`).value = "MÃO DE OBRA (MINUTOS)";
+        wsRel.getCell(`B${moHeadRow}`).font = fontBold; wsRel.getCell(`B${moHeadRow}`).fill = grayFill; wsRel.getCell(`B${moHeadRow}`).border = borderStyle; wsRel.getCell(`B${moHeadRow}`).alignment = { horizontal: "center" };
 
         let moMin = {
           "PLAINA": parseInt(document.getElementById("outH10").innerText) || 0,
@@ -3410,7 +3441,7 @@ renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawi
           "SETUP ROUTER": parseInt(document.getElementById("outSetup").innerText) || 0
         };
 
-        let moIdx = 21;
+        let moIdx = moHeadRow + 1;
         for (let proc in moMin) {
           if(moMin[proc] > 0 || proc === "PLAINA" || proc === "DESENGROSSADEIRA" || proc === "SERRA FITA" || proc === "SERRA CIRCULAR" || proc === "MONTAGEM") {
               let row = wsRel.getRow(moIdx);
