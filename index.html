@@ -236,20 +236,28 @@
 
       #toast {
         position: fixed;
-        bottom: -60px;
+        /* Deixa o toast acima do home indicator (não colide com a barra do iOS) */
+        bottom: calc(24px + env(safe-area-inset-bottom, 0px));
         left: 50%;
-        transform: translateX(-50%);
+        /* Estado inicial: totalmente fora da tela (100% da altura própria + 60px de folga) */
+        transform: translate(-50%, calc(100% + 60px));
+        opacity: 0;
         color: white;
         padding: 12px 28px;
         border-radius: 30px;
         font-size: 0.95rem;
         font-weight: 600;
-        transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                    opacity 0.25s ease;
         z-index: 9999;
         pointer-events: none;
+        max-width: calc(100vw - 32px);
+        text-align: center;
+        will-change: transform, opacity;
       }
       #toast.show {
-        bottom: 30px;
+        transform: translate(-50%, 0);
+        opacity: 1;
       }
 
       .main-content {
