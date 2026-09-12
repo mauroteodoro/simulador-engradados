@@ -1028,17 +1028,47 @@
           font-size: 1.8rem;
         }
 
-        /* Evita overflow de colunas de tempo no card */
+        /* Rótulo e valor: rótulo encolhe, valor mantém o tamanho natural
+           e nunca quebra no meio de um número ("0,113 kg" fica inteiro). */
         .result-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          gap: 12px;
           font-size: 0.85rem;
+          padding: 10px 0;
         }
         .result-card {
           overflow: hidden;
         }
+        /* Rótulo: pode quebrar entre palavras, mas nunca entre caracteres. */
+        .result-row strong {
+          flex: 1 1 auto;
+          min-width: 0;
+          overflow-wrap: break-word;
+          word-break: normal;
+        }
+        /* Valor: nunca encolhe abaixo do tamanho natural e nunca quebra. */
         .result-row > span {
+          flex: 0 0 auto;
+          text-align: right;
+          white-space: nowrap;
+          overflow-wrap: normal;
+          word-break: keep-all;
+        }
+        /* Blocos com texto longo (ex.: EVA "Ext: 2 un de ...") podem
+           quebrar entre palavras, mas nunca entre caracteres. */
+        .result-row > span small {
           white-space: normal;
-          word-break: break-word;
-          overflow-wrap: anywhere;
+          overflow-wrap: break-word;
+          word-break: normal;
+          display: inline-block;
+          max-width: 100%;
+        }
+        /* Linha do Tempo Total continua com o valor colado à direita. */
+        .result-row--total {
+          justify-content: space-between;
+          align-items: baseline;
         }
       }
 
