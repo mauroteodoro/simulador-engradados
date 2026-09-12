@@ -712,22 +712,39 @@
       #login-overlay {
         position: fixed;
         top: 0;
-        right: 0;
-        bottom: 0;
         left: 0;
+        width: 100vw;
+        height: 100vh;   /* fallback */
+        height: 100dvh;  /* iOS Safari dinâmico (cobre a URL bar) */
         background: var(--bg-body);
         z-index: 2147483000;
         display: flex;
         justify-content: center;
         align-items: center;
         transition: opacity 0.4s ease, visibility 0.4s;
+        overflow: hidden;
+        isolation: isolate;
         /* Respeita notch / barra inferior / laterais */
         padding: env(safe-area-inset-top, 0)
                  env(safe-area-inset-right, 0)
                  env(safe-area-inset-bottom, 0)
                  env(safe-area-inset-left, 0);
-        /* Evita que qualquer conteúdo do app "vaze" pelas bordas */
+      }
+
+      /* Enquanto o login está visível, escondemos TUDO o que está atrás.
+         É a garantia absoluta contra "vazamento" visual. */
+      body.logged-out > *:not(#login-overlay):not(#toast) {
+        visibility: hidden;
+      }
+
+      /* Trava real do scroll no iOS Safari */
+      body.logged-out {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
+        overscroll-behavior: none;
       }
       .login-box {
         background: var(--bg-panel);
@@ -737,9 +754,18 @@
         border: 1px solid var(--border-light);
         width: 90%;
         max-width: 380px;
+        max-height: calc(100dvh - 40px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         text-align: center;
         transform: translateY(0);
         transition: transform 0.4s ease;
+      }
+
+      @supports not (height: 100dvh) {
+        .login-box {
+          max-height: calc(100vh - 40px);
+        }
       }
       #login-overlay.hidden .login-box {
         transform: translateY(-20px);
@@ -799,6 +825,47 @@
         opacity: 0;
         transition: opacity 0.2s;
         font-weight: 600;
+      }
+
+      /* ---- Campo de senha com olhinho ---- */
+      .login-pass-wrap {
+        position: relative;
+        width: 100%;
+        margin-bottom: 15px;
+      }
+      .login-pass-wrap .login-input {
+        margin-bottom: 0;
+        padding-right: 52px;
+      }
+      .login-eye {
+        position: absolute;
+        top: 50%;
+        right: 6px;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        border-radius: 8px;
+        transition: color 0.2s, background 0.2s, transform 0.1s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .login-eye:hover {
+        color: var(--text-main);
+        background: rgba(0, 0, 0, 0.05);
+      }
+      .login-eye:active {
+        transform: translateY(-50%) scale(0.92);
+      }
+      .login-eye svg {
+        width: 20px;
+        height: 20px;
+        pointer-events: none;
       }
 
       /* ============================================================
@@ -1092,13 +1159,33 @@
           autocomplete="off"
           spellcheck="false"
         />
-        <input
-          type="password"
-          id="loginPass"
-          class="login-input"
-          placeholder="Senha"
-          onkeypress="if(event.key === 'Enter') validarLogin()"
-        />
+        <div class="login-pass-wrap">
+          <input
+            type="password"
+            id="loginPass"
+            class="login-input"
+            placeholder="Senha"
+            autocomplete="current-password"
+            onkeypress="if(event.key === 'Enter') validarLogin()"
+          />
+          <button
+            type="button"
+            id="eyeBtn"
+            class="login-eye"
+            aria-label="Mostrar senha"
+            onclick="togglePassword()"
+            tabindex="-1"
+          >
+            <span id="eyeIconWrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </span>
+          </button>
+        </div>
         <button class="login-btn" onclick="validarLogin()">
           Acessar Sistema
         </button>
@@ -1847,7 +1934,7 @@
     <!-- LOGIC SCRIPT -->
     <script>
       // --- SISTEMA DE LOGIN DE ACESSO ---
-      function validarLogin() {
+            function validarLogin() {
         const user = document
           .getElementById("loginUser")
           .value.trim()
@@ -1862,11 +1949,13 @@
           overlay.style.opacity = "0";
           overlay.style.visibility = "hidden";
 
-          // Libera o scroll da página
+          // Libera tudo — o app volta a ser visível e rolável
+          document.body.classList.remove("logged-out");
           document.body.style.overflow = "";
           document.documentElement.style.overflow = "";
 
           setTimeout(onWindowResize, 400);
+          setTimeout(onWindowResize, 700);
         } else {
           errorLabel.style.opacity = "1";
           let box = document.querySelector(".login-box");
@@ -1887,14 +1976,57 @@
         document.getElementById("loginPass").value = "";
         document.getElementById("loginError").style.opacity = "0";
 
+        // Reseta o olhinho ao estado "senha oculta"
+        const passInput = document.getElementById("loginPass");
+        passInput.type = "password";
+        const eyeBtn = document.getElementById("eyeBtn");
+        if (eyeBtn) eyeBtn.setAttribute("aria-label", "Mostrar senha");
+        const eyeWrap = document.getElementById("eyeIconWrap");
+        if (eyeWrap) eyeWrap.innerHTML = olhoAbertoSVG();
+
         let overlay = document.getElementById("login-overlay");
         overlay.classList.remove("hidden");
         overlay.style.opacity = "1";
         overlay.style.visibility = "visible";
 
-        // Trava o scroll enquanto o login está visível
-        document.body.style.overflow = "hidden";
-        document.documentElement.style.overflow = "hidden";
+        // Trava REAL do scroll (iOS Safari respeita position: fixed)
+        document.body.classList.add("logged-out");
+      }
+
+      // ---- Olhinho: mostrar / ocultar senha ----
+      function olhoAbertoSVG() {
+        return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>`;
+      }
+      function olhoFechadoSVG() {
+        return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+          <line x1="1" y1="1" x2="23" y2="23"></line>
+        </svg>`;
+      }
+
+      function togglePassword() {
+        const input = document.getElementById("loginPass");
+        const btn = document.getElementById("eyeBtn");
+        const iconWrap = document.getElementById("eyeIconWrap");
+        if (!input || !btn || !iconWrap) return;
+
+        const mostrando = input.type === "text";
+        if (mostrando) {
+          input.type = "password";
+          btn.setAttribute("aria-label", "Mostrar senha");
+          iconWrap.innerHTML = olhoAbertoSVG();
+        } else {
+          input.type = "text";
+          btn.setAttribute("aria-label", "Ocultar senha");
+          iconWrap.innerHTML = olhoFechadoSVG();
+        }
       }
 
       function switchTab(tabId) {
@@ -5140,15 +5272,27 @@ function exportarExcel() {
       }
 
       window.onload = function () {
+        // Estado inicial: logado para fora (overlay visível)
+        document.body.classList.add("logged-out");
+
         // Force reflow — garante que o layout está calculado antes do 3D
         void document.getElementById("canvas-container").offsetHeight;
 
-        // Trava scroll enquanto o overlay de login estiver visível
-        document.body.style.overflow = "hidden";
-        document.documentElement.style.overflow = "hidden";
-
         init3D();
         atualizarStatusTemplate();
+
+        // Quando as fontes terminarem de baixar, força um recálculo geral.
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(() => {
+            onWindowResize();
+            if (crateGroup) recomputePieceBoundsCache();
+          });
+        }
+
+        // Reforço extra: mais um recálculo 500 ms depois
+        setTimeout(() => {
+          onWindowResize();
+        }, 500);
       };
     </script>
   </body>
