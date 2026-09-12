@@ -342,7 +342,7 @@
 
       .results-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
         gap: 20px;
         margin-top: 20px;
       }
@@ -1031,6 +1031,14 @@
         /* Evita overflow de colunas de tempo no card */
         .result-row {
           font-size: 0.85rem;
+        }
+        .result-card {
+          overflow: hidden;
+        }
+        .result-row > span {
+          white-space: normal;
+          word-break: break-word;
+          overflow-wrap: anywhere;
         }
       }
 
@@ -1917,10 +1925,16 @@
       let highlightedMesh = null;
       let originalMaterial = null;
       let mouseDownPos = { x: 0, y: 0 };
+      let mouseDownTime = 0;
+      let mouseDownPointerId = null;
 
       window.addEventListener("pointerdown", function (event) {
+        // Só rastreamos o botão esquerdo do mouse (os demais são pan).
+        if (event.pointerType === "mouse" && event.button !== 0) return;
         mouseDownPos.x = event.clientX;
         mouseDownPos.y = event.clientY;
+        mouseDownTime = performance.now();
+        mouseDownPointerId = event.pointerId;
       });
 
       function toggleInspector() {
@@ -1964,17 +1978,24 @@
         }
       }
 
-      window.addEventListener("click", function (event) {
+            window.addEventListener("pointerup", function (event) {
         if (!isInspecting) return;
+        if (event.pointerId !== mouseDownPointerId) return;
 
-        let dragDist = Math.hypot(
+        // Toque/click curto (até 600 ms) — descarta "segurar o dedo".
+        const dt = performance.now() - mouseDownTime;
+        if (dt > 600) return;
+
+        // Distância pequena — descarta arrasto (rotação do engradado).
+        // 8 px é folgado o suficiente para absorver o tremor do dedo.
+        const dragDist = Math.hypot(
           event.clientX - mouseDownPos.x,
           event.clientY - mouseDownPos.y
         );
-        if (dragDist > 6) return;
+        if (dragDist > 8) return;
 
-        let canvasContainer = document.getElementById("canvas-container");
-        let canvasRect = canvasContainer.getBoundingClientRect();
+        const canvasContainer = document.getElementById("canvas-container");
+        const canvasRect = canvasContainer.getBoundingClientRect();
 
         if (
           event.clientX >= canvasRect.left &&
@@ -1990,23 +2011,23 @@
             -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
 
           raycaster.setFromCamera(mouse, camera);
-          let rawIntersects = raycaster.intersectObjects(
+          const rawIntersects = raycaster.intersectObjects(
             crateGroup.children,
             true
           );
-          let intersects = rawIntersects.filter((hit) => hit.object.isMesh);
+          const intersects = rawIntersects.filter((hit) => hit.object.isMesh);
 
           if (intersects.length > 0) {
             clearHighlight();
 
-            let object = intersects[0].object;
-            let targetMesh =
+            const object = intersects[0].object;
+            const targetMesh =
               object.parent &&
               object.parent.isGroup &&
               object.parent !== crateGroup
                 ? object.parent
                 : object;
-            let data = targetMesh.userData;
+            const data = targetMesh.userData;
 
             if (data && data.type && data.type !== "none") {
               highlightedMesh = targetMesh;
@@ -2056,7 +2077,9 @@
             }
           } else {
             clearHighlight();
-            document.getElementById("pieceInfoBox").classList.remove("visible");
+            document
+              .getElementById("pieceInfoBox")
+              .classList.remove("visible");
           }
         }
       });
