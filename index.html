@@ -1878,7 +1878,10 @@
         event.target.classList.add("active");
 
         if (tabId === "simulador") {
-          setTimeout(onWindowResize, 50);
+          // Recalcula em 2 tempos: imediato e após um frame, para
+          // garantir que o canvas pegue a dimensão final.
+          setTimeout(onWindowResize, 30);
+          requestAnimationFrame(() => requestAnimationFrame(onWindowResize));
         }
       }
 
@@ -2199,16 +2202,45 @@
 
         window.addEventListener("resize", onWindowResize);
         window.addEventListener("orientationchange", () => {
-          // O iOS demora um pouco para reportar as novas dimensões
           setTimeout(onWindowResize, 250);
         });
 
-        try {
-          atualizarModelo();
-        } catch (e) {
-          console.error("Erro em atualizarModelo:", e);
+        // ---- Detecção robusta de tamanho do canvas ----
+        // O iOS Safari, quando a barra de endereço aparece/some, e o
+        // Android ao trocar de orientação, alteram o tamanho sem disparar
+        // "resize". O ResizeObserver capta tudo.
+        let resizeObserver = null;
+        if (window.ResizeObserver) {
+          resizeObserver = new ResizeObserver(() => {
+            onWindowResize();
+          });
+          resizeObserver.observe(container);
         }
-        animate();
+
+        // ---- Bootstrap em 3 estágios ----
+        // 1) Espera o próximo frame de pintura (layout mínimo pronto)
+        // 2) Espera mais um frame (fontes e scrollbar assentados)
+        // 3) Só então mede o canvas, cria o engradado e liga o loop
+        // Isso garante que a primeira renderização já sai no tamanho certo,
+        // sem precisar de "navegar para consertar".
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            // Ajusta aspect/renderer ANTES de construir o engradado
+            onWindowResize();
+
+            try {
+              atualizarModelo();
+            } catch (e) {
+              console.error("Erro em atualizarModelo:", e);
+            }
+
+            // Reforço: em alguns Androids o vh só "assenta" após ~200 ms
+            setTimeout(onWindowResize, 200);
+            setTimeout(onWindowResize, 600);
+
+            animate();
+          });
+        });
       }
 
       function animate() {
@@ -2367,6 +2399,14 @@
             controls.update();
           }
         }
+      }
+
+      // Escuta a "visual viewport" — capta a barra de endereço do iOS
+      // aparecendo/sumindo sem disparar "resize" tradicional.
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", () => {
+          onWindowResize();
+        });
       }
 
       function addMesh(
@@ -5070,6 +5110,9 @@ function exportarExcel() {
       }
 
       window.onload = function () {
+        // Force reflow — garante que o layout está calculado antes do 3D
+        void document.getElementById("canvas-container").offsetHeight;
+
         init3D();
         atualizarStatusTemplate();
       };
