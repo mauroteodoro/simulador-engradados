@@ -3408,17 +3408,9 @@
           "2 un"
         );
 
-        // Adiciona os plugs internos — fecham os furos em Z, tornando-os cegos.
-        // Herdam o userData da peça-pai para não quebrar a inspeção.
-        [meshCurtaDir, meshCurtaEsq].forEach((pai) => {
-          for (let i = 0; i < numAtarraxantesQuina; i++) {
-            const yHole = startY + i * stepY;
-            const plug = new THREE.Mesh(geomPlugCurta, frameMat);
-            plug.position.set(0, yHole, 0);
-            plug.userData = pai.userData;
-            pai.add(plug);
-          }
-        });
+        // Plugs removidos — apareciam como "tubos" internos durante a
+        // inspeção (quando a peça fica transparente). O furo volta a ser
+        // passante, sem prejuízo visual nem funcional.
 
         // (As antigas "cruzes" da fenda Philips foram removidas — ficavam soltas
         // na nova geometria da cabeça. A forma da cabeça já comunica o parafuso.)
