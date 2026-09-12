@@ -2136,9 +2136,12 @@
                 child.material = child.userData.origMat;
               }
             });
-          } else {
-            highlightedMesh.material = originalMaterial;
-          }
+                  } else {
+          highlightedMesh.material = originalMaterial;
+          highlightedMesh.children.forEach((c) => {
+            if (c.userData && c.userData.isPlug) c.visible = true;
+          });
+        }
           highlightedMesh = null;
           originalMaterial = null;
         } else if (highlightedMesh && highlightedMesh.isGroup) {
@@ -2226,6 +2229,9 @@
                         emissive: 0x991b1b,
                       })
                     : hologramWood.clone();
+                highlightedMesh.children.forEach((c) => {
+                  if (c.userData && c.userData.isPlug) c.visible = false;
+                });
               }
 
               const infoBox = document.getElementById("pieceInfoBox");
@@ -2706,6 +2712,9 @@
               obj.userData.origMat = obj.material;
             }
             obj.material = ehAlvo ? material : glassMat;
+            obj.children.forEach((c) => {
+              if (c.userData && c.userData.isPlug) c.visible = false;
+            });
           }
         });
       }
@@ -3317,21 +3326,12 @@
         // ExtrudeGeometry vai de z=0 até z=eEsp; desloca para centrar em z=0
         geomLonga.translate(0, 0, -eEsp / 2);
 
-        // ---- Peça Curta com furos CEGOS de verdade ----
-        // O ExtrudeGeometry do Three.js só faz furo passante (face a face).
-        // Para simular um furo cego real, dividimos a peça em 3 pedaços
-        // empilhados no eixo Z:
-        //   1) Capa frontal fina (espessura = 45 mm) COM furo
-        //   2) Miolo sólido no centro SEM furo
-        //   3) Capa traseira fina (espessura = 45 mm) COM furo
-        // O parafuso atarraxante entra pelos 45 mm da capa e "morre" no
-        // miolo — sem plugs flutuantes, sem tubos aparentes na inspeção.
+        // ---- Peça Curta (furo passante simples) ----
+        // Voltou ao formato original: um único bloco extrudado com os
+        // furos atravessando a peça de face a face. Isso mantém a
+        // aparência limpa e evita o efeito de "bloco interno" durante
+        // a inspeção com holograma transparente.
         const comprimentoCurta = ladoMenor - 2 * eEsp;
-        const profundidadeFuroCurta = 0.045; // 45 mm
-        const comprimentoMiolo = Math.max(
-          0.02,
-          comprimentoCurta - 2 * profundidadeFuroCurta
-        );
 
         const shapeCurta = new THREE.Shape();
         shapeCurta.moveTo(-eEsp / 2, -aInt / 2);
@@ -3347,72 +3347,14 @@
           shapeCurta.holes.push(h);
         }
 
-        // Geometria compartilhada pelas duas capas externas (frontal e traseira).
-        // Vai de z=0 até z=+profundidadeFuroCurta; o posicionamento final
-        // é feito no mesh de cada capa.
-        const geomCapaFuro = new THREE.ExtrudeGeometry(shapeCurta, {
-          depth: profundidadeFuroCurta,
+        const geomCurta = new THREE.ExtrudeGeometry(shapeCurta, {
+          depth: comprimentoCurta,
           bevelEnabled: false,
           curveSegments: 20,
         });
+        geomCurta.translate(0, 0, -comprimentoCurta / 2);
 
-        // Miolo sólido central (BoxGeometry simples, sem furo).
-        const geomMiolo = new THREE.BoxGeometry(eEsp, aInt, comprimentoMiolo);
-
-        // Contornos sutis (mesmo estilo das outras madeiras).
-        const lineMatCurta = new THREE.LineBasicMaterial({
-          color: 0x4a3b2c,
-          transparent: true,
-          opacity: 0.25,
-        });
-        const edgesCapa = new THREE.EdgesGeometry(geomCapaFuro, 25);
-        const edgesMiolo = new THREE.EdgesGeometry(geomMiolo, 25);
-
-        // Helper: monta uma peça curta completa (3 pedaços agrupados).
-        const criarPecaCurta = (posX, expX) => {
-          const grupo = new THREE.Group();
-          grupo.position.set(posX, 0, 0);
-
-          // 1. Capa frontal (com furo)
-          const capaFrontal = new THREE.Mesh(geomCapaFuro, frameMat);
-          capaFrontal.position.z = -comprimentoCurta / 2;
-          capaFrontal.castShadow = true;
-          capaFrontal.receiveShadow = true;
-          capaFrontal.add(new THREE.LineSegments(edgesCapa, lineMatCurta));
-          grupo.add(capaFrontal);
-
-          // 2. Miolo sólido central
-          const miolo = new THREE.Mesh(geomMiolo, frameMat);
-          miolo.position.z = 0;
-          miolo.castShadow = true;
-          miolo.receiveShadow = true;
-          miolo.add(new THREE.LineSegments(edgesMiolo, lineMatCurta));
-          grupo.add(miolo);
-
-          // 3. Capa traseira (com furo)
-          const capaTraseira = new THREE.Mesh(geomCapaFuro, frameMat);
-          capaTraseira.position.z =
-            comprimentoCurta / 2 - profundidadeFuroCurta;
-          capaTraseira.castShadow = true;
-          capaTraseira.receiveShadow = true;
-          capaTraseira.add(new THREE.LineSegments(edgesCapa, lineMatCurta));
-          grupo.add(capaTraseira);
-
-          grupo.userData = {
-            origPos: grupo.position.clone(),
-            expDir: new THREE.Vector3(expX, 0, 0),
-            type: "quadro",
-            name: "Quadro Base (Peça Curta)",
-            materialName: materialQuadro,
-            dimensions: strQuadroCurt,
-            totalQtd: "2 un",
-          };
-
-          crateGroup.add(grupo);
-          return grupo;
-        };
-
-        addMesh(
+        const meshLongaFrente = addMesh(
           geomLonga,
           frameMat,
           0,
@@ -3427,7 +3369,7 @@
           strQuadroLong,
           "2 un"
         );
-        addMesh(
+        const meshLongaTras = addMesh(
           geomLonga,
           frameMat,
           0,
@@ -3442,18 +3384,79 @@
           strQuadroLong,
           "2 un"
         );
-        const meshCurtaDir = criarPecaCurta(
+        const meshCurtaDir = addMesh(
+          geomCurta,
+          frameMat,
           ladoMaior / 2 - eEsp / 2,
-          0.4
+          0,
+          0,
+          0.4,
+          0,
+          0,
+          "quadro",
+          "Quadro Base (Peça Curta)",
+          materialQuadro,
+          strQuadroCurt,
+          "2 un"
         );
-        const meshCurtaEsq = criarPecaCurta(
+        const meshCurtaEsq = addMesh(
+          geomCurta,
+          frameMat,
           -ladoMaior / 2 + eEsp / 2,
-          -0.4
+          0,
+          0,
+          -0.4,
+          0,
+          0,
+          "quadro",
+          "Quadro Base (Peça Curta)",
+          materialQuadro,
+          strQuadroCurt,
+          "2 un"
         );
 
-        // Plugs removidos — apareciam como "tubos" internos durante a
-        // inspeção (quando a peça fica transparente). O furo volta a ser
-        // passante, sem prejuízo visual nem funcional.
+        // ============ FECHAMENTO CEGO DOS FUROS ============
+        // O ExtrudeGeometry só faz furo passante. Para dar a aparência
+        // de furo CEGO, inserimos um plugue cilíndrico de madeira dentro
+        // de cada furo, deixando apenas a boca aberta:
+        //   - Peça longa (35 mm): 15 mm de furo em cada face
+        //   - Peça curta:         45 mm de furo em cada ponta
+        const criarPlugues = (pecaMesh, comprimentoTotal, profundidadeFuro, posicoes) => {
+          const comprimentoPlug = comprimentoTotal - 2 * profundidadeFuro;
+          if (comprimentoPlug <= 0.003) return;
+
+          const plugGeo = new THREE.CylinderGeometry(
+            raioFuroAtarraxante - 0.0001,
+            raioFuroAtarraxante - 0.0001,
+            comprimentoPlug,
+            16
+          );
+          plugGeo.rotateX(Math.PI / 2);
+
+                    posicoes.forEach(({ x, y }) => {
+            const plug = new THREE.Mesh(plugGeo, frameMat);
+            plug.position.set(x, y, 0);
+            plug.userData = Object.assign({}, pecaMesh.userData, { isPlug: true });
+            pecaMesh.add(plug);
+          });
+        };
+
+        const posicoesFuroLonga = [];
+        for (let i = 0; i < numAtarraxantesQuina; i++) {
+          const yHole = startY + i * stepY;
+          posicoesFuroLonga.push({ x:  scX, y: yHole });
+          posicoesFuroLonga.push({ x: -scX, y: yHole });
+        }
+        criarPlugues(meshLongaFrente, eEsp, 0.015, posicoesFuroLonga);
+        criarPlugues(meshLongaTras,   eEsp, 0.015, posicoesFuroLonga);
+
+        const posicoesFuroCurta = [];
+        for (let i = 0; i < numAtarraxantesQuina; i++) {
+          const yHole = startY + i * stepY;
+          posicoesFuroCurta.push({ x: 0, y: yHole });
+        }
+        criarPlugues(meshCurtaDir, comprimentoCurta, 0.045, posicoesFuroCurta);
+        criarPlugues(meshCurtaEsq, comprimentoCurta, 0.045, posicoesFuroCurta);
 
         // (As antigas "cruzes" da fenda Philips foram removidas — ficavam soltas
         // na nova geometria da cabeça. A forma da cabeça já comunica o parafuso.)
