@@ -2,7 +2,14 @@
 <html lang="pt-BR"
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#f5f5f7" />
     <title>Artefacto | Custos Industriais</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -777,6 +784,266 @@
         transition: opacity 0.2s;
         font-weight: 600;
       }
+
+      /* ============================================================
+         MOBILE / TOUCH — regras gerais
+         ============================================================ */
+      html {
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior-y: none;
+      }
+      body {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Botões e inputs: alvo mínimo confortável para dedos */
+      button,
+      .tab-btn,
+      .btn-calc,
+      .btn-export,
+      .theme-toggle,
+      .btn-explode,
+      .login-btn,
+      .login-input {
+        min-height: 44px;
+        touch-action: manipulation;
+      }
+      /* Botões redondos pequenos (câmera/recenter) podem ficar com 44px */
+      .btn-explode[style*="44px"] {
+        min-height: 44px !important;
+      }
+
+      /* Canvas 3D: captura todos os toques (não deixa a página rolar) */
+      #canvas-container,
+      #canvas-container canvas {
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      /* Slider nativo com área de toque maior */
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 28px;
+        background: transparent;
+      }
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 6px;
+        background: rgba(148, 163, 184, 0.35);
+        border-radius: 3px;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 22px;
+        height: 22px;
+        background: var(--primary);
+        border-radius: 50%;
+        margin-top: -8px;
+        box-shadow: 0 2px 6px rgba(0, 102, 255, 0.35);
+      }
+      input[type="range"]::-moz-range-track {
+        height: 6px;
+        background: rgba(148, 163, 184, 0.35);
+        border-radius: 3px;
+      }
+      input[type="range"]::-moz-range-thumb {
+        width: 22px;
+        height: 22px;
+        background: var(--primary);
+        border: none;
+        border-radius: 50%;
+        box-shadow: 0 2px 6px rgba(0, 102, 255, 0.35);
+      }
+
+      /* Painel lateral e header: respeitam as áreas seguras do iPhone */
+      .app-header,
+      .tabs,
+      .dashboard-container {
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+      }
+
+      /* Hint de mouse vs toque */
+      .hint-desktop { display: block; }
+      .hint-mobile  { display: none; }
+
+      /* ============================================================
+         MOBILE — breakpoint 900px (ajusta layout geral)
+         ============================================================ */
+      @media (max-width: 900px) {
+        body {
+          padding: 12px 12px calc(24px + env(safe-area-inset-bottom)) 12px;
+        }
+
+        /* Header mais compacto */
+        .app-header {
+          margin-bottom: 12px;
+          gap: 10px;
+        }
+
+        /* Tabs mais próximas */
+        .tabs {
+          margin-bottom: 12px;
+          gap: 8px;
+        }
+        .tab-btn {
+          padding: 10px 16px;
+          font-size: 0.88rem;
+        }
+
+        /* Painel e canvas com padding menor */
+        .panel {
+          padding: 16px;
+          border-radius: 16px;
+        }
+
+        /* Canvas ganha mais espaço vertical em retrato */
+        #canvas-container {
+          min-height: 60vh;
+          border-radius: 10px;
+        }
+
+        /* Controles explodir/inspecionar/câmera */
+        .explode-controls {
+          top: 12px;
+          right: 12px;
+          gap: 8px;
+        }
+        .btn-explode {
+          padding: 10px 16px;
+          font-size: 0.82rem;
+        }
+
+        /* Slider de expansão ocupa a largura toda e fica mais alto */
+        .slider-wrapper {
+          padding: 12px;
+          border-radius: 12px;
+        }
+        .slider-wrapper label {
+          font-size: 0.72rem;
+        }
+
+        /* Caixa de informação da peça em telas pequenas */
+        .piece-info-box {
+          font-size: 0.78rem;
+        }
+
+        /* Hint: troca o texto padrão */
+        .hint-desktop { display: none; }
+        .hint-mobile  { display: block; }
+
+        /* Grid de resultados: uma coluna, cards mais enxutos */
+        .results-grid {
+          gap: 12px;
+          margin-top: 12px;
+        }
+        .result-card {
+          padding: 18px;
+          border-radius: 16px;
+        }
+
+        /* Manual: padding menor */
+        .manual-item-body-content {
+          padding: 4px 18px 20px 18px;
+        }
+        .manual-item-header {
+          padding: 16px 18px;
+        }
+      }
+
+      /* ============================================================
+         MOBILE — breakpoint 500px (celulares em retrato)
+         ============================================================ */
+      @media (max-width: 500px) {
+        /* Header título em 2 linhas bonitas */
+        .header-title h1 {
+          font-size: 1.4rem !important;
+        }
+        .header-title h1:last-child {
+          font-size: 0.82rem !important;
+        }
+
+        /* Botões de tema/sair em pílula mais estreita */
+        .theme-toggle {
+          padding: 8px 14px;
+          font-size: 0.82rem;
+        }
+
+        /* Tabs ocupam a largura toda */
+        .tab-btn {
+          padding: 10px 12px;
+          font-size: 0.82rem;
+        }
+
+        /* Canvas 3D mais alto para ficar confortável */
+        #canvas-container {
+          min-height: 55vh;
+        }
+
+        /* Controles no canto, mais compactos */
+        .explode-controls {
+          top: 8px;
+          right: 8px;
+          gap: 6px;
+        }
+        .btn-explode {
+          padding: 8px 14px;
+          font-size: 0.78rem;
+        }
+
+        /* Botões redondos de câmera/recentrar ficam 38x38 */
+        .btn-explode[style*="44px"] {
+          width: 38px !important;
+          height: 38px !important;
+          padding: 0 !important;
+        }
+        .btn-explode svg {
+          width: 17px;
+          height: 17px;
+        }
+
+        /* Caixa de info vira uma faixa compacta na base */
+        .piece-info-box {
+          top: auto !important;
+          bottom: 8px !important;
+          left: 8px !important;
+          right: 8px !important;
+          min-width: auto !important;
+          padding: 10px 12px !important;
+          font-size: 0.75rem !important;
+        }
+        #piTitle {
+          font-size: 0.85rem !important;
+          margin-bottom: 6px !important;
+        }
+
+        /* Login mais compacto */
+        .login-box {
+          padding: 28px 22px;
+        }
+        .login-box h1 {
+          font-size: 1.8rem;
+        }
+
+        /* Evita overflow de colunas de tempo no card */
+        .result-row {
+          font-size: 0.85rem;
+        }
+      }
+
+      /* Paisagem em celular: canvas mais baixo mas largo */
+      @media (max-height: 500px) and (orientation: landscape) {
+        #canvas-container {
+          min-height: 75vh;
+        }
+        .app-header,
+        .tabs {
+          margin-bottom: 8px;
+        }
+      }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -1077,7 +1344,12 @@
               </div>
             </div>
             <div class="canvas-hint">
-              💡 Use o mouse: Botão esquerdo para girar, botão direito para mover e scroll para zoom.
+              <span class="hint-desktop">
+                💡 Use o mouse: Botão esquerdo para girar, botão direito para mover e scroll para zoom.
+              </span>
+              <span class="hint-mobile">
+                👆 Um dedo gira · dois dedos movem e dão zoom · toque para inspecionar peças.
+              </span>
             </div>
           </div>
         </div>
@@ -1859,9 +2131,21 @@
         );
         camera.position.set(2, 1.5, 2);
 
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+        renderer = new THREE.WebGLRenderer({
+          antialias: true,
+          alpha: true,
+          preserveDrawingBuffer: true,
+          powerPreference: "high-performance",
+        });
         renderer.setSize(container.clientWidth, container.clientHeight);
-        // Sombras desativadas: visual mais limpo, sem interferir no brilho das peças.
+
+        // Cap de DPR — em celulares com tela 3x, isso derruba o custo de
+        // renderização pela metade sem perder nitidez perceptível.
+        const dprCap =
+          window.matchMedia("(pointer: coarse)").matches ? 2.0 : 2.5;
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, dprCap));
+
+        // Sombras desativadas: visual mais limpo.
         renderer.shadowMap.enabled = false;
         container.appendChild(renderer.domElement);
 
@@ -1891,6 +2175,11 @@
         scene.add(crateGroup);
 
         window.addEventListener("resize", onWindowResize);
+        window.addEventListener("orientationchange", () => {
+          // O iOS demora um pouco para reportar as novas dimensões
+          setTimeout(onWindowResize, 250);
+        });
+
         try {
           atualizarModelo();
         } catch (e) {
@@ -2016,9 +2305,45 @@
 
       function onWindowResize() {
         const container = document.getElementById("canvas-container");
+        if (!container || !camera || !renderer) return;
+
         camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(container.clientWidth, container.clientHeight);
+
+        // Recalcula o DPR — alguns navegadores mudam entre monitores
+        const dprCap =
+          window.matchMedia("(pointer: coarse)").matches ? 2.0 : 2.5;
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, dprCap));
+
+        // Ajusta a distância da câmera para caber bem em retrato/paisagem.
+        // Em retrato, precisamos afastar mais porque a largura da tela é menor.
+        if (crateGroup && crateGroup.userData.ladoMaior) {
+          const lM = crateGroup.userData.ladoMaior;
+          const aI = crateGroup.userData.aInt || 0.1;
+          const dir = new THREE.Vector3()
+            .subVectors(camera.position, controls.target);
+          const distAtual = dir.length();
+
+          // Base de referência: 1.5× o lado maior é suficiente em paisagem.
+          // Em retrato, multiplica por (1 / aspect) para compensar.
+          let distIdeal = lM * 1.5;
+          if (camera.aspect < 1) {
+            distIdeal = distIdeal / camera.aspect * 0.85;
+          }
+          // Não afasta demais — sempre cabendo no maxDistance
+          distIdeal = Math.min(distIdeal, lM * 6);
+
+          // Só ajusta se a diferença for grande, para não "puxar" a câmera
+          // do usuário a cada tecla digitada
+          if (Math.abs(distAtual - distIdeal) > lM * 0.35) {
+            const dirN = dir.normalize();
+            camera.position.copy(controls.target).addScaledVector(dirN, distIdeal);
+            camera.position.y = Math.max(camera.position.y, aI * 3);
+            controls.maxDistance = lM * 6;
+            controls.update();
+          }
+        }
       }
 
       function addMesh(
