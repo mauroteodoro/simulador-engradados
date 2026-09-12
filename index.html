@@ -3064,7 +3064,7 @@
           12
         );
         const haste = new THREE.Mesh(hasteGeo, material);
-        haste.position.y = -sentido * (0.002 + compRoscado / 2);
+        haste.position.y = -sentido * (0.0012 + compRoscado / 2);
         haste.castShadow = true;
         haste.receiveShadow = true;
         group.add(haste);
@@ -3086,7 +3086,7 @@
         const pontaGeo = new THREE.ConeGeometry(raioCorpo - 0.0003, compPonta, 12);
         const ponta = new THREE.Mesh(pontaGeo, material);
         if (sentido > 0) ponta.rotation.x = Math.PI;
-        ponta.position.y = -sentido * (0.002 + compRoscado + compPonta / 2);
+        ponta.position.y = -sentido * (0.0012 + compRoscado + compPonta / 2);
         ponta.castShadow = true;
         group.add(ponta);
 
