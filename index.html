@@ -1495,6 +1495,13 @@
         color: var(--danger-text);
       }
 
+      /* Botão de exportar — hover azul (não vermelho) */
+      .historico-item-actions button.btn-export-hist:hover {
+        background: rgba(0, 113, 227, 0.08);
+        border-color: rgba(0, 113, 227, 0.35);
+        color: var(--primary);
+      }
+
       .historico-item-actions button svg {
         width: 16px;
         height: 16px;
@@ -1876,11 +1883,11 @@
       <button class="tab-btn active" onclick="switchTab('simulador')">
         Simulador de Engradados
       </button>
-      <button class="tab-btn" onclick="switchTab('manual')">
-        Manual de Engenharia
-      </button>
       <button class="tab-btn" onclick="switchTab('historico')">
         Histórico
+      </button>
+      <button class="tab-btn" onclick="switchTab('manual')">
+        Manual de Engenharia
       </button>
     </div>
 
@@ -2868,7 +2875,8 @@
         "mauros": "MAURO S.",
         "maalves": "MATHEUS ALVES",
         "samuelj": "SAMUEL J.",
-        "joseed":  "JOSÉ E."
+        "joseed":  "JOSÉ E.",
+        "barth":  "LUÍS BARTH."
       };
       const SENHA_PADRAO = "custos2026";
 
@@ -5869,6 +5877,7 @@ function exportarExcel() {
   }
 
   const d = dadosSimulacao;
+  const usuarioExport = usuarioLogado;  // captura sync
 
   const workbook = new ExcelJS.Workbook();
   const buffer = base64ParaArrayBuffer(templateB64);
@@ -5967,7 +5976,12 @@ function exportarExcel() {
         wsFases.getCell("H11").value = null;
 
         // F6: nome do usuário que fez login no Web App
-        wsFases.getCell("F6").value = usuarioLogado || "";
+        wsFases.getCell("F6").value = usuarioExport || "";
+
+        // C3: código do relatório (só se houver)
+        if (d.codigo) {
+          wsFases.getCell("C3").value = d.codigo;
+        }
 
         // ---- Cabeçalho ----
         const cI = d.cInt.toFixed(2).replace(".", ",");
@@ -6721,6 +6735,13 @@ function renderizarSimulacaoCard(s) {
     <line x1="14" y1="11" x2="14" y2="17"></line>
   </svg>`;
 
+  // Ícone de download (exportar planilha)
+  const downloadSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+    <polyline points="7 10 12 15 17 10"></polyline>
+    <line x1="12" y1="15" x2="12" y2="3"></line>
+  </svg>`;
+
   // (ícones SVG do cabeçalho colapsado removidos — não são mais usados)
 
   // ---- Madeiras ----
@@ -6790,6 +6811,7 @@ function renderizarSimulacaoCard(s) {
         </div>
 
         <div class="historico-item-actions" onclick="event.stopPropagation();">
+          <button class="btn-export-hist" onclick="exportarSimulacaoHistorico('${idSeguro}')" title="Exportar planilha desta simulação">${downloadSVG}</button>
           <button onclick="excluirSimulacao('${s.id}')" title="Excluir simulação">${lixeiraSVG}</button>
         </div>
       </div>
@@ -7085,6 +7107,100 @@ async function salvarCodigoSimulacao(id, idSeguro) {
       btn.innerText = "💾";
       btn.disabled = false;
     }, 1500);
+  }
+}
+
+// -------------------------------------------------------------
+// Reconstrói o objeto "dadosSimulacao" a partir de uma simulação
+// salva no histórico (para permitir reexportação do Excel).
+// -------------------------------------------------------------
+function simParaDadosSimulacao(s) {
+  const m = s.medidas || {};
+  const cInt = m.comprimentoInterno || 0;
+  const lInt = m.larguraInterna || 0;
+  const aInt = m.alturaInterna || 0;
+  const cExt = m.comprimentoExterno || (cInt + 0.07);
+  const lExt = m.larguraExterna || (lInt + 0.07);
+  const ladoMaior = Math.max(cExt, lExt);
+  const ladoMenor = Math.min(cExt, lExt);
+
+  // Quantidades (reconstrói das unidades salvas)
+  let flatScrews = 0, hexScrews = 0;
+  let g1440 = 0, g8012 = 0;
+  let cColaB = 0, pesoEVA = 0, colaC = 0;
+
+  (s.insumos || []).forEach((it) => {
+    const q = Number(it.quantidade) || 0;
+    switch (it.codigo) {
+      case "33010796": flatScrews = q; break;
+      case "33010071": hexScrews = q; break;
+      case "33014I46": g1440 = q * 1000; break;
+      case "33014815": g8012 = q * 1000; break;
+      case "33009190": cColaB = q * 1000; break;
+      case "33009A50": pesoEVA = q * 1000; break;
+      case "33009A51": colaC = q * 1000; break;
+    }
+  });
+
+  // Tempos (minutos → segundos)
+  let segH9 = 0, segH10 = 0, segH11 = 0, segH12 = 0, segH13 = 0;
+  let segRouterSetup = 0, segRouterUsin = 0;
+
+  ((s.maoDeObra && s.maoDeObra.processos) || []).forEach((p) => {
+    const seg = (Number(p.minutos) || 0) * 60;
+    switch (p.nome) {
+      case "PLAINA":           segH10 = seg; break;
+      case "DESENGROSSADEIRA": segH9  = seg; break;
+      case "SERRA FITA":       segH12 = seg; break;
+      case "SERRA CIRCULAR":   segH11 = seg; break;
+      case "MONTAGEM":         segH13 = seg; break;
+      case "ROUTER":           segRouterUsin  = seg; break;
+      case "SETUP ROUTER":     segRouterSetup = seg; break;
+    }
+  });
+
+  return {
+    cInt, lInt, aInt, cExt, lExt, ladoMaior, ladoMenor,
+    material: s.material || "Tecplay",
+    segH9, segH10, segH11, segH12, segH13,
+    segRouterSetup, segRouterUsin,
+    flatScrews, hexScrews, g1440, g8012,
+    cColaB, pesoEVA, colaC,
+    codigo: s.codigo || ""
+  };
+}
+
+// -------------------------------------------------------------
+// Exporta o Excel de uma simulação salva no histórico
+// -------------------------------------------------------------
+function exportarSimulacaoHistorico(idSeguro) {
+  const sim = historicoSimulacoes.find(
+    (x) => x.id.replace(/[^a-zA-Z0-9]/g, "") === idSeguro
+  );
+  if (!sim) {
+    showToast("❌ Simulação não encontrada", false);
+    return;
+  }
+  if (!localStorage.getItem("artefacto_template_engradado")) {
+    showToast("⚠️ Carregue o template da planilha primeiro", false);
+    return;
+  }
+
+  // Guarda o estado atual (Simulador)
+  const dadosAntes = dadosSimulacao;
+  const usuarioAntes = usuarioLogado;
+
+  // Aplica os dados da simulação salva
+  dadosSimulacao = simParaDadosSimulacao(sim);
+  usuarioLogado = sim.usuario || usuarioAntes;
+
+  try {
+    // `exportarExcel` captura `d` e `usuarioExport` de forma síncrona,
+    // então é seguro restaurar logo depois.
+    exportarExcel();
+  } finally {
+    dadosSimulacao = dadosAntes;
+    usuarioLogado = usuarioAntes;
   }
 }
 
