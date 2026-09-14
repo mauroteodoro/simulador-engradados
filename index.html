@@ -94,23 +94,89 @@
       }
 
       .theme-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
         background: var(--bg-panel);
         color: var(--text-main);
         border: 1px solid var(--border-light);
-        padding: 8px 18px;
+        padding: 8px 16px;
         border-radius: 980px;
         cursor: pointer;
-        font-weight: 500;
-        font-size: 0.9rem;
+        font-weight: 600;
+        font-size: 0.88rem;
+        font-family: inherit;
         transition: all 0.2s ease;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        min-height: 40px;
+        -webkit-tap-highlight-color: transparent;
       }
       .theme-toggle:hover {
         background: var(--bg-panel-2);
         border-color: rgba(0, 102, 255, 0.3);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
       }
       .theme-toggle:active {
-        transform: scale(0.97);
+        transform: translateY(0) scale(0.97);
+      }
+
+      .theme-toggle-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
+        color: var(--primary);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .theme-toggle-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .theme-toggle:hover .theme-toggle-icon {
+        transform: rotate(15deg) scale(1.05);
+      }
+
+      .theme-toggle-label {
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      /* Botão Sair — paleta vermelha suave */
+      .btn-logout {
+        color: var(--danger-text);
+      }
+      .btn-logout .theme-toggle-icon {
+        color: var(--danger-text);
+      }
+      .btn-logout:hover {
+        background: var(--danger-bg);
+        border-color: var(--danger-border);
+        color: var(--danger-text);
+      }
+      .btn-logout:hover .theme-toggle-icon {
+        transform: translateX(2px);
+      }
+
+      /* Em telas pequenas: só o ícone */
+      @media (max-width: 500px) {
+        .theme-toggle {
+          padding: 8px 12px;
+        }
+        .theme-toggle-label {
+          display: none;
+        }
+        .theme-toggle-icon {
+          width: 18px;
+          height: 18px;
+        }
+        .theme-toggle-icon svg {
+          width: 18px;
+          height: 18px;
+        }
       }
 
       .tabs {
@@ -126,7 +192,7 @@
         padding: 10px 24px;
         border-radius: 980px;
         cursor: pointer;
-        font-weight: 500;
+        font-weight: 700;
         font-size: 0.95rem;
         transition: all 0.3s ease;
       }
@@ -1150,6 +1216,495 @@
           margin-bottom: 8px;
         }
       }
+
+            /* ============================================================
+         FILTRO DROPDOWN CUSTOM — estilo Apple
+         ============================================================ */
+         .filtro-dropdown {
+        position: relative;
+        flex: 1;
+        min-width: 180px;
+      }
+
+      .filtro-dropdown-btn {
+        width: 100%;
+        padding: 12px 16px;
+        background: var(--canvas-bg);
+        border: 1px solid transparent;
+        border-radius: 12px;
+        color: var(--text-main);
+        font-size: 1rem;
+        font-family: inherit;
+        text-align: left;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        min-height: 44px;
+      }
+
+      .filtro-dropdown-btn:hover {
+        background: var(--bg-panel);
+        border-color: var(--border-light);
+      }
+
+      .filtro-dropdown-btn.open {
+        background: var(--bg-panel);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+      }
+
+      .filtro-dropdown-arrow {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 0.6;
+      }
+
+      .filtro-dropdown-btn.open .filtro-dropdown-arrow {
+        transform: rotate(180deg);
+        opacity: 1;
+        color: var(--primary);
+      }
+
+      .filtro-dropdown-panel {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        right: 0;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-light);
+        border-radius: 14px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+        padding: 6px;
+        z-index: 500;
+        display: none;
+        max-height: 300px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .filtro-dropdown-panel.open {
+        display: block;
+        animation: dropdownIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      @keyframes dropdownIn {
+        from {
+          opacity: 0;
+          transform: translateY(-6px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .filtro-dropdown-item {
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        color: var(--text-main);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.15s ease, color 0.15s ease;
+        user-select: none;
+      }
+
+      .filtro-dropdown-item:hover {
+        background: var(--bg-panel-2);
+      }
+
+      .filtro-dropdown-item.selected {
+        background: rgba(0, 113, 227, 0.1);
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .filtro-dropdown-item.selected::after {
+        content: "";
+        margin-left: auto;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--primary);
+      }
+
+      /* ============================================================
+         HISTÓRICO — lista colapsável + relatório expandível
+         ============================================================ */
+      .historico-item {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-light);
+        border-radius: 14px;
+        margin-bottom: 10px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        transition: border-color 0.2s;
+      }
+
+      .historico-item.expanded {
+        border-color: var(--primary);
+      }
+
+      .historico-item-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.2s;
+      }
+
+      .historico-item-header:hover {
+        background: var(--bg-panel-2);
+      }
+
+      .historico-item-chevron {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        transition: transform 0.25s, color 0.25s;
+        flex-shrink: 0;
+      }
+
+      .historico-item.expanded .historico-item-chevron {
+        transform: rotate(90deg);
+        color: var(--primary);
+      }
+
+      .historico-item-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .historico-item-titulo {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-main);
+        line-height: 1.35;
+        margin-bottom: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .historico-item-codigo {
+        font-family: inherit;
+        background: rgba(0, 102, 255, 0.1);
+        color: var(--primary);
+        padding: 3px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+      }
+
+      .historico-item-codigo.vazio {
+        background: var(--bg-panel-2);
+        color: var(--text-muted);
+        font-style: italic;
+      }
+
+      .historico-item-actions {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .historico-item-actions button {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid var(--border-light);
+        background: var(--bg-panel);
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        padding: 0;
+      }
+
+      .historico-item-actions button:hover {
+        background: var(--danger-bg);
+        border-color: var(--danger-border);
+        color: var(--danger-text);
+      }
+
+      .historico-item-actions button svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .historico-item-body {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .historico-item.expanded .historico-item-body {
+        grid-template-rows: 1fr;
+      }
+
+      .historico-item-body-inner {
+        overflow: hidden;
+      }
+
+      .historico-item-body-content {
+        padding: 20px;
+        border-top: 1px solid var(--border-light);
+        background: var(--bg-panel-2);
+      }
+
+      /* Cabeçalho (Apontador / Data / Natureza / Código) */
+      .historico-cabecalho {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1.4fr;
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        overflow: hidden;
+        font-size: 0.82rem;
+        margin-bottom: 14px;
+        background: var(--bg-panel);
+      }
+
+      .historico-cabecalho > div {
+        padding: 8px 12px;
+        border-right: 1px solid var(--border-light);
+      }
+
+      .historico-cabecalho > div:last-child {
+        border-right: none;
+      }
+
+      .historico-cabecalho strong {
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        display: block;
+        margin-bottom: 2px;
+      }
+
+      .historico-codigo-input {
+        width: 100%;
+        padding: 5px 8px;
+        background: var(--bg-panel);
+        border: 1px solid var(--primary);
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-main);
+        font-family: inherit;
+        outline: none;
+      }
+
+      .historico-codigo-input:focus {
+        box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.15);
+      }
+
+      .historico-codigo-linha {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+      }
+
+      .historico-codigo-salvar {
+        background: transparent !important;
+        color: var(--primary) !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 4px 6px !important;
+        font-size: 1.15rem !important;
+        cursor: pointer;
+        flex-shrink: 0;
+        line-height: 1;
+        transition: transform 0.15s, opacity 0.15s;
+        opacity: 0.7;
+        box-shadow: none !important;
+        margin-top: 0 !important;
+      }
+      .historico-codigo-salvar:hover {
+        transform: scale(1.2);
+        opacity: 1;
+      }
+      .historico-codigo-salvar:disabled {
+        cursor: wait;
+        transform: none;
+      }
+
+      /* Produto + Foto */
+      .historico-produto {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 14px;
+        background: var(--bg-panel);
+      }
+
+      .historico-foto {
+        background: linear-gradient(135deg, #f8f9fa 0%, #eef1f4 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        border-right: 1px solid var(--border-light);
+        min-height: 160px;
+      }
+
+      .historico-foto img {
+        max-width: 100%;
+        max-height: 160px;
+        object-fit: contain;
+        background: transparent;
+        border-radius: 4px;
+      }
+
+      .historico-produto-info {
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .historico-produto-info .info-bloco {
+        background: var(--bg-panel-2);
+        border: 1px solid var(--border-light);
+        border-radius: 6px;
+        padding: 8px 12px;
+      }
+
+      .historico-produto-info .info-bloco strong {
+        font-size: 0.65rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        display: block;
+        margin-bottom: 3px;
+      }
+
+      .historico-produto-info .info-bloco p {
+        margin: 0;
+        font-size: 0.83rem;
+        color: var(--text-main);
+        line-height: 1.4;
+      }
+
+      /* Seções */
+      .historico-secao-titulo {
+        background: var(--bg-panel-2);
+        border: 1px solid var(--border-light);
+        border-bottom: none;
+        border-radius: 6px 6px 0 0;
+        padding: 7px 12px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--primary);
+        text-align: center;
+        margin: 14px 0 0 0;
+      }
+
+      .historico-tabela {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.78rem;
+        border: 1px solid var(--border-light);
+        border-radius: 0 0 6px 6px;
+        overflow: hidden;
+        margin-bottom: 4px;
+        background: var(--bg-panel);
+      }
+
+      .historico-tabela th {
+        background: var(--bg-panel-2);
+        color: var(--text-muted);
+        font-weight: 700;
+        font-size: 0.68rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        text-align: left;
+        padding: 7px 10px;
+        border-bottom: 1px solid var(--border-light);
+      }
+
+      .historico-tabela td {
+        padding: 6px 10px;
+        border-bottom: 1px solid var(--border-light);
+        color: var(--text-main);
+        vertical-align: middle;
+      }
+
+      .historico-tabela tr:last-child td {
+        border-bottom: none;
+      }
+
+      .historico-tabela td.numero {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .historico-tabela tfoot td {
+        background: var(--bg-panel-2);
+        font-weight: 700;
+      }
+
+      /* ---- Responsivo do Histórico ---- */
+      @media (max-width: 900px) {
+        .historico-cabecalho {
+          grid-template-columns: 1fr 1fr;
+        }
+        .historico-cabecalho > div {
+          border-bottom: 1px solid var(--border-light);
+        }
+        .historico-cabecalho > div:nth-child(2n) {
+          border-right: none;
+        }
+        .historico-produto {
+          grid-template-columns: 1fr;
+        }
+        .historico-foto {
+          border-right: none;
+          border-bottom: 1px solid var(--border-light);
+          min-height: 130px;
+        }
+        .historico-item-titulo {
+          white-space: normal;
+        }
+        .historico-item-body-content {
+          padding: 12px;
+        }
+      }
+
+      /* ============================================================
+         DARK MODE — overrides do Histórico
+         ============================================================ */
+      :root[data-theme="dark"] .historico-foto {
+        background: linear-gradient(135deg, #1a1a1c 0%, #242426 100%);
+      }
+
+      :root[data-theme="dark"] .historico-tabela th {
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      :root[data-theme="dark"] .historico-tabela tfoot td {
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      :root[data-theme="dark"] .filtro-dropdown-panel {
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+      }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -1237,11 +1792,24 @@
         </h1>
       </div>
       <div style="display: flex; gap: 10px; align-items: center">
-        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
-          🌙 Dark Mode
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema">
+          <span class="theme-toggle-icon" id="themeToggleIcon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </span>
+          <span class="theme-toggle-label" id="themeToggleLabel">Dark Mode</span>
         </button>
-        <button class="theme-toggle" style="color: #ff3b30;" onclick="fazerLogout()">
-          Sair
+
+        <button class="theme-toggle btn-logout" onclick="fazerLogout()" title="Sair do sistema">
+          <span class="theme-toggle-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </span>
+          <span class="theme-toggle-label">Sair</span>
         </button>
       </div>
     </div>
@@ -1253,6 +1821,9 @@
       </button>
       <button class="tab-btn" onclick="switchTab('manual')">
         Manual de Engenharia
+      </button>
+      <button class="tab-btn" onclick="switchTab('historico')">
+        Histórico
       </button>
     </div>
 
@@ -1338,6 +1909,15 @@
             style="display: none"
           >
             📥 Exportar para Planilha
+          </button>
+
+          <button
+            class="btn-export"
+            onclick="salvarNoHistorico()"
+            id="btnSalvarHistorico"
+            style="display: none; background: #0071e3; margin-top: 10px;"
+          >
+            💾 Salvar no histórico
           </button>
 
           <div style="margin-top: 20px" id="alertaContainer"></div>
@@ -1937,6 +2517,69 @@
         </div>
     
 
+    <!-- ABA 3: HISTÓRICO -->
+    <div id="historico-tab" class="tab-content" style="max-width: 1400px; margin: 0 auto; padding-bottom: 50px;">
+
+      <div class="panel" style="margin-bottom: 20px;">
+        <h2 style="color: var(--primary); font-size: 1.35rem; margin-bottom: 8px;">
+          📁 Histórico de Projeções
+        </h2>
+        <p style="color: var(--text-muted); line-height: 1.6; font-size: 0.95rem; margin: 0 0 16px 0;">
+          Todas as simulações salvas. Use os campos abaixo para filtrar. O <strong>código de produção</strong> pode ser preenchido depois — clique nele para editar.
+        </p>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px;">
+          <input
+            type="text"
+            id="filtroCodigo"
+            placeholder="🔎 Buscar por código..."
+            oninput="aplicarFiltrosHistorico()"
+            style="flex: 1; min-width: 180px;"
+          />
+          <div class="filtro-dropdown" id="filtroUsuarioWrap">
+            <input type="hidden" id="filtroUsuario" value="" />
+            <button
+              type="button"
+              class="filtro-dropdown-btn"
+              id="filtroUsuarioBtn"
+              onclick="toggleUsuarioDropdown(event)"
+            >
+              <span id="filtroUsuarioLabel">👤 Todos os usuários</span>
+              <svg class="filtro-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div class="filtro-dropdown-panel" id="filtroUsuarioPanel"></div>
+          </div>
+          <input
+            type="text"
+            id="filtroMedidas"
+            placeholder="📏 Filtrar por medidas (ex: 3,04)..."
+            oninput="aplicarFiltrosHistorico()"
+            style="flex: 1; min-width: 180px;"
+          />
+          <!-- (filtro por data removido) -->
+          <button
+            onclick="carregarHistorico()"
+            style="padding: 12px 20px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; min-height: 44px;"
+          >
+            🔄 Atualizar
+          </button>
+        </div>
+
+        <div id="historicoContador" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;"></div>
+      </div>
+
+      <div id="historicoLista"></div>
+
+      <div id="historicoVazio" style="display: none; text-align: center; padding: 60px 20px; color: var(--text-muted);">
+        <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
+        <p style="font-size: 1rem; margin: 0;">Nenhuma simulação encontrada no histórico.</p>
+        <p style="font-size: 0.85rem; margin-top: 8px;">Salve uma projeção pela aba Simulador para começar.</p>
+      </div>
+
+    </div>
+
     <!-- TOAST NOTIFICATION -->
     <div id="toast"></div>
 
@@ -2099,6 +2742,11 @@
           setTimeout(onWindowResize, 30);
           requestAnimationFrame(() => requestAnimationFrame(onWindowResize));
         }
+
+        if (tabId === "historico") {
+          // Carrega (ou recarrega) as simulações do Firestore
+          carregarHistorico();
+        }
       }
 
       function showToast(msg, isExcel = false) {
@@ -2114,18 +2762,40 @@
         setTimeout(() => toast.classList.remove("show"), 3000);
       }
 
+      // Ícones SVG inline (reaproveitados no toggleTheme)
+      const ICONE_LUA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>`;
+
+      const ICONE_SOL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"></circle>
+        <line x1="12" y1="2" x2="12" y2="4"></line>
+        <line x1="12" y1="20" x2="12" y2="22"></line>
+        <line x1="4.93" y1="4.93" x2="6.34" y2="6.34"></line>
+        <line x1="17.66" y1="17.66" x2="19.07" y2="19.07"></line>
+        <line x1="2" y1="12" x2="4" y2="12"></line>
+        <line x1="20" y1="12" x2="22" y2="12"></line>
+        <line x1="4.93" y1="19.07" x2="6.34" y2="17.66"></line>
+        <line x1="17.66" y1="6.34" x2="19.07" y2="4.93"></line>
+      </svg>`;
+
       function toggleTheme() {
         const html = document.documentElement;
         const currentTheme = html.getAttribute("data-theme");
-        const themeBtn = document.getElementById("themeToggle");
+        const iconWrap = document.getElementById("themeToggleIcon");
+        const label = document.getElementById("themeToggleLabel");
 
         if (currentTheme === "dark") {
+          // Voltando para o modo claro
           html.removeAttribute("data-theme");
-          themeBtn.innerHTML = "🌙 Dark Mode";
+          if (iconWrap) iconWrap.innerHTML = ICONE_LUA;
+          if (label) label.textContent = "Dark Mode";
           if (scene) scene.background = new THREE.Color(0xe2e8f0);
         } else {
+          // Indo para o modo escuro
           html.setAttribute("data-theme", "dark");
-          themeBtn.innerHTML = "☀️ Light Mode";
+          if (iconWrap) iconWrap.innerHTML = ICONE_SOL;
+          if (label) label.textContent = "Light Mode";
           if (scene) scene.background = new THREE.Color(0x0f172a);
         }
       }
@@ -4353,6 +5023,7 @@
             crateGroup.remove(crateGroup.children[0]);
           }
           document.getElementById("btnExport").style.display = "none";
+          document.getElementById("btnSalvarHistorico").style.display = "none";
           return;
         }
         if (lInt > cInt) {
@@ -4398,10 +5069,11 @@
             </div>
           `;
           if (isUserClick) showToast("🚫 Bloqueado: aguardando regra para compensado", false);
-          while (crateGroup.children.length > 0) {
+          while (crateGroup.length === 0 || crateGroup.children.length > 0) {
             crateGroup.remove(crateGroup.children[0]);
           }
           document.getElementById("btnExport").style.display = "none";
+          document.getElementById("btnSalvarHistorico").style.display = "none";
           return;
         }
 
@@ -4834,6 +5506,7 @@
         document.getElementById("outH15").title = tooltipHover;
 
         document.getElementById("btnExport").style.display = "block";
+        document.getElementById("btnSalvarHistorico").style.display = "block";
 
         // Guarda tudo que a exportação precisa — em segundos puros (sem formatação)
         dadosSimulacao = {
@@ -4996,6 +5669,133 @@ async function patchG51Formula(buffer) {
     type: "arraybuffer",
     compression: "DEFLATE",
   });
+}
+
+// ============================================================
+// CAPTURA DE FOTO 3D — utilizada pela exportação Excel e pelo histórico
+// (precisa ficar no escopo global para funcionar em ambos os contextos)
+// ============================================================
+function capturarFotoParaExcel(formato = "png") {
+  if (!crateGroup || !scene || !camera || !renderer) {
+    console.warn("[FOTO] Objetos 3D indisponíveis.");
+    return null;
+  }
+
+  const originalAspect = camera.aspect;
+  const originalBg = scene.background;
+  const originalCamPos = camera.position.clone();
+  const originalCamRot = camera.rotation.clone();
+  const originalTarget = controls.target.clone();
+
+  try {
+    renderer.setSize(CONF_EXCEL_FOTO_LARGURA, CONF_EXCEL_FOTO_ALTURA);
+    camera.aspect = CONF_EXCEL_FOTO_LARGURA / CONF_EXCEL_FOTO_ALTURA;
+    camera.updateProjectionMatrix();
+    scene.background = null;
+
+    const box = new THREE.Box3().setFromObject(crateGroup);
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    const center = sphere.center;
+    const radius = sphere.radius;
+
+    controls.target.copy(center);
+
+    const fov = camera.fov * (Math.PI / 180);
+    let cameraDistance = radius / Math.sin(fov / 2);
+    if (camera.aspect < 1) {
+      cameraDistance = cameraDistance / camera.aspect;
+    }
+    cameraDistance = cameraDistance / CONF_EXCEL_FOTO_MARGIN;
+
+    // Direção isométrica fixa
+    const direction = new THREE.Vector3(1, 0.85, 1).normalize();
+    camera.position
+      .copy(center)
+      .add(direction.multiplyScalar(cameraDistance));
+    camera.lookAt(center);
+
+    renderer.render(scene, camera);
+
+    const mime = formato === "jpeg" ? "image/jpeg" : "image/png";
+    const quality = formato === "jpeg" ? 0.82 : undefined;
+    const imgData = renderer.domElement.toDataURL(mime, quality);
+    console.log("[FOTO] toDataURL OK. Tamanho base64:", imgData.length);
+    return imgData.split(",")[1];
+  } catch (err) {
+    console.error("[FOTO] Erro:", err);
+    return null;
+  } finally {
+    scene.background = originalBg;
+    camera.aspect = originalAspect;
+    camera.position.copy(originalCamPos);
+    camera.rotation.copy(originalCamRot);
+    camera.updateProjectionMatrix();
+    controls.target.copy(originalTarget);
+    onWindowResize();
+  }
+}
+
+// ============================================================
+// CAPTURA DE FOTO 3D — versão global (independente do exportarExcel)
+// Chamada pelo Histórico e por qualquer outro fluxo fora do .then()
+// ============================================================
+function capturarFotoGlobal(formato = "png") {
+  if (!crateGroup || !scene || !camera || !renderer) {
+    console.warn("[FOTO-GLOBAL] Objetos 3D indisponíveis.");
+    return null;
+  }
+
+  const originalAspect = camera.aspect;
+  const originalBg = scene.background;
+  const originalCamPos = camera.position.clone();
+  const originalCamRot = camera.rotation.clone();
+  const originalTarget = controls.target.clone();
+
+  try {
+    renderer.setSize(CONF_EXCEL_FOTO_LARGURA, CONF_EXCEL_FOTO_ALTURA);
+    camera.aspect = CONF_EXCEL_FOTO_LARGURA / CONF_EXCEL_FOTO_ALTURA;
+    camera.updateProjectionMatrix();
+    scene.background = null;
+
+    const box = new THREE.Box3().setFromObject(crateGroup);
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    const center = sphere.center;
+    const radius = sphere.radius;
+
+    controls.target.copy(center);
+
+    const fov = camera.fov * (Math.PI / 180);
+    let cameraDistance = radius / Math.sin(fov / 2);
+    if (camera.aspect < 1) {
+      cameraDistance = cameraDistance / camera.aspect;
+    }
+    cameraDistance = cameraDistance / CONF_EXCEL_FOTO_MARGIN;
+
+    const direction = new THREE.Vector3(1, 0.85, 1).normalize();
+    camera.position
+      .copy(center)
+      .add(direction.multiplyScalar(cameraDistance));
+    camera.lookAt(center);
+
+    renderer.render(scene, camera);
+
+    const mime = formato === "jpeg" ? "image/jpeg" : "image/png";
+    const quality = formato === "jpeg" ? 0.82 : undefined;
+    const imgData = renderer.domElement.toDataURL(mime, quality);
+    console.log("[FOTO-GLOBAL] toDataURL OK. Tamanho:", imgData.length);
+    return imgData.split(",")[1];
+  } catch (err) {
+    console.error("[FOTO-GLOBAL] Erro:", err);
+    return null;
+  } finally {
+    scene.background = originalBg;
+    camera.aspect = originalAspect;
+    camera.position.copy(originalCamPos);
+    camera.rotation.copy(originalCamRot);
+    camera.updateProjectionMatrix();
+    controls.target.copy(originalTarget);
+    onWindowResize();
+  }
 }
 
 // ============ EXPORTAÇÃO USANDO O TEMPLATE ============
@@ -5334,64 +6134,6 @@ function exportarExcel() {
           console.warn("Falha ao embutir a foto 3D no Excel:", err);
         }
       }
-            // Captura a vista 3D atual e devolve a imagem em base64 (só os dados, sem prefixo).
-      // Usada para embutir a foto no Excel, na aba RELATÓRIO DE ASSINATURA.
-      function capturarFotoParaExcel() {
-        if (!crateGroup || !scene || !camera || !renderer) return null;
-
-        const originalAspect = camera.aspect;
-        const originalBg = scene.background;
-        const originalCamPos = camera.position.clone();
-        const originalCamRot = camera.rotation.clone();
-        const originalTarget = controls.target.clone();
-
-        try {
-          renderer.setSize(CONF_EXCEL_FOTO_LARGURA, CONF_EXCEL_FOTO_ALTURA);
-          camera.aspect = CONF_EXCEL_FOTO_LARGURA / CONF_EXCEL_FOTO_ALTURA;
-          camera.updateProjectionMatrix();
-          scene.background = null;
-
-          const box = new THREE.Box3().setFromObject(crateGroup);
-          const sphere = box.getBoundingSphere(new THREE.Sphere());
-          const center = sphere.center;
-          const radius = sphere.radius;
-
-          controls.target.copy(center);
-
-          const fov = camera.fov * (Math.PI / 180);
-          let cameraDistance = radius / Math.sin(fov / 2);
-          if (camera.aspect < 1) {
-            cameraDistance = cameraDistance / camera.aspect;
-          }
-          cameraDistance = cameraDistance / CONF_EXCEL_FOTO_MARGIN;
-
-          // Direção isométrica fixa — (1, 0.85, 1) dá ~33° de elevação,
-          // mostrando bem a face superior (onde está a grade de ripas)
-          // e duas laterais. Mais bonito que a view aleatória do usuário.
-          const direction = new THREE.Vector3(1, 0.85, 1).normalize();
-          camera.position
-            .copy(center)
-            .add(direction.multiplyScalar(cameraDistance));
-          camera.lookAt(center);
-
-          renderer.render(scene, camera);
-          const imgData = renderer.domElement.toDataURL("image/png");
-          return imgData.split(",")[1]; // remove o prefixo data:image/png;base64,
-        } catch (err) {
-          console.error("Erro ao capturar foto:", err);
-          return null;
-        } finally {
-          // Restaura sempre, independente do sucesso
-          scene.background = originalBg;
-          camera.aspect = originalAspect;
-          camera.position.copy(originalCamPos);
-          camera.rotation.copy(originalCamRot);
-          camera.updateProjectionMatrix();
-          controls.target.copy(originalTarget);
-          onWindowResize();
-        }
-      }
-
       // ============ GERAR DOWNLOAD ============
       return workbook.xlsx.writeBuffer();
     })
@@ -5432,6 +6174,878 @@ function exportarExcel() {
       console.error(err);
       showToast("❌ Erro ao gerar planilha", false);
     });
+}
+
+// ============================================================
+// SALVAR NO HISTÓRICO — formato "RELATÓRIO DE ASSINATURA"
+// ------------------------------------------------------------
+// Grava a simulação atual na coleção "simulacoes" do Firestore
+// com TODOS os campos que compõem o Relatório de Assinatura:
+// cabeçalho, foto, lista de insumos, mão de obra e custos.
+// O campo `codigo` nasce vazio e é editável depois pelo usuário.
+// ============================================================
+async function salvarNoHistorico() {
+  if (!dadosSimulacao || !dadosSimulacao.ladoMaior) {
+    showToast("⚠️ Processe a produção primeiro", false);
+    return;
+  }
+  if (typeof db === "undefined" || !db) {
+    showToast("❌ Firebase não inicializado", false);
+    return;
+  }
+
+  const d = dadosSimulacao;
+  const btn = document.getElementById("btnSalvarHistorico");
+  btn.disabled = true;
+  btn.innerText = "💾 Salvando...";
+
+  try {
+    // ---- 1. Foto do engradado (JPEG pequeno para caber no Firestore) ----
+    let fotoBase64 = null;
+    let fotoFormato = "jpeg";
+    try {
+      fotoBase64 = capturarFotoParaExcel("jpeg");
+      if (!fotoBase64) {
+        console.warn("Foto não capturada (retornou null).");
+      } else {
+        const kb = Math.round((fotoBase64.length * 3) / 4 / 1024);
+        console.log(`📸 Foto capturada em JPEG: ~${kb} KB`);
+        if (kb > 800) {
+          console.warn("⚠️ Foto ainda grande (>800KB). Considere reduzir a resolução.");
+        }
+      }
+    } catch (e) {
+      console.warn("Não foi possível capturar a foto:", e);
+    }
+
+    // ---- 2. Helpers de formatação ----
+    const min = (seg) => Math.round((seg || 0) / 60);
+    const minTotal = min(d.segH9) + min(d.segH10) + min(d.segH11) +
+                     min(d.segH12) + min(d.segH13) +
+                     min(d.segRouterSetup) + min(d.segRouterUsin);
+
+    const cI = d.cInt.toFixed(2).replace(".", ",");
+    const lI = d.lInt.toFixed(2).replace(".", ",");
+    const aI = d.aInt.toFixed(2).replace(".", ",");
+
+    // ---- 3. Lista de insumos (mesma ordem do Relatório) ----
+    const insumos = [
+      { codigo: d.material === "Caxeta" ? "34013207" : "34013519",
+        descricao: d.material === "Caxeta"
+          ? "CAXETA PRANCHADO 04 CM ESP"
+          : "TECPLAY 35MM",
+        unidade: "m3", quantidade: 0, custoUnitario: 0, custoTotal: 0 },
+
+      { codigo: "34013099",
+        descricao: "PINUS APARELHADO 04 FACES - 20 MM X 195 MM X 3000 MM",
+        unidade: "m3", quantidade: 0, custoUnitario: 0, custoTotal: 0 },
+
+      { codigo: "34013230",
+        descricao: "CHAPA MDF 03 MM - 2.75 X 1.85 - EUCALIPTUS - DURATEX",
+        unidade: "m2", quantidade: 0, custoUnitario: 0, custoTotal: 0 },
+
+      { codigo: "33010796",
+        descricao: "PARAFUSO A. ATARRAXANTE CAB. CHATA FENDA PHILIPS - 5,0 X 80 MM",
+        unidade: "PECA", quantidade: d.flatScrews, custoUnitario: 0, custoTotal: 0 },
+
+      { codigo: "33010071",
+        descricao: 'PARAFUSO SEXTAVADO PONTA OGIVADA 5,5MM X 2.1/4"',
+        unidade: "UN", quantidade: d.hexScrews, custoUnitario: 0, custoTotal: 0 },
+
+      { codigo: "33014I46", descricao: "GRAMPO 14/40",
+        unidade: "MILH", quantidade: d.g1440 / 1000,
+        custoUnitario: 0, custoTotal: 0 },
+
+      { codigo: "33014815", descricao: "GRAMPO 80/12",
+        unidade: "MILH", quantidade: d.g8012 / 1000,
+        custoUnitario: 0, custoTotal: 0 },
+
+      { codigo: "33009190",
+        descricao: "COLA CASCOREZ EXTRA C/ 5 KG - HENKEL / ALMAFLEX PVA EXTRA",
+        unidade: "KG", quantidade: d.cColaB / 1000,
+        custoUnitario: 0, custoTotal: 0 },
+
+      { codigo: "33009A50",
+        descricao: "CHAPA DE EVA DE ESPESSURA 20 MM. MACIO MARROM",
+        unidade: "KG", quantidade: d.pesoEVA / 1000,
+        custoUnitario: 0, custoTotal: 0 },
+
+      { codigo: "33009A51",
+        descricao: "COLA DE CONTATO - COVULFIX - BRASCOLA / FOTIKOURO F L85 - FCC",
+        unidade: "KG", quantidade: d.colaC / 1000,
+        custoUnitario: 0, custoTotal: 0 }
+    ];
+
+    // ---- 3b. Madeiras utilizadas (mesma lógica da aba Madeiras do Excel) ----
+    const numVaosInf = Math.max(2, Math.ceil((d.ladoMaior - 0.12) / 0.5));
+    const numRipasInfFace = numVaosInf + 1;
+    const numRipasInfTotal = numRipasInfFace * 2;
+    const usaReforcada = d.ladoMaior >= 3.0;
+    let baseNumSup = Math.max(2, Math.ceil((d.ladoMenor - 0.51) / 0.5));
+    if (d.ladoMaior >= 2.0) {
+      baseNumSup = d.ladoMenor < 1.2
+        ? Math.max(baseNumSup, 3)
+        : Math.max(baseNumSup, 4);
+    }
+    const numRipasSupTotal = baseNumSup * 2;
+    const comprimentoRipaSup = Math.min(d.ladoMaior, 3.0);
+
+    const madeiras = [];
+
+    // Quadro longo
+    madeiras.push({
+      descricao: d.material === "Caxeta"
+        ? "CAXETA PRANCHADO 04 CM ESP"
+        : "TECPLAY 35MM",
+      comprimento: d.ladoMaior,
+      largura: d.aInt,
+      espessura: 0.035,
+      quantidade: 2,
+      volume: d.ladoMaior * d.aInt * 0.035 * 2
+    });
+
+    // Quadro curto
+    madeiras.push({
+      descricao: d.material === "Caxeta"
+        ? "CAXETA PRANCHADO 04 CM ESP"
+        : "TECPLAY 35MM",
+      comprimento: d.ladoMenor - 0.07,
+      largura: d.aInt,
+      espessura: 0.035,
+      quantidade: 2,
+      volume: (d.ladoMenor - 0.07) * d.aInt * 0.035 * 2
+    });
+
+    // Ripas normais (base + tampa)
+    const qtdRipasNormais = usaReforcada
+      ? numRipasInfTotal - 4
+      : numRipasInfTotal;
+    madeiras.push({
+      descricao: "PINUS APARELHADO 04 FACES",
+      comprimento: d.ladoMenor,
+      largura: 0.06,
+      espessura: 0.02,
+      quantidade: qtdRipasNormais,
+      volume: d.ladoMenor * 0.06 * 0.02 * qtdRipasNormais
+    });
+
+    // Ripas reforçadas (só quando ≥ 3,00 m)
+    if (usaReforcada) {
+      madeiras.push({
+        descricao: "PINUS APARELHADO 04 FACES (REFORÇADA)",
+        comprimento: d.ladoMenor,
+        largura: 0.12,
+        espessura: 0.02,
+        quantidade: 4,
+        volume: d.ladoMenor * 0.12 * 0.02 * 4
+      });
+    }
+
+    // Ripas de amarração (topo / base)
+    madeiras.push({
+      descricao: "PINUS APARELHADO 04 FACES (AMARRAÇÃO)",
+      comprimento: comprimentoRipaSup,
+      largura: 0.06,
+      espessura: 0.02,
+      quantidade: numRipasSupTotal,
+      volume: comprimentoRipaSup * 0.06 * 0.02 * numRipasSupTotal
+    });
+
+    // MDF (base + tampa)
+    madeiras.push({
+      descricao: "CHAPA MDF 03 MM - EUCALIPTUS - DURATEX",
+      comprimento: d.ladoMaior,
+      largura: d.ladoMenor,
+      espessura: 0.003,
+      quantidade: 2,
+      volume: d.ladoMaior * d.ladoMenor * 0.003 * 2
+    });
+
+    // ---- 4. Mão de obra (mesma ordem do Relatório) ----
+    const processos = [
+      { nome: "PLAINA",           minutos: min(d.segH10) },
+      { nome: "DESENGROSSADEIRA", minutos: min(d.segH9)  },
+      { nome: "SERRA FITA",       minutos: min(d.segH12) },
+      { nome: "SERRA CIRCULAR",   minutos: min(d.segH11) },
+      { nome: "MONTAGEM",         minutos: min(d.segH13) },
+      { nome: "ROUTER",           minutos: min(d.segRouterUsin) },
+      { nome: "SETUP ROUTER",     minutos: min(d.segRouterSetup) }
+    ];
+    processos.forEach((p) => {
+      p.percentual = minTotal > 0 ? p.minutos / minTotal : 0;
+      p.valor = 0; // preenchido depois pelo Excel
+    });
+
+    // ---- 5. Documento final no formato do Relatório ----
+    const documento = {
+      // ----- Cabeçalho -----
+      usuario:     usuarioLogado || "DESCONHECIDO",
+      dataCriacao: firebase.firestore.FieldValue.serverTimestamp(),
+      codigo:      "",   // ← EDITÁVEL DEPOIS
+      responsavel: "",   // ← editável depois
+      revisadoPor: "",   // ← editável depois
+      natureza:    "PROJEÇÃO",
+
+      // ----- Produto -----
+      nomeProduto:
+        `ENGRADADO DE MADEIRA ${cI}M X ${lI}M X ${aI}H MEDIDA INTERNA` +
+        ` - C KIT PARAFUSOS + PORCAS BORBOLETA E KIT EVA EXTERNO`,
+
+      // ----- Foto NÃO é mais salva (gerada on-demand a partir das medidas) -----
+      // Isso reduz o documento a ~2 KB — sem custo e sem risco de ultrapassar o limite.
+
+      // ----- Madeiras utilizadas (aba Madeiras do Excel) -----
+      madeiras: madeiras,
+
+      // ----- Medidas -----
+      medidas: {
+        comprimentoInterno: d.cInt,
+        larguraInterna:     d.lInt,
+        alturaInterna:      d.aInt,
+        comprimentoExterno: d.cExt,
+        larguraExterna:     d.lExt
+      },
+
+      material: d.material,
+
+      // ----- Lista estruturada -----
+      insumos: insumos,
+
+      // ----- Mão de obra -----
+      maoDeObra: {
+        processos: processos,
+        totalMinutos: minTotal
+      },
+
+      // ----- Custos (preenchidos depois pelo usuário ou re-export) -----
+      custoStandard: 0,
+      custoSeco: 0
+    };
+
+    // ---- 6. Grava no Firestore ----
+    const ref = await db.collection("simulacoes").add(documento);
+    console.log("✅ Simulação salva no Firestore. ID:", ref.id);
+    showToast("💾 Salvo no histórico com sucesso!", true);
+
+  } catch (err) {
+    console.error("❌ Erro ao salvar no Firestore:", err);
+    showToast(
+      "❌ Erro ao salvar: " + (err.message || err.code || "desconhecido"),
+      false
+    );
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "💾 Salvar no histórico";
+  }
+}
+
+// ============================================================
+// ABA HISTÓRICO — carrega, exibe e permite editar as simulações
+// ============================================================
+let historicoSimulacoes = [];   // cache local
+
+// -------------------------------------------------------------
+// Carrega todas as simulações salvas no Firestore
+// -------------------------------------------------------------
+// -------------------------------------------------------------
+// Popula o dropdown custom de usuários com os nomes do MAPA_USUARIOS.
+// -------------------------------------------------------------
+function popularSelectUsuarios() {
+  const panel = document.getElementById("filtroUsuarioPanel");
+  if (!panel) return;
+
+  const valorAtual = document.getElementById("filtroUsuario").value || "";
+
+  // Nomes únicos, ordenados alfabeticamente
+  const nomes = Array.from(new Set(Object.values(MAPA_USUARIOS)));
+  nomes.sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+  // Reconstrói o painel
+  panel.innerHTML = "";
+
+  // Item "Todos"
+  const itemTodos = document.createElement("div");
+  itemTodos.className = "filtro-dropdown-item" + (valorAtual === "" ? " selected" : "");
+  itemTodos.dataset.value = "";
+  itemTodos.textContent = "👤 Todos os usuários";
+  itemTodos.onclick = () => selecionarUsuario("", "👤 Todos os usuários");
+  panel.appendChild(itemTodos);
+
+  // Itens de usuário
+  nomes.forEach((nome) => {
+    const item = document.createElement("div");
+    item.className = "filtro-dropdown-item" + (valorAtual === nome ? " selected" : "");
+    item.dataset.value = nome;
+    item.textContent = "👤 " + nome;
+    item.onclick = () => selecionarUsuario(nome, "👤 " + nome);
+    panel.appendChild(item);
+  });
+}
+
+// -------------------------------------------------------------
+// Abre/fecha o dropdown de usuários
+// -------------------------------------------------------------
+function toggleUsuarioDropdown(event) {
+  if (event) event.stopPropagation();
+  const panel = document.getElementById("filtroUsuarioPanel");
+  const btn = document.getElementById("filtroUsuarioBtn");
+  if (!panel || !btn) return;
+
+  const abrir = !panel.classList.contains("open");
+  panel.classList.toggle("open", abrir);
+  btn.classList.toggle("open", abrir);
+}
+
+function fecharUsuarioDropdown() {
+  const panel = document.getElementById("filtroUsuarioPanel");
+  const btn = document.getElementById("filtroUsuarioBtn");
+  if (panel) panel.classList.remove("open");
+  if (btn) btn.classList.remove("open");
+}
+
+// -------------------------------------------------------------
+// Seleciona um usuário e aplica o filtro
+// -------------------------------------------------------------
+function selecionarUsuario(valor, label) {
+  const inputHidden = document.getElementById("filtroUsuario");
+  const labelEl = document.getElementById("filtroUsuarioLabel");
+  if (!inputHidden || !labelEl) return;
+
+  inputHidden.value = valor;
+  labelEl.textContent = label;
+
+  // Atualiza seleção visual
+  document.querySelectorAll("#filtroUsuarioPanel .filtro-dropdown-item").forEach((el) => {
+    el.classList.toggle("selected", el.dataset.value === valor);
+  });
+
+  fecharUsuarioDropdown();
+  aplicarFiltrosHistorico();
+}
+
+// -------------------------------------------------------------
+// Fecha o dropdown ao clicar em qualquer lugar fora dele
+// -------------------------------------------------------------
+document.addEventListener("click", function (e) {
+  const wrap = document.getElementById("filtroUsuarioWrap");
+  if (wrap && !wrap.contains(e.target)) {
+    fecharUsuarioDropdown();
+  }
+});
+
+// Fecha com ESC
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") fecharUsuarioDropdown();
+});
+
+async function carregarHistorico() {
+  const lista = document.getElementById("historicoLista");
+  const vazio = document.getElementById("historicoVazio");
+  const contador = document.getElementById("historicoContador");
+
+  // Popula o dropdown de usuários antes de carregar
+  popularSelectUsuarios();
+
+  if (typeof db === "undefined" || !db) {
+    lista.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--danger-text);">❌ Firebase não inicializado.</div>';
+    return;
+  }
+
+  lista.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-muted);">⏳ Carregando simulações...</div>';
+  vazio.style.display = "none";
+  contador.innerText = "";
+
+  try {
+    const snap = await db
+      .collection("simulacoes")
+      .orderBy("dataCriacao", "desc")
+      .get();
+
+    historicoSimulacoes = [];
+    snap.forEach((doc) => {
+      historicoSimulacoes.push({ id: doc.id, ...doc.data() });
+    });
+
+    console.log(`📚 ${historicoSimulacoes.length} simulações carregadas.`);
+    aplicarFiltrosHistorico();
+
+  } catch (err) {
+    console.error("❌ Erro ao carregar histórico:", err);
+    lista.innerHTML = `<div style="padding: 40px; text-align: center; color: var(--danger-text);">
+      ❌ Erro ao carregar: ${err.message || err.code}<br>
+      <small>Se aparecer "requires an index", clique no link do console para criar o índice.</small>
+    </div>`;
+  }
+}
+
+// -------------------------------------------------------------
+// Filtra o cache local e re-renderiza
+// -------------------------------------------------------------
+function aplicarFiltrosHistorico() {
+  const lista = document.getElementById("historicoLista");
+  const vazio = document.getElementById("historicoVazio");
+  const contador = document.getElementById("historicoContador");
+
+  const fCodigo = (document.getElementById("filtroCodigo").value || "").trim().toLowerCase();
+  const fUsuario = (document.getElementById("filtroUsuario").value || "").trim();
+  const fMedidas = (document.getElementById("filtroMedidas").value || "").trim().toLowerCase();
+
+  const filtradas = historicoSimulacoes.filter((s) => {
+    // Código
+    if (fCodigo && !(s.codigo || "").toLowerCase().includes(fCodigo)) return false;
+
+    // Usuário — comparação exata com o valor do dropdown
+    if (fUsuario && (s.usuario || "") !== fUsuario) return false;
+
+    // Medidas
+    if (fMedidas) {
+      const c = ((s.medidas && s.medidas.comprimentoInterno) || 0).toFixed(2).replace(".", ",");
+      const l = ((s.medidas && s.medidas.larguraInterna) || 0).toFixed(2).replace(".", ",");
+      const a = ((s.medidas && s.medidas.alturaInterna) || 0).toFixed(2).replace(".", ",");
+      const haystack = `${c} ${l} ${a} ${c}x${l}`.toLowerCase();
+      if (!haystack.includes(fMedidas)) return false;
+    }
+
+    return true;
+  });
+
+  contador.innerText = `${filtradas.length} de ${historicoSimulacoes.length} simulações`;
+
+  if (filtradas.length === 0) {
+    lista.innerHTML = "";
+    vazio.style.display = historicoSimulacoes.length === 0 ? "block" : "none";
+    if (historicoSimulacoes.length > 0) {
+      lista.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-muted);">Nenhum resultado com esses filtros.</div>';
+    }
+    return;
+  }
+
+  vazio.style.display = "none";
+
+  // Renderiza cada simulação em um card
+  const html = filtradas.map((s) => renderizarSimulacaoCard(s)).join("");
+  lista.innerHTML = html;
+}
+
+// -------------------------------------------------------------
+// Renderiza UM card no formato do Relatório de Assinatura
+// -------------------------------------------------------------
+function renderizarSimulacaoCard(s) {
+  const m = s.medidas || {};
+  const med = (v) => ((v || 0).toFixed(2).replace(".", ","));
+  const nomeProduto = s.nomeProduto || "ENGRADADO DE MADEIRA";
+
+  // Versão curta para o cabeçalho colapsado (só até "MEDIDA INTERNA")
+  const nomeProdutoCurto = nomeProduto.split(" - C KIT")[0];
+
+  // Data
+  let dataStr = "—";
+  if (s.dataCriacao && s.dataCriacao.toDate) {
+    const dt = s.dataCriacao.toDate();
+    dataStr = dt.toLocaleDateString("pt-BR") + " " +
+              String(dt.getHours()).padStart(2, "0") + ":" +
+              String(dt.getMinutes()).padStart(2, "0");
+  }
+
+  // Foto: se já tiver salva no Firestore usa ela; senão, gera on-demand ao abrir
+  const fotoMime = s.fotoFormato === "jpeg" ? "image/jpeg" : "image/png";
+  let fotoHTML;
+  if (s.fotoBase64) {
+    fotoHTML = `<img src="data:${fotoMime};base64,${s.fotoBase64}" alt="Engradado" />`;
+  } else {
+    fotoHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 20px;">Clique para visualizar</div>`;
+  }
+
+  // Ícone lixeira
+  const lixeiraSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="3 6 5 6 21 6"></polyline>
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+    <line x1="10" y1="11" x2="10" y2="17"></line>
+    <line x1="14" y1="11" x2="14" y2="17"></line>
+  </svg>`;
+
+  // (ícones SVG do cabeçalho colapsado removidos — não são mais usados)
+
+  // ---- Madeiras ----
+  const madeiras = s.madeiras || [];
+  let linhasMadeiras = "";
+  let totalVolume = 0;
+  madeiras.forEach((w) => {
+    totalVolume += (w.volume || 0);
+    linhasMadeiras += `
+      <tr>
+        <td>${w.descricao || "—"}</td>
+        <td class="numero">${(w.comprimento || 0).toFixed(2).replace(".", ",")}</td>
+        <td class="numero">${((w.largura || 0) * 100).toFixed(0)} mm</td>
+        <td class="numero">${w.quantidade || 0}</td>
+        <td class="numero">${(w.volume || 0).toFixed(4).replace(".", ",")}</td>
+      </tr>`;
+  });
+
+  // ---- Insumos ----
+  const insumos = s.insumos || [];
+  let linhasInsumos = "";
+  insumos.forEach((it) => {
+    const qtd = (typeof it.quantidade === "number" && it.quantidade > 0)
+      ? it.quantidade.toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 })
+      : "-";
+    linhasInsumos += `
+      <tr>
+        <td>${it.codigo || "—"}</td>
+        <td>${it.descricao || "—"}</td>
+        <td>${it.unidade || "—"}</td>
+        <td class="numero">${qtd}</td>
+      </tr>`;
+  });
+
+  // ---- Mão de obra ----
+  const mdo = (s.maoDeObra && s.maoDeObra.processos) || [];
+  const totalMin = (s.maoDeObra && s.maoDeObra.totalMinutos) || 0;
+  let linhasMdo = "";
+  mdo.forEach((p) => {
+    const pct = (p.percentual || 0) * 100;
+    linhasMdo += `
+      <tr>
+        <td>${p.nome || "—"}</td>
+        <td class="numero">${p.minutos || 0}</td>
+        <td class="numero">${pct.toFixed(2).replace(".", ",")}%</td>
+      </tr>`;
+  });
+
+  const codigoAtual = (s.codigo || "").replace(/"/g, "&quot;");
+  const codigoVazio = !s.codigo;
+  const idSeguro = s.id.replace(/[^a-zA-Z0-9]/g, "");
+
+  return `
+    <div class="historico-item" id="hist-item-${idSeguro}" data-id="${s.id}">
+
+      <!-- LINHA COLAPSADA -->
+      <div class="historico-item-header" onclick="toggleHistoricoItem('${idSeguro}')">
+        <span class="historico-item-chevron">▶</span>
+
+        <span
+          class="historico-item-codigo ${s.codigo ? "" : "vazio"}"
+          id="badge-codigo-${idSeguro}"
+        >${s.codigo || "SEM CÓDIGO"}</span>
+
+        <div class="historico-item-info">
+          <div class="historico-item-titulo">${nomeProdutoCurto}</div>
+        </div>
+
+        <div class="historico-item-actions" onclick="event.stopPropagation();">
+          <button onclick="excluirSimulacao('${s.id}')" title="Excluir simulação">${lixeiraSVG}</button>
+        </div>
+      </div>
+
+      <!-- RELATÓRIO EXPANDIDO -->
+      <div class="historico-item-body">
+        <div class="historico-item-body-inner">
+          <div class="historico-item-body-content">
+
+            <!-- Cabeçalho -->
+            <div class="historico-cabecalho">
+              <div>
+                <strong>Apontador</strong>
+                ${s.usuario || "—"}
+              </div>
+              <div>
+                <strong>Data</strong>
+                ${dataStr}
+              </div>
+              <div>
+                <strong>Natureza</strong>
+                ${s.natureza || "PROJEÇÃO"}
+              </div>
+              <div>
+                <strong>Código</strong>
+                <div class="historico-codigo-linha">
+                  <input
+                    type="text"
+                    class="historico-codigo-input"
+                    id="cod-${idSeguro}"
+                    value="${codigoAtual}"
+                    placeholder="Preencher depois..."
+                    onclick="event.stopPropagation();"
+                    onkeydown="if(event.key==='Enter'){ event.preventDefault(); salvarCodigoSimulacao('${s.id}', '${idSeguro}'); }"
+                  />
+                  <button
+                    class="historico-codigo-salvar"
+                    onclick="event.stopPropagation(); salvarCodigoSimulacao('${s.id}', '${idSeguro}');"
+                  >💾</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Produto + Foto -->
+            <div class="historico-produto">
+              <div class="historico-foto">${fotoHTML}</div>
+              <div class="historico-produto-info">
+                <div class="info-bloco">
+                  <strong>Produto / Código</strong>
+                  <p>${nomeProduto}</p>
+                </div>
+                <div class="info-bloco">
+                  <strong>Medidas internas</strong>
+                  <p>${med(m.comprimentoInterno)} × ${med(m.larguraInterna)} × ${med(m.alturaInterna)} m</p>
+                </div>
+                <div class="info-bloco">
+                  <strong>Medidas externas</strong>
+                  <p>${med(m.comprimentoExterno)} × ${med(m.larguraExterna)} m</p>
+                  <p style="margin-top: 4px;"><strong>Material:</strong> ${s.material || "—"}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Madeiras -->
+            <div class="historico-secao-titulo">Madeiras Utilizadas</div>
+            <table class="historico-tabela">
+              <thead>
+                <tr>
+                  <th>Descrição</th>
+                  <th style="text-align: right;">Comp. (m)</th>
+                  <th style="text-align: right;">Largura</th>
+                  <th style="text-align: right;">Qtd.</th>
+                  <th style="text-align: right;">Vol. (m³)</th>
+                </tr>
+              </thead>
+              <tbody>${linhasMadeiras || '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Sem madeiras registradas</td></tr>'}</tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4">Volume total</td>
+                  <td class="numero">${totalVolume.toFixed(4).replace(".", ",")} m³</td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <!-- Lista de insumos -->
+            <div class="historico-secao-titulo">Lista de Insumos</div>
+            <table class="historico-tabela">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Descrição</th>
+                  <th>U/M</th>
+                  <th style="text-align: right;">Qtd. usada</th>
+                </tr>
+              </thead>
+              <tbody>${linhasInsumos || '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);">Sem insumos registrados</td></tr>'}</tbody>
+            </table>
+
+            <!-- Mão de obra -->
+            <div class="historico-secao-titulo">Mão de Obra</div>
+            <table class="historico-tabela">
+              <thead>
+                <tr>
+                  <th>Processo</th>
+                  <th style="text-align: right;">Minutos</th>
+                  <th style="text-align: right;">% da fase</th>
+                </tr>
+              </thead>
+              <tbody>${linhasMdo || '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);">Sem processos registrados</td></tr>'}</tbody>
+              <tfoot>
+                <tr>
+                  <td>Total</td>
+                  <td class="numero">${totalMin}</td>
+                  <td class="numero">100,00%</td>
+                </tr>
+              </tfoot>
+            </table>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// -------------------------------------------------------------
+// Expande / colapsa um item do histórico
+// -------------------------------------------------------------
+async function toggleHistoricoItem(idSeguro) {
+  const el = document.getElementById("hist-item-" + idSeguro);
+  if (!el) return;
+
+  const vaiExpandir = !el.classList.contains("expanded");
+  el.classList.toggle("expanded");
+
+  if (!vaiExpandir) return;
+
+  // Se já tiver foto, não faz nada
+  const fotoDiv = el.querySelector(".historico-foto");
+  if (!fotoDiv) return;
+
+  const sim = historicoSimulacoes.find(
+    (x) => x.id.replace(/[^a-zA-Z0-9]/g, "") === idSeguro
+  );
+  if (!sim) return;
+
+  // Já tem foto salva no Firestore? Já foi renderizada no HTML pelo card.
+  if (sim.fotoBase64) return;
+
+  // Já geramos a foto nesta sessão? Usa o cache em memória.
+  if (sim._fotoGerada) {
+    fotoDiv.innerHTML = `<img src="data:image/png;base64,${sim._fotoGerada}" alt="Engradado" />`;
+    return;
+  }
+
+  // Gera agora
+  console.log("[HISTÓRICO] Gerando foto para:", idSeguro, sim.medidas);
+  fotoDiv.innerHTML = '<div style="color: var(--text-muted); font-size: 0.78rem; text-align: center; padding: 20px;">⏳ Gerando imagem 3D...</div>';
+
+  try {
+    const foto = await gerarFotoHistorico(sim);
+    console.log("[HISTÓRICO] Foto gerada. Tamanho:", foto ? foto.length : "null");
+    if (foto) {
+      sim._fotoGerada = foto;
+      fotoDiv.innerHTML = `<img src="data:image/png;base64,${foto}" alt="Engradado" />`;
+    } else {
+      fotoDiv.innerHTML = '<div style="color: var(--text-muted); font-size: 0.8rem; text-align: center;">Sem foto (captura retornou vazio)</div>';
+    }
+  } catch (err) {
+    console.error("[HISTÓRICO] Erro ao gerar foto:", err);
+    fotoDiv.innerHTML = '<div style="color: var(--text-muted); font-size: 0.8rem; text-align: center;">Erro: ' + (err.message || "desconhecido") + '</div>';
+  }
+}
+
+// -------------------------------------------------------------
+// Gera a foto 3D de uma simulação histórica a partir das medidas
+// salvas. Salva o estado atual, constrói o engradado antigo,
+// tira a foto, e restaura o estado original.
+// -------------------------------------------------------------
+async function gerarFotoHistorico(s) {
+  console.log("[HISTÓRICO] gerarFotoHistorico chamado. scene:", !!scene, "camera:", !!camera, "renderer:", !!renderer, "crateGroup:", !!crateGroup);
+  if (!scene || !camera || !renderer || !crateGroup) {
+    console.warn("[HISTÓRICO] Objetos 3D indisponíveis.");
+    return null;
+  }
+
+  // 1. Salva estado atual
+  const estadoSalvo = {
+    cInt: document.getElementById("cInt").value,
+    lInt: document.getElementById("lInt").value,
+    aInt: document.getElementById("aInt").value,
+    metodoCorte: document.getElementById("metodoCorteMdf").value,
+    dadosSimulacao: Object.assign({}, dadosSimulacao),
+    isExploded: isExploded,
+  };
+
+  const m = s.medidas || {};
+  const cInt = m.comprimentoInterno || 0.93;
+  const lInt = m.larguraInterna || 0.93;
+  const aInt = m.alturaInterna || 0.05;
+  const material = s.material || "Tecplay";
+
+  const cExt = Math.round((cInt + 0.07) * 1000) / 1000;
+  const lExt = Math.round((lInt + 0.07) * 1000) / 1000;
+
+  try {
+    console.log("[HISTÓRICO] Construindo engradado:", cExt, lExt, aInt, material);
+    // 2. Constrói o engradado histórico
+    construirEngradado(cExt, lExt, aInt, material);
+    console.log("[HISTÓRICO] Engradado construído. Chamando capturarFotoParaExcel...");
+
+    // 3. Captura foto PNG (com transparência)
+    const fotoBase64 = capturarFotoGlobal("png");
+    console.log("[HISTÓRICO] capturarFotoGlobal retornou. Tamanho:", fotoBase64 ? fotoBase64.length : "null");
+
+    // 4. Restaura o estado original
+    document.getElementById("cInt").value = estadoSalvo.cInt;
+    document.getElementById("lInt").value = estadoSalvo.lInt;
+    document.getElementById("aInt").value = estadoSalvo.aInt;
+    document.getElementById("metodoCorteMdf").value = estadoSalvo.metodoCorte;
+
+    // Reconstrói o engradado atual (o que o usuário estava vendo)
+    const d = estadoSalvo.dadosSimulacao;
+    if (d && d.ladoMaior) {
+      construirEngradado(d.cExt, d.lExt, d.aInt, d.material);
+    } else {
+      atualizarModelo();
+    }
+    dadosSimulacao = estadoSalvo.dadosSimulacao;
+
+    return fotoBase64;
+  } catch (e) {
+    console.error("Erro ao gerar foto do histórico:", e);
+    // Em caso de erro, tenta ao menos restaurar o estado
+    try {
+      const d = estadoSalvo.dadosSimulacao;
+      if (d && d.ladoMaior) {
+        construirEngradado(d.cExt, d.lExt, d.aInt, d.material);
+      } else {
+        atualizarModelo();
+      }
+      dadosSimulacao = estadoSalvo.dadosSimulacao;
+    } catch (e2) {
+      console.error("Falha ao restaurar estado:", e2);
+    }
+    return null;
+  }
+}
+
+// -------------------------------------------------------------
+// Salva apenas o campo "codigo" de uma simulação
+// -------------------------------------------------------------
+async function salvarCodigoSimulacao(id, idSeguro) {
+  const input = document.getElementById(`cod-${idSeguro}`);
+  if (!input) return;
+
+  const novoCodigo = input.value.trim();
+  const btn = input.parentElement.querySelector(".historico-codigo-salvar");
+  const badge = document.getElementById(`badge-codigo-${idSeguro}`);
+
+  btn.disabled = true;
+  btn.innerText = "⏳";
+
+  try {
+    await db.collection("simulacoes").doc(id).update({ codigo: novoCodigo });
+
+    // Atualiza o cache local
+    const s = historicoSimulacoes.find((x) => x.id === id);
+    if (s) s.codigo = novoCodigo;
+
+    // Atualiza o badge na linha colapsada (SEM CÓDIGO ↔ código)
+    if (badge) {
+      if (novoCodigo) {
+        badge.textContent = novoCodigo;
+        badge.classList.remove("vazio");
+      } else {
+        badge.textContent = "SEM CÓDIGO";
+        badge.classList.add("vazio");
+      }
+    }
+
+    btn.innerText = "✅";
+    showToast("✅ Código salvo!", true);
+    setTimeout(() => {
+      btn.innerText = "💾";
+      btn.disabled = false;
+    }, 1200);
+  } catch (err) {
+    console.error("Erro ao salvar código:", err);
+    btn.innerText = "❌";
+    showToast("❌ Erro ao salvar código", false);
+    setTimeout(() => {
+      btn.innerText = "💾";
+      btn.disabled = false;
+    }, 1500);
+  }
+}
+
+// -------------------------------------------------------------
+// Exclui uma simulação (com confirmação)
+// -------------------------------------------------------------
+async function excluirSimulacao(id) {
+  if (!confirm("Tem certeza que deseja excluir esta simulação do histórico?")) return;
+
+  try {
+    await db.collection("simulacoes").doc(id).delete();
+    historicoSimulacoes = historicoSimulacoes.filter((s) => s.id !== id);
+    aplicarFiltrosHistorico();
+    showToast("🗑️ Simulação excluída", false);
+  } catch (err) {
+    console.error("Erro ao excluir:", err);
+    showToast("❌ Erro ao excluir", false);
+  }
 }
 
       // --- SEÇÃO DE CONFIGURAÇÃO DA CÂMERA EXCEL ---
@@ -5555,6 +7169,30 @@ function exportarExcel() {
           onWindowResize();
         }, 500);
       };
+    </script>
+
+    <!-- ============================================================
+         FIREBASE — SDK compat (funciona em HTML puro)
+         ============================================================ -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script>
+      // Configuração do projeto "simulador-engradados"
+      const firebaseConfig = {
+        apiKey: "AIzaSyCcnQFZi34LND_u3pb0PlMza6HeJvo1wsY",
+        authDomain: "simulador-engradados.firebaseapp.com",
+        projectId: "simulador-engradados",
+        storageBucket: "simulador-engradados.firebasestorage.app",
+        messagingSenderId: "578631679414",
+        appId: "1:578631679414:web:c907db093a249d22771517"
+      };
+
+      // Inicializa o Firebase
+      firebase.initializeApp(firebaseConfig);
+
+            // Referência global ao banco de dados (Firestore)
+            const db = firebase.firestore();
+      console.log("🔥 Firebase conectado ao projeto:", firebaseConfig.projectId);
     </script>
   </body>
 </html>
