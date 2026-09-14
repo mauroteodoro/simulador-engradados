@@ -1769,6 +1769,70 @@
       :root[data-theme="dark"] .filtro-dropdown-panel {
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
       }
+
+      /* ============================================================
+         ABA PREÇOS
+         ============================================================ */
+      .precos-tabela {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        border: 1px solid var(--border-light);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .precos-tabela th {
+        background: var(--bg-panel-2);
+        color: var(--text-muted);
+        font-weight: 700;
+        font-size: 0.7rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .precos-tabela td {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border-light);
+        color: var(--text-main);
+        vertical-align: middle;
+      }
+      .precos-tabela tr:last-child td {
+        border-bottom: none;
+      }
+      .precos-input {
+        width: 100%;
+        padding: 8px 12px;
+        background: var(--canvas-bg);
+        border: 1.5px solid transparent;
+        border-radius: 10px;
+        color: var(--text-main);
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-align: right;
+        font-family: inherit;
+        outline: none;
+        transition: all 0.15s ease;
+        font-variant-numeric: tabular-nums;
+      }
+      .precos-input:focus {
+        border-color: var(--primary);
+        background: var(--bg-panel);
+        box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+      }
+
+      /* Colunas de custo no histórico */
+      .historico-tabela td.moeda {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .historico-tabela tfoot td.destaque {
+        background: rgba(0, 113, 227, 0.08);
+        color: var(--primary);
+        font-weight: 800;
+      }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -1885,6 +1949,9 @@
       </button>
       <button class="tab-btn" onclick="switchTab('historico')">
         Histórico
+      </button>
+      <button class="tab-btn" onclick="switchTab('precos')">
+        Preços
       </button>
       <button class="tab-btn" onclick="switchTab('manual')">
         Manual de Engenharia
@@ -2223,6 +2290,52 @@
         </div>
       </div>
     </div>
+
+        <!-- ABA PREÇOS -->
+        <div id="precos-tab" class="tab-content" style="max-width: 1000px; margin: 0 auto; padding-bottom: 50px;">
+
+          <div class="panel" style="margin-bottom: 20px;">
+            <h2 style="color: var(--primary); font-size: 1.35rem; margin-bottom: 8px;">
+              💰 Tabela de Preços
+            </h2>
+            <p style="color: var(--text-muted); line-height: 1.6; font-size: 0.95rem; margin: 0;">
+              Edite os valores unitários abaixo e clique em <strong>Salvar preços</strong>. As mudanças se aplicam a todos os relatórios do histórico (presentes e futuros).
+            </p>
+          </div>
+
+          <div class="panel" style="margin-bottom: 20px;">
+            <h3 style="margin: 0 0 14px 0; font-size: 1rem; font-weight: 700;">📦 Insumos</h3>
+            <table class="precos-tabela" id="precosInsumosTable">
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Código</th>
+                  <th>Descrição</th>
+                  <th style="width: 70px;">U/M</th>
+                  <th style="width: 130px; text-align: right;">Valor unitário (R$)</th>
+                </tr>
+              </thead>
+              <tbody id="precosInsumosBody"></tbody>
+            </table>
+          </div>
+
+          <div class="panel" style="margin-bottom: 20px;">
+            <h3 style="margin: 0 0 14px 0; font-size: 1rem; font-weight: 700;">👷 Mão de Obra (R$ por minuto)</h3>
+            <table class="precos-tabela" id="precosMOTable">
+              <thead>
+                <tr>
+                  <th>Processo</th>
+                  <th style="width: 130px; text-align: right;">R$ / minuto</th>
+                </tr>
+              </thead>
+              <tbody id="precosMOBody"></tbody>
+            </table>
+          </div>
+
+          <button class="btn-calc" onclick="salvarPrecos(event)" style="max-width: 320px;">
+            💾 Salvar preços
+          </button>
+
+        </div>
 
         <!-- ABA 2: MANUAL DE ENGENHARIA & PRODUÇÃO -->
         <div id="manual-tab" class="tab-content" style="max-width: 1400px; margin: 0 auto; padding-bottom: 50px;">
@@ -2810,6 +2923,11 @@
         if (tabId === "historico") {
           // Carrega (ou recarrega) as simulações do Firestore
           carregarHistorico();
+        }
+
+        if (tabId === "precos") {
+          // Carrega preços e popula a tabela editável
+          carregarPrecos().then(popularTabelaPrecos);
         }
       }
 
@@ -6299,21 +6417,72 @@ async function salvarNoHistorico() {
     const lI = d.lInt.toFixed(2).replace(".", ",");
     const aI = d.aInt.toFixed(2).replace(".", ",");
 
+    // ---- 3. Cálculo das quantidades de madeiras (com margem de perda) ----
+    // Regra:
+    //   Caxeta e Pinus → volume × 1,3 (30% de margem)
+    //   Tecplay e MDF  → volume (ou área) × 1,1 (10% de margem)
+    //
+    // Para o quadro, o volume é a soma das 4 peças:
+    //   2 longas (ladoMaior × altura × 0,035) + 2 curtas (ladoMenor-0,07 × altura × 0,035)
+
+    // Caxeta → volume em m³ (comprimento × altura × espessura × 2 peças)
+    // Tecplay → área lateral em m² (comprimento × altura × 2 peças)
+    let qtdMaterialQuadro;
+    if (d.material === "Caxeta") {
+      const volQuadro =
+        (d.ladoMaior * d.aInt * 0.035 * 2) +
+        ((d.ladoMenor - 0.07) * d.aInt * 0.035 * 2);
+      qtdMaterialQuadro = volQuadro * 1.3;
+    } else {
+      const areaQuadro =
+        (d.ladoMaior * d.aInt * 2) +
+        ((d.ladoMenor - 0.07) * d.aInt * 2);
+      qtdMaterialQuadro = areaQuadro * 1.1;
+    }
+
+    // Pinus (ripas) — soma todas as ripas e aplica 30%
+    const numVaosInfQ = Math.max(2, Math.ceil((d.ladoMaior - 0.12) / 0.5));
+    const numRipasInfFaceQ = numVaosInfQ + 1;
+    const numRipasInfTotalQ = numRipasInfFaceQ * 2;
+    const usaReforcadaQ = d.ladoMaior >= 3.0;
+    let baseNumSupQ = Math.max(2, Math.ceil((d.ladoMenor - 0.51) / 0.5));
+    if (d.ladoMaior >= 2.0) {
+      baseNumSupQ = d.ladoMenor < 1.2
+        ? Math.max(baseNumSupQ, 3)
+        : Math.max(baseNumSupQ, 4);
+    }
+    const numRipasSupTotalQ = baseNumSupQ * 2;
+    const comprimentoRipaSupQ = Math.min(d.ladoMaior, 3.0);
+    const qtdRipasNormaisQ = usaReforcadaQ
+      ? numRipasInfTotalQ - 4
+      : numRipasInfTotalQ;
+
+    const volRipasNormais    = d.ladoMenor * 0.06 * 0.02 * qtdRipasNormaisQ;
+    const volRipasReforcadas = usaReforcadaQ ? d.ladoMenor * 0.12 * 0.02 * 4 : 0;
+    const volRipasAmarracao  = comprimentoRipaSupQ * 0.06 * 0.02 * numRipasSupTotalQ;
+    const volPinus = volRipasNormais + volRipasReforcadas + volRipasAmarracao;
+    const qtdPinus = volPinus * 1.3;
+
+    // MDF — o insumo é comprado em m² (área), então multiplicamos a área × 1,1
+    const areaMDF = d.ladoMaior * d.ladoMenor * 2; // 2 chapas (base + tampa)
+    const qtdMDF = areaMDF * 1.1;
+
     // ---- 3. Lista de insumos (mesma ordem do Relatório) ----
     const insumos = [
       { codigo: d.material === "Caxeta" ? "34013207" : "34013519",
         descricao: d.material === "Caxeta"
           ? "CAXETA PRANCHADO 04 CM ESP"
           : "TECPLAY 35MM",
-        unidade: "m3", quantidade: 0, custoUnitario: 0, custoTotal: 0 },
+        unidade: d.material === "Caxeta" ? "m3" : "m2",
+        quantidade: qtdMaterialQuadro, custoUnitario: 0, custoTotal: 0 },
 
       { codigo: "34013099",
         descricao: "PINUS APARELHADO 04 FACES - 20 MM X 195 MM X 3000 MM",
-        unidade: "m3", quantidade: 0, custoUnitario: 0, custoTotal: 0 },
+        unidade: "m3", quantidade: qtdPinus, custoUnitario: 0, custoTotal: 0 },
 
       { codigo: "34013230",
         descricao: "CHAPA MDF 03 MM - 2.75 X 1.85 - EUCALIPTUS - DURATEX",
-        unidade: "m2", quantidade: 0, custoUnitario: 0, custoTotal: 0 },
+        unidade: "m2", quantidade: qtdMDF, custoUnitario: 0, custoTotal: 0 },
 
       { codigo: "33010796",
         descricao: "PARAFUSO A. ATARRAXANTE CAB. CHATA FENDA PHILIPS - 5,0 X 80 MM",
@@ -6514,6 +6683,30 @@ async function salvarNoHistorico() {
 // ABA HISTÓRICO — carrega, exibe e permite editar as simulações
 // ============================================================
 let historicoSimulacoes = [];   // cache local
+let precosCache = {};           // { codigo: valor } — insumos e MO
+
+// Lista padrão dos insumos (sempre os mesmos códigos)
+const INSUMOS_PADRAO = [
+  { codigo: "34013207", descricao: "CAXETA PRANCHADO 04 CM ESP", unidade: "m3" },
+  { codigo: "34013519", descricao: "TECPLAY 35MM", unidade: "m2" },
+  { codigo: "34013099", descricao: "PINUS APARELHADO 04 FACES - 20 MM X 195 MM X 3000 MM", unidade: "m3" },
+  { codigo: "34013230", descricao: "CHAPA MDF 03 MM - 2.75 X 1.85 - EUCALIPTUS - DURATEX", unidade: "m2" },
+  { codigo: "33010796", descricao: "PARAFUSO A. ATARRAXANTE CAB. CHATA FENDA PHILIPS - 5,0 X 80 MM", unidade: "PECA" },
+  { codigo: "33010071", descricao: 'PARAFUSO SEXTAVADO PONTA OGIVADA 5,5MM X 2.1/4"', unidade: "UN" },
+  { codigo: "33014I46", descricao: "GRAMPO 14/40", unidade: "MILH" },
+  { codigo: "33014815", descricao: "GRAMPO 80/12", unidade: "MILH" },
+  { codigo: "33009190", descricao: "COLA CASCOREZ EXTRA C/ 5 KG - HENKEL / ALMAFLEX PVA EXTRA", unidade: "KG" },
+  { codigo: "33009A50", descricao: "CHAPA DE EVA DE ESPESSURA 20 MM. MACIO MARROM", unidade: "KG" },
+  { codigo: "33009A51", descricao: "COLA DE CONTATO - COVULFIX - BRASCOLA / FOTIKOURO F L85 - FCC", unidade: "KG" }
+];
+
+// Lista padrão das taxas de Mão de Obra e GGF
+const TAXAS_HORA_PADRAO = [
+  "TX HORA HOMEM - MARCENARIA MODELO",
+  "TX HORA MAQ. ROUTER - MARC. MODELO",
+  "TX HORA GGF - MARCENARIA MODELO",
+  "TX HORA GGF - MAQ. ROUTER - MARC. MODELO"
+];
 
 // -------------------------------------------------------------
 // Carrega todas as simulações salvas no Firestore
@@ -6616,6 +6809,11 @@ async function carregarHistorico() {
 
   // Popula o dropdown de usuários antes de carregar
   popularSelectUsuarios();
+
+  // Garante que os preços estejam carregados antes de renderizar
+  if (Object.keys(precosCache).length === 0) {
+    await carregarPrecos();
+  }
 
   if (typeof db === "undefined" || !db) {
     lista.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--danger-text);">❌ Firebase não inicializado.</div>';
@@ -6744,51 +6942,174 @@ function renderizarSimulacaoCard(s) {
 
   // (ícones SVG do cabeçalho colapsado removidos — não são mais usados)
 
-  // ---- Madeiras ----
-  const madeiras = s.madeiras || [];
-  let linhasMadeiras = "";
-  let totalVolume = 0;
-  madeiras.forEach((w) => {
-    totalVolume += (w.volume || 0);
-    linhasMadeiras += `
-      <tr>
-        <td>${w.descricao || "—"}</td>
-        <td class="numero">${(w.comprimento || 0).toFixed(2).replace(".", ",")}</td>
-        <td class="numero">${((w.largura || 0) * 100).toFixed(0)} mm</td>
-        <td class="numero">${w.quantidade || 0}</td>
-        <td class="numero">${(w.volume || 0).toFixed(4).replace(".", ",")}</td>
-      </tr>`;
-  });
+  // (Bloco "Madeiras Utilizadas" removido — os volumes das madeiras
+  //  agora são apresentados na Lista de Insumos, com margem de perda.)
 
   // ---- Insumos ----
-  const insumos = s.insumos || [];
+  // Recalcula retroativo os 3 insumos de madeira (Caxeta/Tecplay, Pinus, MDF)
+  // para simulações antigas que foram salvas com quantidade 0.
+  const insumos = (s.insumos || []).map((it) => {
+    // ... (bloco de recálculo mantido igual)
+    const COD_QUADRO_CAXETA = "34013207";
+    const COD_QUADRO_TECPLAY = "34013519";
+    const COD_PINUS = "34013099";
+    const COD_MDF   = "34013230";
+
+    const ehMadeira =
+      it.codigo === COD_QUADRO_CAXETA ||
+      it.codigo === COD_QUADRO_TECPLAY ||
+      it.codigo === COD_PINUS ||
+      it.codigo === COD_MDF;
+
+    // Não é madeira → mantém intacto
+    if (!ehMadeira) return it;
+
+    // Recalcula usando as medidas salvas no documento
+    const mm = s.medidas || {};
+    const cInt = mm.comprimentoInterno || 0;
+    const lInt = mm.larguraInterna || 0;
+    const aInt = mm.alturaInterna || 0;
+    const cExt = mm.comprimentoExterno || (cInt + 0.07);
+    const lExt = mm.larguraExterna || (lInt + 0.07);
+    const ladoMaior = Math.max(cExt, lExt);
+    const ladoMenor = Math.min(cExt, lExt);
+    const material = s.material || "Tecplay";
+
+    // Quadro — Caxeta em m³, Tecplay em m²
+    let qtdMaterialQuadro;
+    if (material === "Caxeta") {
+      const volQuadro =
+        (ladoMaior * aInt * 0.035 * 2) +
+        ((ladoMenor - 0.07) * aInt * 0.035 * 2);
+      qtdMaterialQuadro = volQuadro * 1.3;
+    } else {
+      const areaQuadro =
+        (ladoMaior * aInt * 2) +
+        ((ladoMenor - 0.07) * aInt * 2);
+      qtdMaterialQuadro = areaQuadro * 1.1;
+    }
+
+    // Pinus
+    const numVaosInf = Math.max(2, Math.ceil((ladoMaior - 0.12) / 0.5));
+    const numRipasInfFace = numVaosInf + 1;
+    const numRipasInfTotal = numRipasInfFace * 2;
+    const usaReforcada = ladoMaior >= 3.0;
+    let baseNumSup = Math.max(2, Math.ceil((ladoMenor - 0.51) / 0.5));
+    if (ladoMaior >= 2.0) {
+      baseNumSup = ladoMenor < 1.2
+        ? Math.max(baseNumSup, 3)
+        : Math.max(baseNumSup, 4);
+    }
+    const numRipasSupTotal = baseNumSup * 2;
+    const comprimentoRipaSup = Math.min(ladoMaior, 3.0);
+    const qtdRipasNormais = usaReforcada
+      ? numRipasInfTotal - 4
+      : numRipasInfTotal;
+
+    const volPinus =
+      (ladoMenor * 0.06 * 0.02 * qtdRipasNormais) +
+      (usaReforcada ? ladoMenor * 0.12 * 0.02 * 4 : 0) +
+      (comprimentoRipaSup * 0.06 * 0.02 * numRipasSupTotal);
+    const qtdPinus = volPinus * 1.3;
+
+    // MDF (m²)
+    const qtdMDF = (ladoMaior * ladoMenor * 2) * 1.1;
+
+    // Devolve com a quantidade calculada e a unidade correta
+    if (it.codigo === COD_QUADRO_CAXETA || it.codigo === COD_QUADRO_TECPLAY) {
+      return {
+        ...it,
+        quantidade: qtdMaterialQuadro,
+        unidade: material === "Caxeta" ? "m3" : "m2"
+      };
+    }
+    if (it.codigo === COD_PINUS) {
+      return { ...it, quantidade: qtdPinus };
+    }
+    if (it.codigo === COD_MDF) {
+      return { ...it, quantidade: qtdMDF };
+    }
+    return it;
+  });
+
   let linhasInsumos = "";
+  let totalInsumos = 0;
+
+  const fmtMoeda = (v) =>
+    (v || 0).toLocaleString("pt-BR", {
+      style: "currency", currency: "BRL",
+      minimumFractionDigits: 2, maximumFractionDigits: 2
+    });
+
+  const fmtUnitario = (v) =>
+    (v || 0).toLocaleString("pt-BR", {
+      minimumFractionDigits: 4, maximumFractionDigits: 4
+    });
+
   insumos.forEach((it) => {
-    const qtd = (typeof it.quantidade === "number" && it.quantidade > 0)
-      ? it.quantidade.toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 })
+    const qtdNum = (typeof it.quantidade === "number") ? it.quantidade : 0;
+    const qtd = qtdNum > 0
+      ? qtdNum.toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 })
       : "-";
+
+    const preco = precosCache[it.codigo] || 0;
+    const custoTotal = qtdNum * preco;
+    totalInsumos += custoTotal;
+
     linhasInsumos += `
       <tr>
         <td>${it.codigo || "—"}</td>
         <td>${it.descricao || "—"}</td>
         <td>${it.unidade || "—"}</td>
         <td class="numero">${qtd}</td>
+        <td class="numero">${preco > 0 ? fmtUnitario(preco) : "-"}</td>
+        <td class="moeda">${custoTotal > 0 ? fmtMoeda(custoTotal) : "-"}</td>
       </tr>`;
   });
 
-  // ---- Mão de obra ----
+  // ---- Mão de obra & GGF ----
   const mdo = (s.maoDeObra && s.maoDeObra.processos) || [];
   const totalMin = (s.maoDeObra && s.maoDeObra.totalMinutos) || 0;
+  
+  let txHomem = precosCache["MO_TX HORA HOMEM - MARCENARIA MODELO"] || 0;
+  let txRouter = precosCache["MO_TX HORA MAQ. ROUTER - MARC. MODELO"] || 0;
+  let txGgfHomem = precosCache["MO_TX HORA GGF - MARCENARIA MODELO"] || 0;
+  let txGgfRouter = precosCache["MO_TX HORA GGF - MAQ. ROUTER - MARC. MODELO"] || 0;
+
   let linhasMdo = "";
+  let totalMO_seco = 0;
+  let totalGGF = 0;
+
   mdo.forEach((p) => {
     const pct = (p.percentual || 0) * 100;
+    const isRouter = p.nome === "ROUTER";
+    const precoMO = isRouter ? txRouter : txHomem;
+    const precoGGF = isRouter ? txGgfRouter : txGgfHomem;
+    
+    const valorMO = (p.minutos || 0) * precoMO;
+    const valorGGF = (p.minutos || 0) * precoGGF;
+    
+    // Novo cálculo somando Taxa Base + GGF na mesma linha
+    const custoFase = valorMO + valorGGF;
+    const precoFase = precoMO + precoGGF;
+    
+    totalMO_seco += valorMO;
+    totalGGF += valorGGF;
+
     linhasMdo += `
       <tr>
         <td>${p.nome || "—"}</td>
         <td class="numero">${p.minutos || 0}</td>
         <td class="numero">${pct.toFixed(2).replace(".", ",")}%</td>
+        <td class="numero">${precoFase > 0 ? fmtUnitario(precoFase) : "-"}</td>
+        <td class="moeda">${custoFase > 0 ? fmtMoeda(custoFase) : "-"}</td>
       </tr>`;
   });
+
+  let custoSeco = totalInsumos + totalMO_seco;
+  let somaTudo = custoSeco + totalGGF;
+  let fatorSetup = somaTudo * 0.20;
+  let custoStandard = somaTudo + fatorSetup;
 
   const codigoAtual = (s.codigo || "").replace(/"/g, "&quot;");
   const codigoVazio = !s.codigo;
@@ -6875,27 +7196,6 @@ function renderizarSimulacaoCard(s) {
               </div>
             </div>
 
-            <!-- Madeiras -->
-            <div class="historico-secao-titulo">Madeiras Utilizadas</div>
-            <table class="historico-tabela">
-              <thead>
-                <tr>
-                  <th>Descrição</th>
-                  <th style="text-align: right;">Comp. (m)</th>
-                  <th style="text-align: right;">Largura</th>
-                  <th style="text-align: right;">Qtd.</th>
-                  <th style="text-align: right;">Vol. (m³)</th>
-                </tr>
-              </thead>
-              <tbody>${linhasMadeiras || '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Sem madeiras registradas</td></tr>'}</tbody>
-              <tfoot>
-                <tr>
-                  <td colspan="4">Volume total</td>
-                  <td class="numero">${totalVolume.toFixed(4).replace(".", ",")} m³</td>
-                </tr>
-              </tfoot>
-            </table>
-
             <!-- Lista de insumos -->
             <div class="historico-secao-titulo">Lista de Insumos</div>
             <table class="historico-tabela">
@@ -6905,9 +7205,17 @@ function renderizarSimulacaoCard(s) {
                   <th>Descrição</th>
                   <th>U/M</th>
                   <th style="text-align: right;">Qtd. usada</th>
+                  <th style="text-align: right;">CUSTO UNIT. (R$)</th>
+                  <th style="text-align: right;">Custo total</th>
                 </tr>
               </thead>
-              <tbody>${linhasInsumos || '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);">Sem insumos registrados</td></tr>'}</tbody>
+              <tbody>${linhasInsumos || '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Sem insumos registrados</td></tr>'}</tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="5" style="text-align:right;">Subtotal insumos</td>
+                  <td class="moeda destaque">${fmtMoeda(totalInsumos)}</td>
+                </tr>
+              </tfoot>
             </table>
 
             <!-- Mão de obra -->
@@ -6918,16 +7226,32 @@ function renderizarSimulacaoCard(s) {
                   <th>Processo</th>
                   <th style="text-align: right;">Minutos</th>
                   <th style="text-align: right;">% da fase</th>
+                  <th style="text-align: right;">CUSTO UNIT. (R$)</th>
+                  <th style="text-align: right;">Custo total</th>
                 </tr>
               </thead>
-              <tbody>${linhasMdo || '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);">Sem processos registrados</td></tr>'}</tbody>
+              <tbody>${linhasMdo || '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Sem processos registrados</td></tr>'}</tbody>
               <tfoot>
                 <tr>
-                  <td>Total</td>
-                  <td class="numero">${totalMin}</td>
-                  <td class="numero">100,00%</td>
+                  <td colspan="4" style="text-align:right;">Subtotal Mão de Obra</td>
+                  <td class="moeda destaque">${fmtMoeda(totalMO_seco + totalGGF)}</td>
                 </tr>
               </tfoot>
+            </table>
+
+            <!-- Resumo de custos -->
+            <div class="historico-secao-titulo" style="background: var(--primary); color: white;">Resumo Final de Custos</div>
+            <table class="historico-tabela" style="font-size: 0.9rem;">
+              <tbody>
+                <tr style="background: rgba(0, 113, 227, 0.05);">
+                  <td style="font-weight: 800; color: var(--primary); font-size: 1.2rem;">CUSTO SECO</td>
+                  <td class="moeda" style="font-weight: 800; color: var(--primary); font-size: 1.3rem;">${fmtMoeda(custoSeco)}</td>
+                </tr>
+                <tr style="background: rgba(16, 185, 129, 0.1);">
+                  <td style="font-weight: 800; color: #10b981; font-size: 1.2rem;">CUSTO STANDARD</td>
+                  <td class="moeda" style="font-weight: 800; color: #10b981; font-size: 1.3rem;">${fmtMoeda(custoStandard)}</td>
+                </tr>
+              </tbody>
             </table>
 
           </div>
@@ -7107,6 +7431,130 @@ async function salvarCodigoSimulacao(id, idSeguro) {
       btn.innerText = "💾";
       btn.disabled = false;
     }, 1500);
+  }
+}
+
+// ============================================================
+// PREÇOS — carrega, popula a tabela e salva
+// ============================================================
+
+// -------------------------------------------------------------
+// Carrega os preços do Firestore (coleção "precos")
+// -------------------------------------------------------------
+async function carregarPrecos() {
+  if (typeof db === "undefined" || !db) return;
+  try {
+    const snap = await db.collection("precos").get();
+    precosCache = {};
+    snap.forEach((doc) => {
+      const data = doc.data();
+      if (data && typeof data.valor === "number") {
+        precosCache[doc.id] = data.valor;
+      }
+    });
+    console.log(`💰 ${Object.keys(precosCache).length} preços carregados.`);
+  } catch (err) {
+    console.error("Erro ao carregar preços:", err);
+  }
+}
+
+// -------------------------------------------------------------
+// Popula a tabela editável de preços na aba "Preços"
+// -------------------------------------------------------------
+function popularTabelaPrecos() {
+  // Insumos
+  const tbodyIns = document.getElementById("precosInsumosBody");
+  if (tbodyIns) {
+    tbodyIns.innerHTML = "";
+    INSUMOS_PADRAO.forEach((ins) => {
+      const tr = document.createElement("tr");
+      const valor = precosCache[ins.codigo] || 0;
+      tr.innerHTML = `
+        <td>${ins.codigo}</td>
+        <td>${ins.descricao}</td>
+        <td>${ins.unidade}</td>
+        <td style="text-align:right;">
+          <input
+            type="number"
+            class="precos-input"
+            data-codigo="${ins.codigo}"
+            data-tipo="insumo"
+            value="${valor.toFixed(4)}"
+            min="0"
+            step="0.0001"
+          />
+        </td>`;
+      tbodyIns.appendChild(tr);
+    });
+  }
+
+  // MO — a "chave" para o Firestore é o próprio nome da taxa (com prefixo)
+  const tbodyMO = document.getElementById("precosMOBody");
+  if (tbodyMO) {
+    tbodyMO.innerHTML = "";
+    TAXAS_HORA_PADRAO.forEach((nome) => {
+      const chave = "MO_" + nome;
+      const valor = precosCache[chave] || 0;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${nome}</td>
+        <td style="text-align:right;">
+          <input
+            type="number"
+            class="precos-input"
+            data-codigo="${chave}"
+            data-tipo="maoDeObra"
+            value="${valor.toFixed(4)}"
+            min="0"
+            step="0.0001"
+          />
+        </td>`;
+      tbodyMO.appendChild(tr);
+    });
+  }
+}
+
+// -------------------------------------------------------------
+// Salva todos os preços da tabela no Firestore
+// -------------------------------------------------------------
+async function salvarPrecos(evt) {
+  if (typeof db === "undefined" || !db) {
+    showToast("❌ Firebase não inicializado", false);
+    return;
+  }
+
+  const btn = evt ? evt.target : document.querySelector('button[onclick*="salvarPrecos"]');
+  const textoOriginal = btn.innerText;
+  btn.disabled = true;
+  btn.innerText = "💾 Salvando...";
+
+  try {
+    const inputs = document.querySelectorAll(".precos-input");
+    const batch = db.batch();
+
+    inputs.forEach((inp) => {
+      const codigo = inp.dataset.codigo;
+      const tipo = inp.dataset.tipo;
+      const valor = parseFloat(inp.value) || 0;
+      const ref = db.collection("precos").doc(codigo);
+      batch.set(ref, { valor, tipo, atualizadoEm: new Date() }, { merge: true });
+      precosCache[codigo] = valor;
+    });
+
+    await batch.commit();
+    console.log(`💰 ${inputs.length} preços salvos.`);
+    showToast("💰 Preços salvos! Atualizando histórico...", true);
+
+    // Re-renderiza o histórico com os novos valores
+    if (document.getElementById("historico-tab").classList.contains("active")) {
+      aplicarFiltrosHistorico();
+    }
+  } catch (err) {
+    console.error("Erro ao salvar preços:", err);
+    showToast("❌ Erro ao salvar: " + (err.message || "desconhecido"), false);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = textoOriginal;
   }
 }
 
