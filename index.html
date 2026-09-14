@@ -15,6 +15,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- Substituímos o SheetJS pelo ExcelJS para permitir fórmulas, bordas e cores perfeitas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <style>
       /* VARIAVEIS DE TEMA (LIQUID GLASS & MODERN DARK) */
@@ -1942,16 +1943,51 @@
     <!-- LOGIC SCRIPT -->
     <script>
       // --- SISTEMA DE LOGIN DE ACESSO ---
-            function validarLogin() {
-        const user = document
-          .getElementById("loginUser")
-          .value.trim()
-          .toLowerCase();
-        const pass = document.getElementById("loginPass").value.trim();
+      function validarLogin() {
+        const userEl = document.getElementById("loginUser");
+        const passEl = document.getElementById("loginPass");
         const errorLabel = document.getElementById("loginError");
 
-        if (user === "custos" && pass === "samuelgay") {
+        const user = userEl.value.trim().toLowerCase();
+        const pass = passEl.value.trim();
+
+        // Sanity check — cobre o caso raro das constantes ainda não
+        // estarem inicializadas (erro de JS anterior no script).
+        if (
+          typeof MAPA_USUARIOS === "undefined" ||
+          typeof SENHA_PADRAO === "undefined"
+        ) {
+          console.error(
+            "[LOGIN] ERRO CRÍTICO: MAPA_USUARIOS ou SENHA_PADRAO não definidos."
+          );
+          errorLabel.innerText =
+            "⚠️ Erro interno: constantes de login não carregadas. Recarregue a página (Ctrl+Shift+R).";
+          errorLabel.style.opacity = "1";
+          return;
+        }
+
+        // --- DEBUG: mostra exatamente o que está sendo comparado ---
+        console.log("[LOGIN] usuário digitado: ", JSON.stringify(user));
+        console.log("[LOGIN] senha digitada:   ", JSON.stringify(pass));
+        console.log("[LOGIN] usuários válidos: ", Object.keys(MAPA_USUARIOS));
+        console.log("[LOGIN] senha esperada:   ", JSON.stringify(SENHA_PADRAO));
+
+        const nomeExibido = MAPA_USUARIOS[user];
+        const senhaOK = pass === SENHA_PADRAO;
+
+        console.log(
+          "[LOGIN] usuário existe?",
+          !!nomeExibido,
+          "| senha correta?",
+          senhaOK
+        );
+
+        if (nomeExibido && senhaOK) {
+          // Guarda o nome exibido (ex.: "MAURO S.") para preencher o F6
+          // do Excel exportado.
+          usuarioLogado = nomeExibido;
           errorLabel.style.opacity = "0";
+
           let overlay = document.getElementById("login-overlay");
           overlay.classList.add("hidden");
           overlay.style.opacity = "0";
@@ -1965,7 +2001,17 @@
           setTimeout(onWindowResize, 400);
           setTimeout(onWindowResize, 700);
         } else {
+          // Mensagem específica — ajuda a identificar o que falhou
+          if (!nomeExibido && !senhaOK) {
+            errorLabel.innerText = "⚠️ Usuário e senha incorretos!";
+          } else if (!nomeExibido) {
+            errorLabel.innerText =
+              '⚠️ Usuário "' + user + '" não reconhecido.';
+          } else {
+            errorLabel.innerText = "⚠️ Senha incorreta.";
+          }
           errorLabel.style.opacity = "1";
+
           let box = document.querySelector(".login-box");
           box.animate(
             [
@@ -2083,6 +2129,21 @@
           if (scene) scene.background = new THREE.Color(0x0f172a);
         }
       }
+
+      // Nome do usuário que fez login — usado para preencher a célula F6
+      // da aba "fases" no Excel exportado.
+      let usuarioLogado = "";
+
+      // Mapa de credenciais: usuário do login → nome exibido no Excel.
+      // Todos usam a mesma senha definida em SENHA_PADRAO.
+      // Para adicionar um novo usuário, basta acrescentar uma linha aqui.
+      const MAPA_USUARIOS = {
+        "mauros": "MAURO S.",
+        "maalves": "MATHEUS ALVES",
+        "samuelj": "SAMUEL J.",
+        "joseed":  "JOSÉ E."
+      };
+      const SENHA_PADRAO = "custos2026";
 
       let scene, camera, renderer, controls, crateGroup;
       let ambientLight, dirLight;
@@ -4873,6 +4934,70 @@ function base64ParaArrayBuffer(base64) {
   return bytes.buffer;
 }
 
+// ============================================================
+// PATCH PÓS-EXCELJS — restaura o `%` em G51 da aba "fases"
+// ------------------------------------------------------------
+// O tokenizador de fórmulas do ExcelJS descarta o operador `%`
+// ao regravar o workbook. Como não há como desativá-lo, patchamos
+// o XML do .xlsx depois que o ExcelJS terminou de escrever, antes
+// de entregar o arquivo para download.
+// ============================================================
+async function patchG51Formula(buffer) {
+  if (typeof JSZip === "undefined") {
+    console.warn("JSZip não carregado — G51 seguirá sem o `%`.");
+    return buffer;
+  }
+
+  const zip = await JSZip.loadAsync(buffer);
+
+  // Descobre quais arquivos são worksheets
+  const sheetFiles = Object.keys(zip.files).filter(
+    (name) =>
+      /^xl\/worksheets\/sheet\d+\.xml$/.test(name) ||
+      /^xl\/worksheets\/sheet\d+\.xml$/i.test(name)
+  );
+
+  let patchAplicado = false;
+
+  for (const sheetName of sheetFiles) {
+    const original = await zip.file(sheetName).async("string");
+
+    // Encontra a célula G51 e sua fórmula. O XML do Excel pode
+    // escrever a fórmula com `&quot;` no lugar das aspas — por isso
+    // o regex é permissivo e casa pelo padrão "IFERROR(E51*F51,...)".
+    const patched = original.replace(
+      /(<c\s+r="G51"[^>]*>\s*<f[^>]*>)([\s\S]*?)(<\/f>)/,
+      (match, pre, formula, post) => {
+        // Se já tem `%` antes da vírgula, não mexe
+        if (/E51\s*\*\s*F51\s*%/.test(formula)) return match;
+
+        // Insere o `%` logo depois de F51
+        const novaFormula = formula.replace(
+          /(E51\s*\*\s*F51)(\s*,)/,
+          "$1%$2"
+        );
+        return pre + novaFormula + post;
+      }
+    );
+
+    if (patched !== original) {
+      zip.file(sheetName, patched);
+      patchAplicado = true;
+    }
+  }
+
+  if (patchAplicado) {
+    console.log("✅ G51 corrigida no XML — `%` restaurado.");
+  } else {
+    console.warn("⚠️ G51 não encontrada no XML — verifique a aba 'fases'.");
+  }
+
+  return await zip.generateAsync({
+    type: "arraybuffer",
+    compression: "DEFLATE",
+  });
+}
+
 // ============ EXPORTAÇÃO USANDO O TEMPLATE ============
 function exportarExcel() {
   const templateB64 = localStorage.getItem(TEMPLATE_KEY);
@@ -4894,6 +5019,12 @@ function exportarExcel() {
   workbook.xlsx
     .load(buffer)
     .then(() => {
+      // Precisa ficar AQUI (depois do load), porque o load() lê o
+      // calcPr do template e sobrescreve o que foi definido antes.
+      // Isso força o Excel a recalcular tudo ao abrir, evitando o
+      // aviso "Encontramos um problema... Reparado".
+      workbook.calcProperties.fullCalcOnLoad = true;
+
       // ============ ABA "Madeiras" ============
       const wsMad = workbook.getWorksheet("Madeiras");
       if (wsMad) {
@@ -4978,12 +5109,17 @@ function exportarExcel() {
         // Limpa o H11 (não gravamos mais o tipo de madeira lá)
         wsFases.getCell("H11").value = null;
 
+        // F6: nome do usuário que fez login no Web App
+        wsFases.getCell("F6").value = usuarioLogado || "";
+
         // ---- Cabeçalho ----
         const cI = d.cInt.toFixed(2).replace(".", ",");
         const lI = d.lInt.toFixed(2).replace(".", ",");
         const aI = d.aInt.toFixed(2).replace(".", ",");
-        wsFases.getCell("C2").value =
-          `ENGRADADO DE MADEIRA ${cI}M X ${lI}M X ${aI}H MEDIDA INTERNA`;
+        const nomeProduto =
+          `ENGRADADO DE MADEIRA ${cI}M X ${lI}M X ${aI}H MEDIDA INTERNA` +
+          ` - C KIT PARAFUSOS + PORCAS BORBOLETA E KIT EVA EXTERNO`;
+        wsFases.getCell("C2").value = nomeProduto;
 
           const hoje = new Date();
         wsFases.getCell("F2").value = hoje;
@@ -5002,24 +5138,37 @@ function exportarExcel() {
         for (let r = 11; r <= 20; r++) {
           wsFases.getCell(`C${r}`).value = {
             formula: `IFERROR(VLOOKUP(B${r},${REF_MAT},2,0),"-")`,
+            result: "-"
           };
           wsFases.getCell(`D${r}`).value = {
             formula: `IFERROR(VLOOKUP(B${r},${REF_MAT},3,0),"-")`,
+            result: "-"
           };
           wsFases.getCell(`F${r}`).value = {
             formula: `IFERROR(VLOOKUP(B${r},${REF_MAT},4,0),"-")`,
+            result: 0
           };
           wsFases.getCell(`G${r}`).value = {
             formula: `IFERROR(E${r}*F${r},"-")`,
+            result: 0
           };
         }
+
+                // G51: NÃO escrever via ExcelJS.
+        // O tokenizador de fórmulas do ExcelJS corrompe esta célula
+        // (descarta `%`, `/100` e variantes). A fórmula correta precisa
+        // vir pronta do template matriz, que preserva o XML original.
+        // Se o template for trocado, garantir que G51 contenha:
+        //   =SEERRO(E51*F51%;"-")   (pt-BR, como aparece no Excel)
+        // (no XML interno do template: IFERROR(E51*F51%,"-"))
 
         // E11, E12, E13: referências à aba Madeiras
         wsFases.getCell("E11").value = {
           formula: d.material === "Caxeta" ? "Madeiras!E61" : "Madeiras!Y27",
+          result: 0
         };
-        wsFases.getCell("E12").value = { formula: "Madeiras!E22" };
-        wsFases.getCell("E13").value = { formula: "Madeiras!O14" };
+        wsFases.getCell("E12").value = { formula: "Madeiras!E22", result: 0 };
+        wsFases.getCell("E13").value = { formula: "Madeiras!O14", result: 0 };
 
         // E14 a E20: quantidades da simulação
         wsFases.getCell("E14").value = d.flatScrews;
@@ -5035,15 +5184,19 @@ function exportarExcel() {
         for (let r = 37; r <= 51; r++) {
           wsFases.getCell(`C${r}`).value = {
             formula: `IFERROR(VLOOKUP(B${r},${REF_MAT},2,0),"-")`,
+            result: "-"
           };
           wsFases.getCell(`D${r}`).value = {
             formula: `IFERROR(VLOOKUP(B${r},${REF_MAT},3,0),"-")`,
+            result: "-"
           };
           wsFases.getCell(`F${r}`).value = {
             formula: `IFERROR(VLOOKUP(B${r},${REF_MAT},4,0),"-")`,
+            result: 0
           };
           wsFases.getCell(`G${r}`).value = {
             formula: `IFERROR(E${r}*F${r},"-")`,
+            result: 0
           };
         }
 
@@ -5051,21 +5204,22 @@ function exportarExcel() {
         wsFases.getCell("E37").value = {
           formula:
             "C57+C58+C59+C60+C61+C62+C63+C64+C65+C66+C67+C68+C69+C70+C71+C72+C73+C74+C75+C76+C83+C84+C85+C86+C87+C88",
+          result: 0
         };
-        wsFases.getCell("E38").value = { formula: "C77" };
-        wsFases.getCell("E39").value = { formula: "C81" };
-        wsFases.getCell("E40").value = { formula: "C78" };
-        wsFases.getCell("E41").value = { formula: "C79" };
-        wsFases.getCell("E42").value = { formula: "C80" };
-        wsFases.getCell("E43").value = { formula: "C82" };
-        wsFases.getCell("E44").value = { formula: "E37" };
-        wsFases.getCell("E45").value = { formula: "E38" };
-        wsFases.getCell("E46").value = { formula: "E39" };
-        wsFases.getCell("E47").value = { formula: "E40" };
-        wsFases.getCell("E48").value = { formula: "E41" };
-        wsFases.getCell("E49").value = { formula: "E42" };
-        wsFases.getCell("E50").value = { formula: "E43" };
-        wsFases.getCell("E51").value = { formula: "SUM(G11:G50)" };
+        wsFases.getCell("E38").value = { formula: "C77", result: 0 };
+        wsFases.getCell("E39").value = { formula: "C81", result: 0 };
+        wsFases.getCell("E40").value = { formula: "C78", result: 0 };
+        wsFases.getCell("E41").value = { formula: "C79", result: 0 };
+        wsFases.getCell("E42").value = { formula: "C80", result: 0 };
+        wsFases.getCell("E43").value = { formula: "C82", result: 0 };
+        wsFases.getCell("E44").value = { formula: "E37", result: 0 };
+        wsFases.getCell("E45").value = { formula: "E38", result: 0 };
+        wsFases.getCell("E46").value = { formula: "E39", result: 0 };
+        wsFases.getCell("E47").value = { formula: "E40", result: 0 };
+        wsFases.getCell("E48").value = { formula: "E41", result: 0 };
+        wsFases.getCell("E49").value = { formula: "E42", result: 0 };
+        wsFases.getCell("E50").value = { formula: "E43", result: 0 };
+        wsFases.getCell("E51").value = { formula: "SUM(G11:G50)", result: 0 };
 
         // ---- Minutos dos processos (linhas 57 a 88) ----
         const min = (seg) => Math.round((seg || 0) / 60);
@@ -5082,29 +5236,30 @@ function exportarExcel() {
         [59, 61, 66, 67, 76, 77, 83].forEach((r) => {
           wsFases.getCell(`D${r}`).value = {
             formula: `IFERROR(C${r}/$C$89,0)`,
+            result: 0
           };
         });
 
         // ---- Totais ----
-        wsFases.getCell("C89").value = { formula: "SUM(C58:C88)" };
-        wsFases.getCell("D89").value = { formula: "IFERROR(C89/C89,0)" };
-        wsFases.getCell("G89").value = { formula: "SUM(G58:G88)" };
-        wsFases.getCell("G52").value = { formula: "SUM(G11:G51)" };
+        wsFases.getCell("C89").value = { formula: "SUM(C58:C88)", result: 0 };
+        wsFases.getCell("D89").value = { formula: "IFERROR(C89/C89,0)", result: 0 };
+        wsFases.getCell("G89").value = { formula: "SUM(G58:G88)", result: 0 };
+        wsFases.getCell("G52").value = { formula: "SUM(G11:G51)", result: 0 };
 
         // ---- Resumo inferior (linhas 93 a 100) ----
-        wsFases.getCell("B93").value = { formula: "B9" };
-        wsFases.getCell("F93").value = { formula: "G52" };
-        wsFases.getCell("I93").value = { formula: "SUM(G11:G43)" };
+        wsFases.getCell("B93").value = { formula: "B9", result: "" };
+        wsFases.getCell("F93").value = { formula: "G52", result: 0 };
+        wsFases.getCell("I93").value = { formula: "SUM(G11:G43)", result: 0 };
 
-        wsFases.getCell("B97").value = { formula: "B93" };
-        wsFases.getCell("D97").value = { formula: "IFERROR(SUM(G11:G28),0)" };
-        wsFases.getCell("F97").value = { formula: "SUM(G37:G43)" };
-        wsFases.getCell("I97").value = { formula: "SUM(D97:G97)" };
-        wsFases.getCell("J97").value = { formula: "SUM(E37:E43)" };
+        wsFases.getCell("B97").value = { formula: "B93", result: "" };
+        wsFases.getCell("D97").value = { formula: "IFERROR(SUM(G11:G28),0)", result: 0 };
+        wsFases.getCell("F97").value = { formula: "SUM(G37:G43)", result: 0 };
+        wsFases.getCell("I97").value = { formula: "SUM(D97:G97)", result: 0 };
+        wsFases.getCell("J97").value = { formula: "SUM(E37:E43)", result: 0 };
 
-        wsFases.getCell("D100").value = { formula: "IFERROR(D97/$I$97,0)" };
-        wsFases.getCell("F100").value = { formula: "IFERROR(F97/$I$97,0)" };
-        wsFases.getCell("I100").value = { formula: "IFERROR(I97/I97,0)" };
+        wsFases.getCell("D100").value = { formula: "IFERROR(D97/$I$97,0)", result: 0 };
+        wsFases.getCell("F100").value = { formula: "IFERROR(F97/$I$97,0)", result: 0 };
+        wsFases.getCell("I100").value = { formula: "IFERROR(I97/I97,0)", result: 0 };
       }
 
       // ============ ABA "RELATÓRIO DE ASSINATURA" ============
@@ -5149,7 +5304,35 @@ function exportarExcel() {
           }
         });
 
-        // Foto 3D removida — o usuário insere manualmente no Excel.
+        // ---- Foto 3D do engradado ----
+        // Captura a vista atual e embute na célula designada da aba.
+        try {
+          const fotoBase64 = capturarFotoParaExcel();
+          if (fotoBase64) {
+            const imageId = workbook.addImage({
+              base64: "data:image/png;base64," + fotoBase64,
+              extension: "png",
+            });
+            wsRel.addImage(imageId, {
+              tl: {
+                col: CONF_EXCEL_FOTO_TL_COL,
+                row: CONF_EXCEL_FOTO_TL_ROW,
+              },
+              ext: {
+                width:  CONF_EXCEL_FOTO_DISPLAY_W,
+                height: CONF_EXCEL_FOTO_DISPLAY_H,
+              },
+              // "oneCell" → a imagem se ancora a uma célula e se move
+              // junto se o usuário inserir linhas acima, sem esticar.
+              editAs: "oneCell",
+            });
+            console.log("✅ Foto 3D embutida na aba RELATÓRIO DE ASSINATURA.");
+          } else {
+            console.warn("⚠️ Não foi possível capturar a foto 3D.");
+          }
+        } catch (err) {
+          console.warn("Falha ao embutir a foto 3D no Excel:", err);
+        }
       }
             // Captura a vista 3D atual e devolve a imagem em base64 (só os dados, sem prefixo).
       // Usada para embutir a foto no Excel, na aba RELATÓRIO DE ASSINATURA.
@@ -5182,12 +5365,10 @@ function exportarExcel() {
           }
           cameraDistance = cameraDistance / CONF_EXCEL_FOTO_MARGIN;
 
-          // Mantém a orientação atual do usuário — a foto sai do mesmo
-          // ângulo que ele está vendo na tela.
-          const direction = originalCamPos
-            .clone()
-            .sub(originalTarget)
-            .normalize();
+          // Direção isométrica fixa — (1, 0.85, 1) dá ~33° de elevação,
+          // mostrando bem a face superior (onde está a grade de ripas)
+          // e duas laterais. Mais bonito que a view aleatória do usuário.
+          const direction = new THREE.Vector3(1, 0.85, 1).normalize();
           camera.position
             .copy(center)
             .add(direction.multiplyScalar(cameraDistance));
@@ -5214,21 +5395,36 @@ function exportarExcel() {
       // ============ GERAR DOWNLOAD ============
       return workbook.xlsx.writeBuffer();
     })
-    .then((outBuffer) => {
-      const blob = new Blob([outBuffer], {
+    .then(async (outBuffer) => {
+      // PATCH: o ExcelJS apaga o `%` da G51 ao regravar o workbook.
+      // Aplicamos a correção direto no XML do .xlsx antes de baixar.
+      const finalBuffer = await patchG51Formula(outBuffer);
+
+      const blob = new Blob([finalBuffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob);
 
-      const now = new Date();
-      const hh = String(now.getHours()).padStart(2, "0");
-      const mm = String(now.getMinutes()).padStart(2, "0");
       const cI = d.cInt.toFixed(2).replace(".", ",");
       const lI = d.lInt.toFixed(2).replace(".", ",");
       const aI = d.aInt.toFixed(2).replace(".", ",");
-      link.download = `Engradado_${cI}x${lI}x${aI}_${hh}h${mm}.xlsx`;
+
+      // Âncora real, anexada ao DOM, clicada uma única vez,
+      // depois removida e com o Blob liberado — evita o aviso
+      // de "múltiplos downloads" do Chrome.
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `ENGRADADO DE MADEIRA ${cI}M X ${lI}M X ${aI}H MEDIDA INTERNA.xlsx`;
+      link.style.display = "none";
+      document.body.appendChild(link);
       link.click();
+
+      // Limpeza agendada — dá tempo do navegador iniciar o download
+      // antes de revogar a URL.
+      setTimeout(() => {
+        if (link.parentNode) link.parentNode.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 800);
 
       showToast("📥 Planilha gerada com sucesso!", true);
     })
@@ -5239,9 +5435,28 @@ function exportarExcel() {
 }
 
       // --- SEÇÃO DE CONFIGURAÇÃO DA CÂMERA EXCEL ---
-      const CONF_EXCEL_FOTO_LARGURA = 968;
-      const CONF_EXCEL_FOTO_ALTURA = 384;
-      const CONF_EXCEL_FOTO_MARGIN = 0.85;
+      // Resolução do render (o PNG sai 2× maior que a exibição → fica
+      // nítido em telas hi-DPI). Aspecto 6:5 combina com a área
+      // reservada para a foto na aba "RELATÓRIO DE ASSINATURA".
+      const CONF_EXCEL_FOTO_LARGURA = 720;
+      const CONF_EXCEL_FOTO_ALTURA  = 600;
+
+      // Fator de zoom da captura:
+      //   < 1.00  → engradado MENOR (mais sobra)
+      //   = 1.00  → encaixa justo no quadro
+      //   > 1.00  → engradado MAIOR (aproxima a câmera, "aperta" o quadro)
+      // 1.15 dá um corte bem justo sem risco de cortar as pontas.
+      const CONF_EXCEL_FOTO_MARGIN  = 1.15;
+
+      // Tamanho com que a foto é exibida DENTRO do Excel (px de tela).
+      // Como renderizamos em 720×600, exibir em 320×267 dá mais que 2× de nitidez.
+      const CONF_EXCEL_FOTO_DISPLAY_W = 320;
+      const CONF_EXCEL_FOTO_DISPLAY_H = 267;
+
+      // Célula onde a foto é ancorada (0-based): col=1 → "B"; row=7 → linha 8.
+      // Row 8 é onde começa o bloco visual ao lado de "PRODUTO / CÓDIGO".
+      const CONF_EXCEL_FOTO_TL_COL = 1;
+      const CONF_EXCEL_FOTO_TL_ROW = 7;
 
       function tirarFotoExcel() {
         if (!crateGroup || !scene || !camera) return;
