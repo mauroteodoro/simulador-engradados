@@ -3466,6 +3466,12 @@
           // Guarda o nome exibido (ex.: "MAURO S.") para preencher o F6
           // do Excel exportado.
           usuarioLogado = nomeExibido;
+          // Persiste a sessão para sobreviver a um refresh da página.
+          try {
+            localStorage.setItem("artefacto_sessao", nomeExibido);
+          } catch (e) {
+            console.warn("Não foi possível salvar a sessão:", e);
+          }
           errorLabel.style.opacity = "0";
 
           let overlay = document.getElementById("login-overlay");
@@ -3508,6 +3514,15 @@
         document.getElementById("loginUser").value = "";
         document.getElementById("loginPass").value = "";
         document.getElementById("loginError").style.opacity = "0";
+
+        // Encerra a sessão: some do localStorage, forçando novo login
+        // no próximo carregamento.
+        try {
+          localStorage.removeItem("artefacto_sessao");
+        } catch (e) {
+          console.warn("Não foi possível limpar a sessão:", e);
+        }
+        usuarioLogado = "";
 
         // Reseta o olhinho ao estado "senha oculta"
         const passInput = document.getElementById("loginPass");
@@ -8994,8 +9009,31 @@
       }
 
       window.onload = function () {
-        // Estado inicial: logado para fora (overlay visível)
-        document.body.classList.add("logged-out");
+        // Tenta restaurar uma sessão salva no localStorage.
+        // Se existir, pula a tela de login e entra direto no app.
+        let sessaoSalva = null;
+        try {
+          sessaoSalva = localStorage.getItem("artefacto_sessao");
+        } catch (e) {
+          console.warn("Não foi possível ler a sessão:", e);
+        }
+
+        if (sessaoSalva) {
+          usuarioLogado = sessaoSalva;
+
+          // Esconde o overlay de login (mesmos passos do validarLogin)
+          const overlay = document.getElementById("login-overlay");
+          if (overlay) {
+            overlay.classList.add("hidden");
+            overlay.style.opacity = "0";
+            overlay.style.visibility = "hidden";
+          }
+          // Garante que o body NÃO está travado como "deslogado"
+          document.body.classList.remove("logged-out");
+        } else {
+          // Sem sessão salva → estado inicial: logado para fora
+          document.body.classList.add("logged-out");
+        }
 
         // Force reflow — garante que o layout está calculado antes do 3D
         void document.getElementById("canvas-container").offsetHeight;
