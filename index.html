@@ -857,6 +857,12 @@
         overflow: hidden;
         overscroll-behavior: none;
       }
+
+      /* Quando existe sessão salva, o overlay de login nem chega a ser
+         renderizado — evita o "flash" ao atualizar a página. */
+      html.has-session #login-overlay {
+        display: none !important;
+      }
       .login-box {
         background: var(--bg-panel);
         padding: 48px 40px 44px;
@@ -1846,6 +1852,22 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   </head>
   <body>
+    <!-- Decide ANTES do primeiro render se mostra o login ou pula direto
+         para o app — elimina o flash da tela de login ao atualizar. -->
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem("artefacto_sessao")) {
+            document.documentElement.classList.add("has-session");
+          } else {
+            document.body.classList.add("logged-out");
+          }
+        } catch (e) {
+          document.body.classList.add("logged-out");
+        }
+      })();
+    </script>
+
     <!-- TELA DE LOGIN OVERLAY -->
     <div id="login-overlay">
       <div class="login-box">
@@ -3472,6 +3494,8 @@
           } catch (e) {
             console.warn("Não foi possível salvar a sessão:", e);
           }
+          // Marca o documento como "logado" — esconde o overlay de login.
+          document.documentElement.classList.add("has-session");
           errorLabel.style.opacity = "0";
 
           let overlay = document.getElementById("login-overlay");
@@ -3523,6 +3547,8 @@
           console.warn("Não foi possível limpar a sessão:", e);
         }
         usuarioLogado = "";
+        // Desmarca o documento como "logado" — volta a mostrar o overlay.
+        document.documentElement.classList.remove("has-session");
 
         // Reseta o olhinho ao estado "senha oculta"
         const passInput = document.getElementById("loginPass");
