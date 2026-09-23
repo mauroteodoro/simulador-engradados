@@ -8512,6 +8512,10 @@
         const lExt = Math.round((lInt + 0.07) * 1000) / 1000;
 
         try {
+          // Força o engradado a ser construído FECHADO (sem explosão),
+          // para que a foto do histórico mostre sempre o modelo íntegro.
+          isExploded = false;
+
           console.log(
             "[HISTÓRICO] Construindo engradado:",
             cExt,
@@ -8539,6 +8543,10 @@
           document.getElementById("metodoCorteMdf").value =
             estadoSalvo.metodoCorte;
 
+          // Restaura o modo explodido ANTES de reconstruir o engradado,
+          // para que o usuário veja exatamente o que via antes.
+          isExploded = estadoSalvo.isExploded;
+
           // Reconstrói o engradado atual (o que o usuário estava vendo)
           const d = estadoSalvo.dadosSimulacao;
           if (d && d.ladoMaior) {
@@ -8553,6 +8561,10 @@
           console.error("Erro ao gerar foto do histórico:", e);
           // Em caso de erro, tenta ao menos restaurar o estado
           try {
+            // Garante que o estado de explosão seja restaurado mesmo
+            // no caminho de erro.
+            isExploded = estadoSalvo.isExploded;
+
             const d = estadoSalvo.dadosSimulacao;
             if (d && d.ladoMaior) {
               construirEngradado(d.cExt, d.lExt, d.aInt, d.material);
