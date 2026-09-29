@@ -11,97 +11,267 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#f5f5f7" />
     <title>Artefacto | Custos Industriais</title>
+
+    <!-- Favicon injetado via JS em base64 — funciona em file:// e http(s):// -->
+    <script>
+      (function () {
+        // SVG do favicon: quadrado azul arredondado com "a" branco em mono.
+        var svg =
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
+          '<rect width="64" height="64" rx="14" fill="#2563eb"/>' +
+          '<path d="M32 10 L52 21 L52 43 L32 54 L12 43 L12 21 Z" ' +
+          'fill="none" stroke="#ffffff" stroke-width="2.5" ' +
+          'stroke-linejoin="round"/>' +
+          '<rect x="20" y="34" width="5" height="8" rx="1" fill="#ffffff"/>' +
+          '<rect x="29.5" y="28" width="5" height="14" rx="1" fill="#ffffff"/>' +
+          '<rect x="39" y="22" width="5" height="20" rx="1" fill="#ffffff"/>' +
+          "</svg>";
+        // Codifica em base64 — evita qualquer problema de URL-encoding
+        var b64 = btoa(unescape(encodeURIComponent(svg)));
+        var uri = "data:image/svg+xml;base64," + b64;
+
+        // Remove qualquer favicon pré-existente
+        var links = document.querySelectorAll(
+          'link[rel="icon"], link[rel="shortcut icon"], link[rel="alternate icon"]'
+        );
+        for (var i = 0; i < links.length; i++) links[i].parentNode.removeChild(links[i]);
+
+        // Cria os novos
+        var linkSvg = document.createElement("link");
+        linkSvg.rel = "icon";
+        linkSvg.type = "image/svg+xml";
+        linkSvg.href = uri;
+        document.head.appendChild(linkSvg);
+
+        var linkShortcut = document.createElement("link");
+        linkShortcut.rel = "shortcut icon";
+        linkShortcut.href = uri;
+        document.head.appendChild(linkShortcut);
+
+        var linkApple = document.createElement("link");
+        linkApple.rel = "apple-touch-icon";
+        linkApple.href = uri;
+        document.head.appendChild(linkApple);
+      })();
+    </script>
+
+    <!-- Favicon aplicado via JS (técnica abaixo) para máxima compatibilidade,
+         inclusive em file:// onde data-URIs no <link> às vezes são bloqueados. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
     <!-- Substituímos o SheetJS pelo ExcelJS para permitir fórmulas, bordas e cores perfeitas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <style>
-      /* VARIAVEIS DE TEMA (LIQUID GLASS & MODERN DARK) */
+      /* VARIAVEIS DE TEMA — paleta sóbria, técnica */
       :root {
-        --bg-body: #f5f5f7;
+        --bg-body: #f7f7f8;
         --bg-panel: #ffffff;
         --bg-panel-2: #fafafa;
-        --text-main: #1d1d1f;
-        --text-muted: #6e6e73;
-        --border-light: rgba(0, 0, 0, 0.07);
+        --bg-subtle: #f2f2f4;
+        --text-main: #18181b;
+        --text-muted: #71717a;
+        --text-dim: #a1a1aa;
+        --border-light: rgba(0, 0, 0, 0.08);
+        --border-strong: rgba(0, 0, 0, 0.14);
         --border-edge: transparent;
-        --primary: #0071e3;
-        --primary-hover: #0062c4;
-        --canvas-bg: #f5f5f7;
-        --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
-          0 8px 24px rgba(0, 0, 0, 0.05);
-        --card-shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.05),
-          0 12px 32px rgba(0, 0, 0, 0.08);
-        --danger-bg: #fff5f5;
-        --danger-border: #ff3b30;
-        --danger-text: #c92a2a;
+        --primary: #2563eb;
+        --primary-hover: #1d4ed8;
+        --primary-subtle: rgba(37, 99, 235, 0.08);
+        --accent-success: #16a34a;
+        --accent-warning: #d97706;
+        --accent-danger: #dc2626;
+        --canvas-bg: #f2f2f4;
+        --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        --card-shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.06);
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 10px;
+        --radius-xl: 12px;
+        --danger-bg: #fef2f2;
+        --danger-border: #dc2626;
+        --danger-text: #b91c1c;
       }
 
       :root[data-theme="dark"] {
-        --bg-body: #000000;
-        --bg-panel: #1c1c1e;
-        --bg-panel-2: #2c2c2e;
-        --text-main: #f5f5f7;
-        --text-muted: #a1a1a6;
-        --border-light: rgba(255, 255, 255, 0.09);
+        --bg-body: #0a0a0b;
+        --bg-panel: #131316;
+        --bg-panel-2: #18181b;
+        --bg-subtle: #1f1f23;
+        --text-main: #f4f4f5;
+        --text-muted: #a1a1aa;
+        --text-dim: #52525b;
+        --border-light: rgba(255, 255, 255, 0.08);
+        --border-strong: rgba(255, 255, 255, 0.14);
         --border-edge: transparent;
-        --primary: #0a84ff;
-        --primary-hover: #409cff;
-        --canvas-bg: #0a0a0b;
-        --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.4),
-          0 8px 24px rgba(0, 0, 0, 0.5);
-        --card-shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.5),
-          0 12px 32px rgba(0, 0, 0, 0.6);
-        --danger-bg: #2c1a1a;
-        --danger-border: #ff453a;
-        --danger-text: #ff8a80;
+        --primary: #3b82f6;
+        --primary-hover: #60a5fa;
+        --primary-subtle: rgba(59, 130, 246, 0.12);
+        --accent-success: #22c55e;
+        --accent-warning: #f59e0b;
+        --accent-danger: #f87171;
+        --canvas-bg: #18181b;
+        --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        --card-shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.6);
+        --danger-bg: #2a1515;
+        --danger-border: #f87171;
+        --danger-text: #fca5a5;
       }
 
       * {
         box-sizing: border-box;
         transition: background-color 0.3s, color 0.3s, border-color 0.3s;
       }
+      html {
+        /* Reserva sempre o espaço da barra de rolagem — evita o "pulo"
+           horizontal quando troca de aba e o conteúdo muda de altura. */
+        scrollbar-gutter: stable;
+      }
+
       body {
         font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text",
           "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         background-color: var(--bg-body);
         color: var(--text-main);
         margin: 0;
-        padding: 24px;
+        padding: 0 24px 24px 24px;
         overflow-x: hidden;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+        letter-spacing: -0.01em;
+      }
+
+      /* Reset total de topo + overflow horizontal */
+      html {
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      body {
+        margin: 0 !important;
+        padding: 0 24px 24px 24px !important;
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        /* Impede que text nodes vazios no topo do body criem
+           uma caixa de linha invisível que empurra o conteúdo. */
+        font-size: 0;
+      }
+      /* Devolve o tamanho da fonte para todos os filhos reais */
+      body > *:not(script):not(style):not(#login-overlay) {
+        font-size: 1rem;
+      }
+      body > #login-overlay {
+        font-size: 1rem;
       }
 
       .app-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
         max-width: 1400px;
-        margin: 0 auto 24px auto;
-        padding: 0 10px;
-      }
-      .header-title {
+        margin: 0 auto !important;
+        padding: 4px 0 10px 0 !important;
         display: flex;
         align-items: center;
-        gap: 18px;
-      }
-      .header-title h1 {
-        margin: 0;
-        font-size: 1.3rem;
-        font-weight: 700;
-        letter-spacing: -0.015em;
-      }
-      .header-title span {
-        font-weight: 300;
+        justify-content: space-between;
+        gap: 20px;
         font-size: 1rem;
+      }
+
+      .header-brand {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        min-width: 0;
+        flex: 1;
+      }
+
+      .header-logo {
+        margin: 0;
+        font-family: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+        font-weight: 600;
+        /* Logo maior — presença visual similar ao logo do DeepSeek */
+        font-size: 1.55rem;
+        letter-spacing: -0.05em;
+        color: var(--text-main);
+        line-height: 1;
+        text-transform: lowercase;
+        flex-shrink: 0;
+      }
+
+      .header-subtitle {
+        /* Acompanha a nova escala do logo */
+        font-size: 0.88rem;
         color: var(--text-muted);
+        font-weight: 400;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        letter-spacing: 0;
+      }
+      .header-subtitle a {
+        color: var(--text-main);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.15s ease;
+      }
+      .header-subtitle a:hover {
+        color: var(--primary);
+      }
+      .header-sep {
+        color: var(--text-dim);
+        margin: 0 6px;
+        font-weight: 400;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 2px;
+        align-items: center;
+        flex-shrink: 0;
+      }
+
+      /* Botões de ação: ícone puro, sem borda até o hover */
+      .icon-btn {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: var(--radius-md);
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+        padding: 0;
+      }
+      .icon-btn:hover {
+        background: var(--bg-subtle);
+        color: var(--text-main);
+        border-color: var(--border-light);
+      }
+      .icon-btn:active {
+        transform: scale(0.94);
+      }
+      .icon-btn svg {
+        width: 17px;
+        height: 17px;
+      }
+      .icon-btn-danger:hover {
+        color: var(--accent-danger);
+        background: var(--danger-bg);
+        border-color: var(--danger-border);
       }
 
       .theme-toggle {
@@ -190,40 +360,114 @@
         }
       }
 
+      /* ---- Seletor de módulo (segmented control) ---- */
+      .module-switcher {
+        max-width: 1400px;
+        margin: 0 auto 10px auto;
+        display: inline-flex;
+        background: var(--bg-subtle);
+        border-radius: var(--radius-md);
+        padding: 3px;
+        gap: 2px;
+      }
+      .module-btn {
+        padding: 6px 14px;
+        border-radius: 5px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 0.82rem;
+        font-weight: 500;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        letter-spacing: -0.005em;
+        white-space: nowrap;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .module-btn:hover {
+        color: var(--text-main);
+      }
+      .module-btn.active {
+        background: var(--bg-panel);
+        color: var(--text-main);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+        font-weight: 600;
+      }
+      .module-btn:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 1px;
+      }
+
+      /* Nav por underline (padrão Linear / Vercel / Notion) */
       .tabs {
         max-width: 1400px;
         margin: 0 auto 24px auto;
         display: flex;
-        gap: 10px;
+        gap: 0;
+        border-bottom: 1px solid var(--border-light);
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        /* Impede o navegador de "puxar" o botão clicado para a viewport */
+        scroll-behavior: auto;
+      }
+      .tabs::-webkit-scrollbar {
+        display: none;
       }
       .tab-btn {
+        position: relative;
         background: transparent;
         color: var(--text-muted);
-        border: 1px solid var(--border-light);
-        padding: 11px 26px;
-        border-radius: 980px;
+        border: none;
+        padding: 12px 16px;
         cursor: pointer;
-        font-weight: 600;
-        font-size: 0.92rem;
+        font-weight: 500;
+        font-size: 0.88rem;
         font-family: inherit;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        letter-spacing: -0.005em;
+        transition: color 0.15s ease;
+        white-space: nowrap;
+        -webkit-tap-highlight-color: transparent;
+        /* Não deixa o navegador fazer auto-scroll ao receber foco */
+        scroll-margin: 0;
+      }
+      .tab-btn:first-child {
+        padding-left: 2px;
       }
       .tab-btn:hover {
-        border-color: var(--primary);
-        color: var(--primary);
-        background: rgba(0, 113, 227, 0.05);
+        color: var(--text-main);
       }
       .tab-btn.active {
+        color: var(--text-main);
+        font-weight: 600;
+      }
+      .tab-btn.active::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        left: 16px;
+        right: 16px;
+        height: 2px;
         background: var(--primary);
-        color: #ffffff;
-        border-color: var(--primary);
-        box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
+        border-radius: 2px 2px 0 0;
+      }
+      .tab-btn:first-child.active::after {
+        left: 2px;
+      }
+      .tab-btn:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: -4px;
+        border-radius: var(--radius-sm);
       }
       .tab-content {
         display: none;
       }
       .tab-content.active {
         display: block;
+        /* Altura mínima para a página não "encolher" e disparar o
+           aparecimento/desaparecimento da barra de rolagem. */
+        min-height: calc(100vh - 160px);
       }
 
       .dashboard-container {
@@ -794,22 +1038,19 @@
         .dashboard-container {
           grid-template-columns: 1fr;
         }
-        .header-title {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 5px;
-        }
-        .app-header {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 15px;
+        .header-subtitle {
+          display: none;
         }
         .tabs {
-          flex-wrap: wrap;
+          margin-bottom: 20px;
         }
         .tab-btn {
-          flex: 1;
-          text-align: center;
+          padding: 11px 14px;
+          font-size: 0.84rem;
+        }
+        .tab-btn.active::after {
+          left: 14px;
+          right: 14px;
         }
         #canvas-container {
           min-height: 400px;
@@ -890,11 +1131,11 @@
       }
       .login-box h1 {
         margin: 0 0 6px 0;
-        font-family: "Courier New", Courier, monospace;
-        font-size: 2.4rem;
-        font-weight: 700;
+        font-family: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 2.2rem;
+        font-weight: 600;
         color: var(--text-main);
-        letter-spacing: -1.5px;
+        letter-spacing: -0.05em;
         text-transform: lowercase;
       }
       .login-box p {
@@ -1836,6 +2077,22 @@
         box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
       }
 
+      /* ---- Override de espaçamento superior ---- */
+      html,
+      body {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+      }
+      body {
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+        padding-bottom: 24px !important;
+      }
+      .app-header {
+        margin-top: 0 !important;
+        padding-top: 14px !important;
+      }
+
       /* Colunas de custo no histórico */
       .historico-tabela td.moeda {
         text-align: right;
@@ -1859,18 +2116,80 @@
         gap: 20px;
         max-width: 1400px;
         margin: 0 auto;
+        align-items: start;
+      }
+
+      /* Compactação da sidebar — reduz alturas sem esconder nada */
+      .laser-dashboard .panel h2 {
+        padding-bottom: 10px;
+        margin-bottom: 14px;
+        font-size: 1.05rem;
+      }
+      .laser-dashboard .panel {
+        padding: 20px;
+      }
+      .laser-dashboard .input-group {
+        margin-bottom: 12px;
+      }
+      .laser-dashboard label {
+        font-size: 0.78rem;
+        margin-bottom: 4px;
+      }
+      .laser-dashboard input,
+      .laser-dashboard select {
+        padding: 9px 12px;
+        font-size: 0.88rem;
+      }
+      .laser-dashboard .laser-select {
+        padding: 9px 12px;
+        font-size: 0.88rem;
+      }
+      .laser-dashboard .laser-unit-tag {
+        padding: 0 9px;
+        font-size: 0.72rem;
+      }
+      .laser-dashboard .laser-dropzone {
+        padding: 14px 12px;
+      }
+      .laser-dashboard .laser-dropzone-icon {
+        font-size: 1.3rem;
+        margin-bottom: 4px;
+      }
+      .laser-dashboard .laser-dropzone-title {
+        font-size: 0.82rem;
+      }
+      .laser-dashboard .laser-dropzone-hint {
+        font-size: 0.7rem;
+      }
+      .laser-dashboard .laser-btn-process {
+        padding: 12px;
+        font-size: 0.92rem;
+        margin-top: 10px;
+      }
+
+      /* Linha de 2 colunas para compactar a sidebar sem esconder campos */
+      .laser-row-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .laser-row-2col > .input-group {
+        margin-bottom: 0;
+      }
+      .laser-row-2col + .input-group {
+        margin-top: 16px;
       }
 
       /* ---------- Dropzone de upload ---------- */
       .laser-dropzone {
         width: 100%;
-        border: 2px dashed var(--border-light);
-        border-radius: 14px;
-        padding: 22px 14px;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        padding: 20px 14px;
         text-align: center;
         cursor: pointer;
-        background: var(--canvas-bg);
-        transition: all 0.2s ease;
+        background: var(--bg-panel-2);
+        transition: all 0.15s ease;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
       }
@@ -1880,9 +2199,8 @@
         background: rgba(0, 113, 227, 0.06);
       }
       .laser-dropzone.has-file {
-        border-style: solid;
-        border-color: rgba(52, 199, 89, 0.55);
-        background: rgba(52, 199, 89, 0.08);
+        border-color: rgba(52, 199, 89, 0.5);
+        background: rgba(52, 199, 89, 0.06);
       }
       .laser-dropzone-icon {
         font-size: 1.6rem;
@@ -1955,7 +2273,10 @@
         box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12);
       }
 
-      /* ---------- Container do canvas 2D ---------- */
+                  /* ---------- Container do canvas 2D ---------- */
+      /* Proporção fixa retangular 3:2 — mesma linguagem visual do
+         canvas 3D dos engradados. A grade não estica os painéis:
+         cada coluna tem sua altura natural. */
       .laser-canvas-wrap {
         width: 100%;
         background: var(--canvas-bg);
@@ -1963,8 +2284,7 @@
         border: 1px solid var(--border-light);
         overflow: hidden;
         position: relative;
-        aspect-ratio: 16 / 10;
-        min-height: 320px;
+        aspect-ratio: 3 / 2;
       }
       .laser-canvas-wrap canvas {
         display: block;
@@ -2026,37 +2346,84 @@
         background: #ef4444;
       }
 
-      /* ---------- Cards de resultado (3 colunas) ---------- */
+      /* ---------- Resultado do orçamento (painel + cards) ---------- */
+      .laser-results-panel {
+        background: var(--bg-panel);
+        border-radius: 22px;
+        padding: 28px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid var(--border-light);
+        margin-top: 20px;
+      }
+      .laser-results-panel h2 {
+        margin-top: 0;
+      }
       .laser-results-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-        gap: 16px;
+        gap: 18px;
         margin-top: 16px;
       }
       .laser-result-card {
-        background: var(--bg-panel);
-        border-radius: 18px;
-        padding: 20px;
+        background: var(--bg-panel-2);
+        border-radius: 16px;
+        padding: 22px 22px 18px 22px;
         border: 1px solid var(--border-light);
-        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+      }
+      /* Faixa colorida no topo do card, dá personalidade */
+      .laser-result-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--primary);
+        opacity: 0.85;
+      }
+      .laser-result-card.card-geo::before {
+        background: #3b82f6;
+      }
+      .laser-result-card.card-tempo::before {
+        background: #f59e0b;
+      }
+      .laser-result-card.card-custo::before {
+        background: #10b981;
       }
       .laser-result-card h3 {
-        margin: 0 0 12px 0;
-        font-size: 0.98rem;
+        margin: 0 0 4px 0;
+        font-size: 0.78rem;
         font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-muted);
         display: flex;
         align-items: center;
         gap: 8px;
-        letter-spacing: -0.01em;
+      }
+      .laser-result-card h3 .icon {
+        font-size: 1rem;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+      .laser-result-card .card-subtitle {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        opacity: 0.7;
+        margin-bottom: 14px;
+        line-height: 1.4;
       }
       .laser-result-row {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
         gap: 12px;
-        padding: 8px 0;
+        padding: 9px 0;
         border-bottom: 1px solid var(--border-light);
-        font-size: 0.85rem;
+        font-size: 0.88rem;
       }
       .laser-result-row:last-child {
         border-bottom: none;
@@ -2066,6 +2433,7 @@
         font-weight: 500;
         flex: 1 1 auto;
         min-width: 0;
+        font-size: 0.82rem;
       }
       .laser-result-row span {
         flex: 0 0 auto;
@@ -2075,27 +2443,59 @@
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
       }
-      .laser-result-row.total {
-        border-top: 1px solid var(--border-light);
-        margin-top: 6px;
-        padding-top: 12px;
+      .laser-result-row.destaque {
+        background: rgba(0, 113, 227, 0.06);
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin: 8px -14px 0 -14px;
         border-bottom: none;
       }
-      .laser-result-row.total strong {
+      .laser-result-row.destaque strong {
         font-weight: 700;
-        color: var(--text-main);
+        color: var(--primary);
+        font-size: 0.72rem;
         text-transform: uppercase;
-        font-size: 0.75rem;
         letter-spacing: 0.05em;
       }
-      .laser-result-row.total span {
-        font-size: 1.05rem;
+      .laser-result-row.destaque span {
+        font-size: 1.15rem;
         font-weight: 800;
         color: var(--primary);
       }
-      .laser-result-row.total.final span {
+      .laser-result-row.destaque.final {
+        background: rgba(16, 185, 129, 0.1);
+        margin-top: 6px;
+      }
+      .laser-result-row.destaque.final strong {
         color: #10b981;
-        font-size: 1.15rem;
+      }
+      .laser-result-row.destaque.final span {
+        color: #10b981;
+        font-size: 1.35rem;
+        letter-spacing: -0.01em;
+      }
+      /* Rodapé com resumo comparativo (custo / metro, tempo / peça) */
+      .laser-summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px 28px;
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid var(--border-light);
+        font-size: 0.82rem;
+      }
+      .laser-summary-item {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+      }
+      .laser-summary-item .label {
+        color: var(--text-muted);
+      }
+      .laser-summary-item .value {
+        font-weight: 700;
+        color: var(--text-main);
+        font-variant-numeric: tabular-nums;
       }
 
       /* ---------- Botões de ação específicos ---------- */
@@ -2236,6 +2636,436 @@
           font-size: 0.9rem;
         }
       }
+      /* ============================================================
+         REFINAMENTO VISUAL GLOBAL — sobriedade premium
+         Camada de override que reduz raio, remove gradientes,
+         suaviza sombras e unifica densidade visual.
+         ============================================================ */
+
+      /* ---------- Painéis e cards base ---------- */
+      .panel {
+        border-radius: var(--radius-xl);
+        box-shadow: var(--card-shadow);
+        padding: 22px;
+      }
+
+      /* ---------- Cabeçalhos ---------- */
+      h2 {
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+      }
+
+      /* ---------- Inputs e selects ---------- */
+      input,
+      select,
+      .laser-select {
+        border-radius: var(--radius-md);
+        padding: 10px 12px;
+        font-size: 0.9rem;
+      }
+      input:focus,
+      select:focus,
+      .laser-select:focus {
+        box-shadow: 0 0 0 3px var(--primary-subtle);
+      }
+
+      /* ---------- Botões principais: sem gradiente, sem pulo ---------- */
+      .btn-calc,
+      .laser-btn-process,
+      .login-btn {
+        background-image: none !important;
+        box-shadow: none !important;
+        border-radius: var(--radius-md) !important;
+        padding: 11px 18px !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        letter-spacing: -0.005em !important;
+        transform: none !important;
+        transition: background 0.15s ease, border-color 0.15s ease !important;
+      }
+      .btn-calc {
+        background: var(--primary) !important;
+      }
+      .btn-calc:hover {
+        background: var(--primary-hover) !important;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+      .laser-btn-process {
+        background: var(--primary) !important;
+      }
+      .laser-btn-process:hover {
+        background: var(--primary-hover) !important;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      /* ---------- Botões secundários (Exportar / Salvar) ---------- */
+      /* Fundo neutro, borda fina, hierarquia abaixo do botão primário. */
+      .btn-export,
+      #btnSalvarHistorico {
+        background: var(--bg-panel) !important;
+        background-image: none !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border-strong) !important;
+        border-radius: var(--radius-md) !important;
+        padding: 10px 14px !important;
+        font-weight: 500 !important;
+        font-size: 0.85rem !important;
+        letter-spacing: -0.005em !important;
+        box-shadow: none !important;
+        transform: none !important;
+        transition: background 0.15s ease, border-color 0.15s ease,
+          color 0.15s ease !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 40px;
+      }
+      .btn-export:hover,
+      #btnSalvarHistorico:hover {
+        background: var(--bg-subtle) !important;
+        border-color: var(--text-muted) !important;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+      .btn-export:active,
+      #btnSalvarHistorico:active {
+        background: var(--bg-panel-2) !important;
+        transform: none !important;
+      }
+
+      /* ---------- Botão "Carregar template" (Engradados) ---------- */
+      /* Mesmo feedback visual do dropzone do Corte a Laser:
+         borda azul + fundo azul translúcido ao passar o mouse. */
+      #btnTemplate {
+        border: 1px solid var(--border-light) !important;
+        background: transparent !important;
+        color: var(--text-muted) !important;
+        border-radius: 6px !important;
+        padding: 9px 14px !important;
+        font-size: 0.78rem !important;
+        font-weight: 500 !important;
+        font-family: inherit !important;
+        transition: all 0.15s ease !important;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+      #btnTemplate:hover {
+        border-color: var(--primary) !important;
+        background: var(--primary-subtle) !important;
+        color: var(--primary) !important;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+      #btnTemplate:active {
+        background: var(--primary-subtle) !important;
+        transform: none !important;
+      }
+
+      /* ---------- Botões flutuantes do canvas 3D ---------- */
+      .btn-explode {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        padding: 8px 14px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        color: var(--text-main);
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+      .btn-explode:hover {
+        background: var(--bg-subtle);
+        border-color: var(--border-strong);
+        transform: none;
+      }
+      .btn-explode.active {
+        background: var(--primary);
+        color: #ffffff;
+        border-color: var(--primary);
+      }
+
+      /* ---------- Cards de resultado do simulador ---------- */
+      .result-card {
+        border-radius: var(--radius-xl);
+        box-shadow: var(--card-shadow);
+        padding: 20px;
+      }
+      .result-card:hover {
+        box-shadow: var(--card-shadow);
+      }
+      .result-card h3 {
+        font-size: 0.88rem;
+        font-weight: 600;
+        letter-spacing: -0.005em;
+        margin-bottom: 4px;
+        gap: 0;
+      }
+      .result-section {
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.07em;
+        margin: 18px 0 6px 0;
+        padding-bottom: 6px;
+      }
+      .result-row {
+        padding: 9px 0;
+        font-size: 0.86rem;
+      }
+      .result-row strong {
+        font-size: 0.82rem;
+      }
+
+      /* ---------- Alertas ---------- */
+      .alert-box {
+        border-radius: var(--radius-md);
+        border-left-width: 3px;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+      }
+      .alert-box strong {
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-bottom: 3px;
+      }
+      .alert-box p {
+        font-size: 0.76rem;
+        line-height: 1.5;
+      }
+
+      /* ---------- Dropdown custom ---------- */
+      .filtro-dropdown-btn {
+        border-radius: var(--radius-md);
+        padding: 10px 12px;
+        font-size: 0.88rem;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-light);
+      }
+      .filtro-dropdown-btn:hover {
+        background: var(--bg-subtle);
+        border-color: var(--border-light);
+      }
+      .filtro-dropdown-btn.open {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-subtle);
+      }
+      .filtro-dropdown-panel {
+        border-radius: var(--radius-md);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        padding: 4px;
+      }
+      .filtro-dropdown-item {
+        border-radius: var(--radius-sm);
+        padding: 8px 10px;
+        font-size: 0.86rem;
+      }
+
+      /* ---------- Histórico ---------- */
+      .historico-item {
+        border-radius: var(--radius-lg);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      }
+      .historico-item-codigo {
+        border-radius: var(--radius-sm);
+        padding: 2px 8px;
+        font-size: 0.78rem;
+        font-weight: 600;
+      }
+      .historico-item-actions button {
+        border-radius: var(--radius-sm);
+        width: 32px;
+        height: 32px;
+      }
+      .historico-cabecalho,
+      .historico-produto,
+      .historico-tabela {
+        border-radius: var(--radius-md);
+      }
+      .historico-secao-titulo {
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+        padding: 8px 12px;
+        font-size: 0.68rem;
+        letter-spacing: 0.06em;
+      }
+      .historico-tabela th {
+        padding: 9px 12px;
+        font-size: 0.68rem;
+      }
+      .historico-tabela td {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+      }
+
+      /* ---------- Manual ---------- */
+      .manual-item {
+        border-radius: var(--radius-lg);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      }
+      .manual-item-icon {
+        border-radius: var(--radius-md);
+        width: 38px;
+        height: 38px;
+        font-size: 1.1rem;
+      }
+      .manual-item-title {
+        font-size: 0.98rem;
+        font-weight: 600;
+      }
+      .manual-item-subtitle {
+        font-size: 0.8rem;
+      }
+      .manual-item-body-content {
+        font-size: 0.88rem;
+        line-height: 1.65;
+      }
+      .manual-item-body-content h4 {
+        font-size: 0.88rem;
+        margin: 16px 0 6px 0;
+      }
+      .manual-item-body-content .highlight-box {
+        border-radius: var(--radius-md);
+        padding: 12px 14px;
+        font-size: 0.84rem;
+      }
+
+      /* ---------- Tabelas de preços ---------- */
+      .precos-tabela {
+        border-radius: var(--radius-md);
+      }
+      .precos-tabela th {
+        padding: 10px 12px;
+        font-size: 0.68rem;
+      }
+      .precos-tabela td {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+      }
+      .precos-input {
+        border-radius: var(--radius-sm);
+        padding: 7px 10px;
+      }
+
+      /* ---------- Canvas 3D ---------- */
+      #canvas-container {
+        border-radius: var(--radius-md);
+      }
+      .piece-info-box {
+        border-radius: var(--radius-md);
+      }
+
+      /* ---------- Slider de explosão ---------- */
+      .slider-wrapper {
+        border-radius: var(--radius-md);
+        padding: 10px 14px;
+      }
+
+      /* ---------- Login ---------- */
+      .login-box {
+        border-radius: var(--radius-xl);
+        padding: 40px 34px 36px 34px;
+        box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.12),
+          0 2px 6px rgba(0, 0, 0, 0.03);
+      }
+      .login-input {
+        border-radius: var(--radius-md);
+      }
+      .login-btn {
+        background: var(--primary) !important;
+        border-radius: var(--radius-md) !important;
+      }
+      .login-btn:hover {
+        background: var(--primary-hover) !important;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+
+      /* ---------- Toast ---------- */
+      #toast {
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+        font-weight: 500;
+        padding: 10px 18px;
+        box-shadow: 0 6px 20px -6px rgba(0, 0, 0, 0.15);
+      }
+          /* ---------- Botão de medição ---------- */
+          .laser-measure-btn {
+        padding: 6px 12px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-light);
+        background: var(--bg-panel);
+        color: var(--text-muted);
+        font-size: 0.78rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        font-family: inherit;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .laser-measure-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: var(--primary-subtle);
+      }
+      .laser-measure-btn.active {
+        background: var(--primary);
+        color: #ffffff;
+        border-color: var(--primary);
+      }
+
+      /* ---------- Painel de medição (sobre o canvas) ---------- */
+      .laser-measure-panel {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(15, 23, 42, 0.94);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+        padding: 14px 16px;
+        min-width: 240px;
+        max-width: 320px;
+        color: #e2e8f0;
+        font-size: 0.78rem;
+        z-index: 50;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+        pointer-events: none;
+        display: none;
+      }
+      .laser-measure-title {
+        font-size: 0.66rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #94a3b8;
+        margin-bottom: 8px;
+      }
+      .laser-measure-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        padding: 4px 0;
+      }
+      .laser-measure-row span {
+        color: #94a3b8;
+      }
+      .laser-measure-row strong {
+        color: #f1f5f9;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+      .laser-measure-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 10px 0 8px 0;
+      }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -2313,46 +3143,29 @@
       </div>
     </div>
 
-    <div class="app-header">
-      <div class="header-title">
-        <h1
-          style="
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-            letter-spacing: -1px;
-            text-transform: lowercase;
-            font-size: 1.8rem;
-          "
-        >
-          artefacto
-        </h1>
-        <h1 style="font-weight: 300; font-size: 1rem; color: var(--text-muted)">
-          |
+    <header class="app-header">
+      <div class="header-brand">
+        <h1 class="header-logo">artefacto</h1>
+        <span class="header-subtitle">
           <a
             href="https://www.linkedin.com/in/maurosantosjr/"
             target="_blank"
-            style="
-              font-weight: 600;
-              font-size: 1.05rem;
-              color: var(--text-main);
-              text-decoration: none;
-              transition: color 0.2s;
-            "
-            onmouseover="this.style.color='var(--primary)'"
-            onmouseout="this.style.color='var(--text-main)'"
+            rel="noopener"
             >Mauro Santos</a
           >
-          - Custos Industriais
-        </h1>
+          <span class="header-sep">·</span>
+          Custos Industriais
+        </span>
       </div>
-      <div style="display: flex; gap: 10px; align-items: center">
+      <div class="header-actions">
         <button
-          class="theme-toggle"
+          class="icon-btn"
           id="themeToggle"
           onclick="toggleTheme()"
           title="Alternar tema"
+          aria-label="Alternar tema"
         >
-          <span class="theme-toggle-icon" id="themeToggleIcon">
+          <span id="themeToggleIcon" style="display: inline-flex">
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -2364,51 +3177,71 @@
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
             </svg>
           </span>
-          <span class="theme-toggle-label" id="themeToggleLabel"
-            >Dark Mode</span
-          >
+          <!-- Rótulo oculto, mantido só para compatibilidade com toggleTheme() -->
+          <span id="themeToggleLabel" style="display: none">Dark Mode</span>
         </button>
 
         <button
-          class="theme-toggle btn-logout"
+          class="icon-btn icon-btn-danger"
           onclick="fazerLogout()"
           title="Sair do sistema"
+          aria-label="Sair"
         >
-          <span class="theme-toggle-icon">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-          </span>
-          <span class="theme-toggle-label">Sair</span>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
         </button>
       </div>
+    </header>
+
+    <!-- SELETOR DE MÓDULO -->
+    <div class="module-switcher" role="tablist" aria-label="Módulo">
+      <button
+        class="module-btn active"
+        data-module="engradados"
+        onclick="switchModule('engradados')"
+      >
+        Engradados
+      </button>
+      <button
+        class="module-btn"
+        data-module="laser"
+        onclick="switchModule('laser')"
+      >
+        Corte a Laser
+      </button>
     </div>
 
-    <!-- TABS NAVEGAÇÃO -->
-    <div class="tabs">
+    <!-- ABAS DO MÓDULO ENGRADADOS -->
+    <nav class="tabs" id="tabs-engradados">
       <button class="tab-btn active" onclick="switchTab('simulador')">
-        Simulador de Engradados
+        Simulador
       </button>
       <button class="tab-btn" onclick="switchTab('historico')">
         Histórico
       </button>
       <button class="tab-btn" onclick="switchTab('precos')">Preços</button>
-      <button class="tab-btn" onclick="switchTab('manual')">
-        Manual de Engenharia
+      <button class="tab-btn" onclick="switchTab('manual')">Manual</button>
+    </nav>
+
+    <!-- ABAS DO MÓDULO CORTE A LASER -->
+    <nav class="tabs" id="tabs-laser" style="display: none">
+      <button class="tab-btn active" onclick="switchTab('laser')">
+        Simulador
       </button>
-      <button class="tab-btn" onclick="switchTab('laser')">
-        🔥 Corte a Laser
+      <button class="tab-btn" onclick="switchTab('laser-manual')">
+        Manual
       </button>
-    </div>
+    </nav>
 
     <!-- ABA 1: SIMULADOR -->
     <div id="simulador-tab" class="tab-content active">
@@ -2478,30 +3311,52 @@
             style="display: none"
             onchange="carregarTemplate(this)"
           />
-          <button
-            type="button"
-            id="btnTemplate"
-            onclick="document.getElementById('inputTemplate').click()"
-            style="
-              width: 100%;
-              margin-top: 12px;
-              padding: 11px 14px;
-              border-radius: 12px;
-              border: 1px dashed var(--border-light);
-              background: transparent;
-              color: var(--text-muted);
-              font-size: 0.85rem;
-              font-weight: 500;
-              cursor: pointer;
-              transition: all 0.2s;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              gap: 6px;
-            "
-          >
-            📎 Carregar template da planilha
-          </button>
+          <div style="display: flex; gap: 8px; margin-top: 12px">
+            <button
+              type="button"
+              id="btnTemplate"
+              onclick="document.getElementById('inputTemplate').click()"
+              style="
+                flex: 1;
+                padding: 9px 14px;
+                border-radius: 6px;
+                border: 1px solid var(--border-light);
+                background: transparent;
+                color: var(--text-muted);
+                font-size: 0.78rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.15s;
+                font-family: inherit;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+              "
+            >
+              📎 Carregar template da planilha
+            </button>
+            <button
+              type="button"
+              id="btnRemoverTemplate"
+              onclick="removerTemplateEngradados()"
+              title="Remover template carregado"
+              style="
+                display: none;
+                padding: 11px 14px;
+                border-radius: 8px;
+                border: 1px solid var(--border-light);
+                background: transparent;
+                color: var(--text-muted);
+                font-size: 0.9rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.15s;
+              "
+            >
+              ✕
+            </button>
+          </div>
 
           <button
             class="btn-export"
@@ -3894,6 +4749,27 @@
                 DXF ou SVG · lido no navegador (não é enviado para servidor)
               </div>
               <div class="laser-dropzone-filename" id="laserDropzoneFilename"></div>
+              <button
+                type="button"
+                id="laserBtnRemoverArquivo"
+                onclick="event.stopPropagation(); laserRemoverArquivo();"
+                style="
+                  display: none;
+                  margin-top: 10px;
+                  padding: 5px 12px;
+                  border-radius: 6px;
+                  border: 1px solid var(--border-light);
+                  background: transparent;
+                  color: var(--text-muted);
+                  font-size: 0.72rem;
+                  font-weight: 500;
+                  cursor: pointer;
+                  transition: all 0.15s;
+                  font-family: inherit;
+                "
+              >
+                Remover arquivo
+              </button>
             </div>
             <input
               type="file"
@@ -3921,9 +4797,9 @@
           </div>
 
           <!-- Espessura -->
-          <div class="input-group">
-            <label>Espessura</label>
-            <div class="laser-field-row">
+          <div class="laser-row-2col">
+            <div class="input-group">
+              <label>Espessura (mm)</label>
               <input
                 type="number"
                 id="laserThickness"
@@ -3933,39 +4809,34 @@
                 step="0.5"
                 inputmode="decimal"
               />
-              <span class="laser-unit-tag">mm</span>
+            </div>
+            <div class="input-group">
+              <label>Potência</label>
+              <select id="laserPower" class="laser-select">
+                <option value="1500">1,5 kW</option>
+                <option value="2000">2 kW</option>
+                <option value="3000" selected>3 kW</option>
+                <option value="4000">4 kW</option>
+                <option value="6000">6 kW</option>
+                <option value="8000">8 kW</option>
+                <option value="12000">12 kW</option>
+              </select>
             </div>
           </div>
 
-          <!-- Tecnologia -->
-          <div class="input-group">
+          <div class="input-group" style="margin-top: 4px">
             <label>Tecnologia</label>
             <select id="laserTech" class="laser-select">
-              <option value="fibra" selected>Fibra Laser (padrão de mercado)</option>
-              <option value="co2">CO₂ Laser (não-metais e metais finos)</option>
+              <option value="fibra" selected>Fibra Laser</option>
+              <option value="co2">CO₂ Laser</option>
             </select>
           </div>
 
-          <!-- Potência -->
-          <div class="input-group">
-            <label>Potência da Máquina</label>
-            <select id="laserPower" class="laser-select">
-              <option value="1500">1,5 kW</option>
-              <option value="2000">2 kW</option>
-              <option value="3000" selected>3 kW</option>
-              <option value="4000">4 kW</option>
-              <option value="6000">6 kW</option>
-              <option value="8000">8 kW</option>
-              <option value="12000">12 kW</option>
-            </select>
-          </div>
-
-          <!-- Gás auxiliar -->
           <div class="input-group">
             <label>Gás Auxiliar</label>
             <select id="laserGas" class="laser-select">
               <option value="n2" selected>Nitrogênio (N₂) — borda limpa</option>
-              <option value="o2">Oxigênio (O₂) — mais rápido, borda oxidada</option>
+              <option value="o2">Oxigênio (O₂) — mais rápido</option>
               <option value="ar">Ar Comprimido — econômico</option>
               <option value="nenhum">Nenhum (fusão)</option>
             </select>
@@ -3974,79 +4845,43 @@
           <!-- Custos (collapsible) -->
           <details class="laser-speed-details" open>
             <summary>Parâmetros de custo</summary>
-            <div style="padding: 12px 14px">
-              <div class="input-group">
-                <label>Taxa da Máquina</label>
-                <div class="laser-field-row">
-                  <input
-                    type="number"
-                    id="laserMachineRate"
-                    value="380"
-                    min="0"
-                    step="10"
-                    inputmode="decimal"
-                  />
-                  <span class="laser-unit-tag">R$/h</span>
+            <div style="padding: 10px 12px">
+              <div class="laser-row-2col">
+                <div class="input-group">
+                  <label>Taxa Máquina</label>
+                  <div class="laser-field-row">
+                    <input type="number" id="laserMachineRate" value="380" min="0" step="10" inputmode="decimal" />
+                    <span class="laser-unit-tag">R$/h</span>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <label>Consumíveis</label>
+                  <div class="laser-field-row">
+                    <input type="number" id="laserConsumablesRate" value="45" min="0" step="5" inputmode="decimal" />
+                    <span class="laser-unit-tag">R$/h</span>
+                  </div>
                 </div>
               </div>
-
-              <div class="input-group">
-                <label>Preço do Gás</label>
-                <div class="laser-field-row">
-                  <input
-                    type="number"
-                    id="laserGasPrice"
-                    value="12"
-                    min="0"
-                    step="0.5"
-                    inputmode="decimal"
-                  />
-                  <span class="laser-unit-tag">R$/m³</span>
+              <div class="laser-row-2col" style="margin-top: 12px">
+                <div class="input-group">
+                  <label>Preço do Gás</label>
+                  <div class="laser-field-row">
+                    <input type="number" id="laserGasPrice" value="12" min="0" step="0.5" inputmode="decimal" />
+                    <span class="laser-unit-tag">R$/m³</span>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <label>Energia</label>
+                  <div class="laser-field-row">
+                    <input type="number" id="laserEnergyPrice" value="0.85" min="0" step="0.01" inputmode="decimal" />
+                    <span class="laser-unit-tag">R$/kWh</span>
+                  </div>
                 </div>
               </div>
-
-              <div class="input-group">
-                <label>Preço da Energia</label>
-                <div class="laser-field-row">
-                  <input
-                    type="number"
-                    id="laserEnergyPrice"
-                    value="0.85"
-                    min="0"
-                    step="0.01"
-                    inputmode="decimal"
-                  />
-                  <span class="laser-unit-tag">R$/kWh</span>
-                </div>
-              </div>
-
-              <div class="input-group">
-                <label>Custo de Consumíveis</label>
-                <div class="laser-field-row">
-                  <input
-                    type="number"
-                    id="laserConsumablesRate"
-                    value="45"
-                    min="0"
-                    step="5"
-                    inputmode="decimal"
-                  />
-                  <span class="laser-unit-tag">R$/h</span>
-                </div>
-              </div>
-
-              <div class="input-group">
+              <div class="input-group" style="margin-top: 12px">
                 <label>Margem do Fornecedor</label>
                 <div class="laser-field-row">
-                  <input
-                    type="number"
-                    id="laserMargin"
-                    value="30"
-                    min="0"
-                    max="200"
-                    step="1"
-                    inputmode="decimal"
-                  />
+                  <input type="number" id="laserMargin" value="30" min="0" max="200" step="1" inputmode="decimal" />
                   <span class="laser-unit-tag">%</span>
                 </div>
               </div>
@@ -4071,6 +4906,16 @@
 
           <div class="laser-canvas-wrap" id="laserCanvasWrap">
             <canvas id="laserCanvas"></canvas>
+            <button
+            type="button"
+            id="laserBtnMeasure"
+            class="laser-measure-btn"
+            onclick="laserToggleMeasure()"
+            style="position: absolute; bottom: 12px; right: 12px; z-index: 10"
+          >
+            📏 Medir
+          </button>
+          <div id="laserMeasurePanel" class="laser-measure-panel"></div>
 
             <div class="laser-canvas-empty" id="laserCanvasEmpty">
               <span class="icon">📐</span>
@@ -4092,26 +4937,805 @@
           </div>
 
           <div
-            style="
-              margin-top: 12px;
-              font-size: 0.78rem;
-              color: var(--text-muted);
-              text-align: center;
-            "
-          >
-            💡 Use o scroll para zoom · arraste para mover · o desenho é
-            normalizado automaticamente para caber na tela.
-          </div>
-        </div>
+          style="
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+          "
+        >
+        <span style="font-size: 0.78rem; color: var(--text-muted)">
+          💡 Scroll = zoom · arraste = mover · duplo clique =
+          recentralizar
+        </span>
       </div>
+      </div>
+    </div>
 
       <!-- ============================================================
            ÁREA DE RESULTADOS — preenchida pelo Passo 4
            ============================================================ -->
-      <div id="laserResultsArea" style="max-width: 1400px; margin: 20px auto 0 auto"></div>
-    </div>
-
-    <!-- TOAST NOTIFICATION -->
+           <div id="laserResultsArea" style="max-width: 1400px; margin: 20px auto 0 auto"></div>
+          </div>
+      
+          <!-- ABA MANUAL DO CORTE A LASER -->
+          <div id="laser-manual-tab" class="tab-content">
+            <div
+              class="panel"
+              style="max-width: 1400px; margin: 0 auto 24px auto; text-align: left"
+            >
+              <h2
+                style="
+                  color: var(--primary);
+                  font-size: 1.2rem;
+                  margin-bottom: 8px;
+                  border: none;
+                  padding: 0;
+                "
+              >
+                Manual do Corte a Laser
+              </h2>
+              <p
+                style="
+                  color: var(--text-muted);
+                  line-height: 1.6;
+                  font-size: 0.9rem;
+                  margin: 0;
+                "
+              >
+                Explicação técnica de <strong>cada campo do orçamento</strong> — o que
+                significa, como é calculado e como escolher o valor certo para o seu
+                fornecedor. Clique em qualquer item para expandir.
+              </p>
+            </div>
+      
+            <div class="manual-list">
+              <!-- 1. VISÃO GERAL -->
+              <div class="manual-item" id="laser-manual-1">
+                <div
+                  class="manual-item-header"
+                  onclick="toggleManual('laser-manual-1')"
+                >
+                  <div class="manual-item-icon">📖</div>
+                  <div class="manual-item-title-block">
+                    <h3 class="manual-item-title">1. Como a ferramenta calcula</h3>
+                    <p class="manual-item-subtitle">
+                      Fluxo completo: do arquivo DXF ao preço final
+                    </p>
+                  </div>
+                  <span class="manual-item-chevron">▶</span>
+                </div>
+                <div class="manual-item-body">
+                  <div class="manual-item-body-inner">
+                    <div class="manual-item-body-content">
+                      <p>
+                        O cálculo tem <strong>4 etapas</strong>, sempre na mesma ordem:
+                      </p>
+                      <h4>1. Leitura do arquivo</h4>
+                      <p>
+                        O parser percorre o DXF/SVG e extrai o
+                        <strong>comprimento total do contorno</strong> (em mm) e o
+                        <strong>número de furos/contornos internos</strong>. Um DXF
+                        pode conter vários desenhos separados — o seletor de "Peça A /
+                        Peça B" permite escolher qual orçar.
+                      </p>
+                      <h4>2. Velocidade de corte</h4>
+                      <p>
+                        Cruzando <strong>material + espessura + potência + gás</strong>,
+                        o sistema determina uma velocidade em mm/s. Essa velocidade
+                        vem de tabelas de referência de mercado (Bodor, Trumpf, Rise
+                        Tek).
+                      </p>
+                      <h4>3. Tempo total</h4>
+                      <p>
+                        <span class="formula"
+                          >t = (comprimento ÷ velocidade) + (furos × piercing) +
+                          setup</span
+                        >
+                      </p>
+                      <p>
+                        O <strong>setup</strong> é o tempo de preparar a máquina (60s
+                        no simulador). O <strong>piercing</strong> é o tempo que o
+                        laser leva para furar a chapa em cada novo contorno.
+                      </p>
+                      <h4>4. Custo</h4>
+                      <p>
+                        Soma 4 parcelas: <strong>máquina</strong>,
+                        <strong>gás</strong>, <strong>energia</strong> e
+                        <strong>consumíveis</strong>. Depois aplica a margem do
+                        fornecedor.
+                      </p>
+                      <div class="highlight-box">
+                        <strong>Por que importa:</strong> quando o fornecedor te dá
+                        "R$ 15 por peça", você decompõe o cálculo por trás disso e
+                        descobre quanto é custo real e quanto é margem.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+      
+              <!-- 2. ARQUIVO -->
+              <div class="manual-item" id="laser-manual-2">
+                <div
+                  class="manual-item-header"
+                  onclick="toggleManual('laser-manual-2')"
+                >
+                  <div class="manual-item-icon">📐</div>
+                  <div class="manual-item-title-block">
+                    <h3 class="manual-item-title">2. Arquivo da Peça (DXF / SVG)</h3>
+                    <p class="manual-item-subtitle">
+                      O que é lido e o que é ignorado
+                    </p>
+                  </div>
+                  <span class="manual-item-chevron">▶</span>
+                </div>
+                <div class="manual-item-body">
+                  <div class="manual-item-body-inner">
+                    <div class="manual-item-body-content">
+                      <h4>Formatos suportados</h4>
+                      <ul>
+                        <li>
+                          <strong>DXF</strong> — formato vetorial do AutoCAD. Padrão da
+                          indústria de corte a laser.
+                        </li>
+                        <li>
+                          <strong>SVG</strong> — formato vetorial web. Útil para
+                          desenhos vindos do Illustrator, Figma ou Inkscape.
+                        </li>
+                      </ul>
+                      <h4>Entidades DXF que a ferramenta lê</h4>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Entidade</th>
+                            <th>Descrição</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td><strong>LINE</strong></td>
+                            <td>Linha reta entre dois pontos</td>
+                          </tr>
+                          <tr>
+                            <td><strong>CIRCLE</strong></td>
+                            <td>Círculo completo</td>
+                          </tr>
+                          <tr>
+                            <td><strong>ARC</strong></td>
+                            <td>Arco de círculo</td>
+                          </tr>
+                          <tr>
+                            <td><strong>LWPOLYLINE</strong></td>
+                            <td>
+                              Polilinha com bulges (arcos embutidos) — a mais comum
+                            </td>
+                          </tr>
+                          <tr>
+                            <td><strong>POLYLINE</strong></td>
+                            <td>Polilinha legada (formato antigo)</td>
+                          </tr>
+                          <tr>
+                            <td><strong>ELLIPSE</strong></td>
+                            <td>Elipse completa ou parcial</td>
+                          </tr>
+                          <tr>
+                            <td><strong>SPLINE</strong></td>
+                            <td>Curva suave (interpolada por amostragem)</td>
+                          </tr>
+                          <tr>
+                            <td><strong>INSERT</strong></td>
+                            <td>
+                              Blocos referenciados — expandidos com posição, rotação e
+                              escala
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <h4>O que é ignorado (não afeta o corte)</h4>
+                      <ul>
+                        <li>
+                          <strong>TEXT / MTEXT</strong> — textos e cotas (não são
+                          cortados)
+                        </li>
+                        <li>
+                          <strong>HATCH</strong> — hachuras e preenchimentos
+                        </li>
+                        <li>
+                          <strong>DIMENSION</strong> — cotas dimensionais
+                        </li>
+                        <li>
+                          <strong>VIEWPORT</strong> — janelas de layout (por isso a
+                          bbox gigante de 10m em alguns arquivos)
+                        </li>
+                      </ul>
+                      <div class="highlight-box">
+                        <strong>Dica:</strong> se o desenho aparecer estranho, abra o
+                        DXF no editor de texto e verifique se há `INSERT` ou `SPLINE`.
+                        Estes são os casos que mais dão problema.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+      
+              <!-- 3. MATERIAL E ESPESSURA -->
+              <div class="manual-item" id="laser-manual-3">
+                <div
+                  class="manual-item-header"
+                  onclick="toggleManual('laser-manual-3')"
+                >
+                  <div class="manual-item-icon">🔩</div>
+                  <div class="manual-item-title-block">
+                    <h3 class="manual-item-title">3. Material e Espessura</h3>
+                    <p class="manual-item-subtitle">
+                      Como cada metal reage ao feixe
+                    </p>
+                  </div>
+                  <span class="manual-item-chevron">▶</span>
+                </div>
+                <div class="manual-item-body">
+                  <div class="manual-item-body-inner">
+                    <div class="manual-item-body-content">
+                      <h4>Ordem de "facilidade de corte" (mais fácil → mais difícil)</h4>
+                      <ol>
+                        <li>
+                          <strong>Aço Carbono (1020, 1045)</strong> — o mais fácil de
+                          todos. Reage com o oxigênio e gera calor exotérmico, que
+                          ajuda o próprio corte. Rápido e barato.
+                        </li>
+                        <li>
+                          <strong>Alumínio (5052, 6061)</strong> — reflete muito o
+                          feixe. Exige potência maior e nitrogênio para borda limpa.
+                        </li>
+                        <li>
+                          <strong>Aço Inox (304, 316L)</strong> — o mais comum na sua
+                          indústria. Condutividade térmica baixa concentra o calor.
+                          Nitrogênio obrigatório.
+                        </li>
+                        <li>
+                          <strong>Latão</strong> — refletivo e com zinco na liga, que
+                          evapora e suja a lente. Precisa de cuidado.
+                        </li>
+                        <li>
+                          <strong>Cobre</strong> — o pior caso. Reflete ~95% do feixe
+                          infravermelho. Exige potência altíssima.
+                        </li>
+                      </ol>
+                      <h4>Como a espessura afeta tudo</h4>
+                      <p>
+                        Dobrar a espessura <strong>não dobra o tempo</strong> — ele
+                        cresce mais rápido. Uma chapa de 4mm corta a ~140 mm/s com 4
+                        kW; uma de 8mm cai para ~40 mm/s com a mesma potência. É uma
+                        relação não-linear.
+                      </p>
+                      <div class="highlight-box">
+                        <strong>Regra prática:</strong> peças com muitas curvas
+                        fechadas (estrelas, engrenagens) sofrem mais com espessura
+                        alta porque o bico precisa desacelerar nas quinas.
+                      </div>
+      
+                      <h4>Referências de Velocidade de Corte</h4>
+                      <p>
+                        Os valores da tabela de velocidade do simulador são baseados em
+                        dados públicos de fabricantes e integradores. Consulte:
+                      </p>
+                      <ul>
+                        <li>
+                          <a
+                            href="https://risetekmachinery.com/fiber-laser-cutting-performance-guide/"
+                            target="_blank"
+                            rel="noopener"
+                            style="color: var(--primary)"
+                            >Rise Tek — Fiber Laser Cutting Performance Guide</a
+                          >
+                        </li>
+                        <li>
+                          <a
+                            href="https://www.bodor.com/en/blogs/laser-cutting-parameters-6kw-12kw-sheet-metal.html"
+                            target="_blank"
+                            rel="noopener"
+                            style="color: var(--primary)"
+                            >Bodor Academy — Guia de Parâmetros 6kW e 12kW</a
+                          >
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+      
+              <!-- 4. TECNOLOGIA -->
+              <div class="manual-item" id="laser-manual-4">
+                <div
+                  class="manual-item-header"
+                  onclick="toggleManual('laser-manual-4')"
+                >
+                  <div class="manual-item-icon">⚡</div>
+                  <div class="manual-item-title-block">
+                    <h3 class="manual-item-title">4. Tecnologia e Potência</h3>
+                    <p class="manual-item-subtitle">
+                      Fibra × CO₂, e por que a potência muda tudo
+                    </p>
+                  </div>
+                  <span class="manual-item-chevron">▶</span>
+                </div>
+                <div class="manual-item-body">
+                  <div class="manual-item-body-inner">
+                    <div class="manual-item-body-content">
+                      <h4>Fibra Laser — o padrão atual</h4>
+                      <p>
+                        Feixe gerado em fibra óptica dopada com itérbio. Comprimento
+                        de onda 1070 nm. <strong>Eficiência elétrica ~35%</strong>.
+                        Praticamente 100% das máquinas compradas após 2015 são fibra.
+                      </p>
+                      <p><strong>Vantagens:</strong></p>
+                      <ul>
+                        <li>Velocidade 3–5× maior em metais finos</li>
+                        <li>Manutenção mais barata (sem gás de ressonador)</li>
+                        <li>Feixe de qualidade excelente (BPP baixo)</li>
+                      </ul>
+                      <h4>CO₂ Laser — tecnologia legada</h4>
+                      <p>
+                        Feixe gerado em mistura de gases (CO₂, N₂, He). Comprimento de
+                        onda 10.600 nm. <strong>Eficiência ~10%</strong>. Só faz
+                        sentido para <strong>não-metais</strong> (acrílico, MDF,
+                        couro, vidro) ou metais finos (aço carbono &lt; 3mm).
+                      </p>
+                      <h4>Escolha da potência</h4>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Potência</th>
+                            <th>Aplicação típica</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td><strong>1,5 – 2 kW</strong></td>
+                            <td>Chapa fina (até 3mm aço inox, 4mm alumínio)</td>
+                          </tr>
+                          <tr>
+                            <td><strong>3 kW</strong></td>
+                            <td>Uso geral (até 6mm inox, 8mm alumínio)</td>
+                          </tr>
+                          <tr>
+                            <td><strong>4 – 6 kW</strong></td>
+                            <td>Padrão industrial (até 12mm inox, 16mm aço)</td>
+                          </tr>
+                          <tr>
+                            <td><strong>8 – 12 kW</strong></td>
+                            <td>Chapas grossas e alta produção (até 25mm)</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <div class="highlight-box">
+                        <strong>Regra de cotação:</strong> peça ao fornecedor qual
+                        potência ele tem. Se for 6kW e você estiver cotando peça de
+                        3mm, o cálculo vai ficar abaixo do valor cobrado — o que é
+                        normal, porque ele dilui o custo da máquina grande em todas as
+                        peças.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+      
+              <!-- 5. GÁS -->
+              <div class="manual-item" id="laser-manual-5">
+                <div
+                  class="manual-item-header"
+                  onclick="toggleManual('laser-manual-5')"
+                >
+                  <div class="manual-item-icon">💨</div>
+                  <div class="manual-item-title-block">
+                    <h3 class="manual-item-title">5. Gás Auxiliar</h3>
+                    <p class="manual-item-subtitle">
+                      Nitrogênio, oxigênio, ar — quando usar cada um
+                    </p>
+                  </div>
+                  <span class="manual-item-chevron">▶</span>
+                </div>
+                <div class="manual-item-body">
+                  <div class="manual-item-body-inner">
+                    <div class="manual-item-body-content">
+                      <p>
+                        O gás tem <strong>3 funções</strong>: empurrar o metal
+                        fundido para fora do corte, esfriar a zona de fusão e proteger
+                        a lente contra respingos.
+                      </p>
+                      <h4>Nitrogênio (N₂)</h4>
+                      <ul>
+                        <li>
+                          <strong>Borda limpa</strong>, sem oxidação — o padrão para
+                          inox e alumínio
+                        </li>
+                        <li>
+                          Custo mais alto (R$ 8–15/m³ em cilindro, R$ 3–6/m³ em tanque
+                          criogênico)
+                        </li>
+                        <li>
+                          Consumo típico: <span class="formula"
+                            >12 + (espessura × 1,2) m³/h</span
+                          >
+                        </li>
+                      </ul>
+                      <h4>Oxigênio (O₂)</h4>
+                      <ul>
+                        <li>
+                          <strong>3× mais rápido</strong> em aço carbono, porque a
+                          reação química gera calor extra
+                        </li>
+                        <li>
+                          <strong>Borda oxidada</strong> (escura), inaceitável para inox
+                          ou alumínio exposto
+                        </li>
+                        <li>Ótimo para aço carbono estrutural</li>
+                      </ul>
+                      <h4>Ar Comprimido</h4>
+                      <ul>
+                        <li>
+                          <strong>Mais barato</strong> — basta um compressor
+                          industrial
+                        </li>
+                        <li>
+                          Borda levemente oxidada, qualidade intermediária
+                        </li>
+                        <li>
+                          Bom para alumínio fino (&lt; 4mm) e aço carbono de baixa
+                          exigência
+                        </li>
+                      </ul>
+                      <h4>Nenhum</h4>
+                      <ul>
+                        <li>
+                          Só para fusão (corte de sacrifício, sem qualidade)
+                        </li>
+                        <li>Praticamente não usado em produção séria</li>
+                      </ul>
+                      <div class="highlight-box">
+                        <strong>Impacto no orçamento:</strong> inox + N₂ + 6mm
+                        espessura consome em média <strong>19 m³/h</strong>. Se o gás
+                        custa R$ 12/m³, isso é R$ 228/h só de gás — frequentemente
+                        <strong>mais que a máquina</strong>. Não ignore esse campo.
+                      </div>
+      
+                      <h4>Referência Técnica de Consumo de Gás</h4>
+                      <p>
+                        Os valores de vazão por espessura são baseados em faixas
+                        públicas de fabricantes de máquinas e calculadoras
+                        especializadas. Consulte:
+                      </p>
+                      <ul>
+                        <li>
+                          <a
+                            href="https://yihailasers.com/laser-cutting-gas-consumption-calculator/"
+                            target="_blank"
+                            rel="noopener"
+                            style="color: var(--primary)"
+                            >Yihai Laser — Calculadora de Consumo de Gás</a
+                          >
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+      
+              <!-- 6. CONSUMÍVEIS -->
+              <div class="manual-item" id="laser-manual-6">
+                <div
+                  class="manual-item-header"
+                  onclick="toggleManual('laser-manual-6')"
+                >
+                  <div class="manual-item-icon">🔧</div>
+                  <div class="manual-item-title-block">
+                    <h3 class="manual-item-title">6. Consumíveis</h3>
+                    <p class="manual-item-subtitle">
+                      As peças de desgaste do cabeçote — o campo mais subestimado
+                    </p>
+                  </div>
+                  <span class="manual-item-chevron">▶</span>
+                </div>
+                <div class="manual-item-body">
+                  <div class="manual-item-body-inner">
+                    <div class="manual-item-body-content">
+                      <p>
+                        <strong>Consumíveis</strong> são as peças do
+                        <strong>cabeçote de corte</strong> que morrem com o uso — não
+                        são a máquina nem a fonte laser. Precisam ser trocadas com
+                        frequência, e o custo disso entra no preço da hora.
+                      </p>
+                      <h4>Lista de consumíveis típicos</h4>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Peça</th>
+                            <th>Função</th>
+                            <th>Vida útil</th>
+                            <th>Custo</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td><strong>Bico de corte</strong></td>
+                            <td>Direciona o gás no ponto de fusão</td>
+                            <td>200–800h</td>
+                            <td>R$ 30–150</td>
+                          </tr>
+                          <tr>
+                            <td><strong>Lente de proteção</strong></td>
+                            <td>
+                              Vidro fino que impede respingo de sujar a lente principal
+                            </td>
+                            <td>20–80h</td>
+                            <td>R$ 100–300</td>
+                          </tr>
+                          <tr>
+                            <td><strong>Lente de foco</strong></td>
+                            <td>Focaliza o feixe no ponto de corte</td>
+                            <td>1000–4000h</td>
+                            <td>R$ 800–3000</td>
+                          </tr>
+                          <tr>
+                            <td><strong>Cerâmica</strong></td>
+                            <td>Isola e prende o bico</td>
+                            <td>~1000h</td>
+                            <td>R$ 200–500</td>
+                          </tr>
+                          <tr>
+                            <td><strong>Fole</strong></td>
+                            <td>Protege o cabeçote contra poeira</td>
+                            <td>~2000h</td>
+                            <td>R$ 500–1500</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <h4>Como estimar o valor de R$/hora</h4>
+                      <p>
+                        Divida o custo de cada peça pela sua vida útil em horas e some
+                        tudo:
+                      </p>
+                      <p>
+                        <span class="formula"
+                          >(100 ÷ 400) + (150 ÷ 40) + (1500 ÷ 2000) + (300 ÷ 1000) +
+                          (1000 ÷ 2000) ≈ R$ 5,55/h</span
+                        >
+                      </p>
+                      <p>
+                        Na prática, aloque <strong>R$ 15 a R$ 50/hora</strong> — há
+                        outros itens menores (vedações, sensores, filtros) e a vida
+                        útil real é menor em produção pesada.
+                      </p>
+                      <div class="highlight-box">
+                        <strong>Regra para o seu caso:</strong> se o fornecedor te dá
+                        "R$ 380/hora, tudo incluído", <strong>deixe consumíveis em
+                        R$ 0</strong>. Se ele discrimina as linhas no orçamento, aí
+                        sim você preenche com o valor que ele cobrou.
+                      </div>
+      
+                      <h4>Referências Técnicas de Consumíveis</h4>
+                      <p>
+                        Os valores de vida útil e custo por hora são baseados em dados
+                        públicos de fabricantes e literatura técnica. Consulte:
+                      </p>
+                      <ul>
+                        <li>
+                          <a
+                            href="https://www.lasercalcpro.com/guides/hourly-cost-structure"
+                            target="_blank"
+                            rel="noopener"
+                            style="color: var(--primary)"
+                            >LaserCalc Pro — Estrutura de Custos Horários</a
+                          >
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+      
+              <!-- 7. PARÂMETROS DE CUSTO -->
+              <div class="manual-item" id="laser-manual-7">
+                <div
+                  class="manual-item-header"
+                  onclick="toggleManual('laser-manual-7')"
+                >
+                  <div class="manual-item-icon">💰</div>
+                  <div class="manual-item-title-block">
+                    <h3 class="manual-item-title">7. Parâmetros de Custo</h3>
+                    <p class="manual-item-subtitle">
+                      Taxa máquina, energia, margem
+                    </p>
+                  </div>
+                  <span class="manual-item-chevron">▶</span>
+                </div>
+                <div class="manual-item-body">
+                  <div class="manual-item-body-inner">
+                    <div class="manual-item-body-content">
+                      <h4>Taxa Máquina (R$/h)</h4>
+                      <p>
+                        É o custo de ter a máquina ligada durante uma hora. Inclui:
+                      </p>
+                      <ul>
+                        <li>Depreciação do investimento (5–10 anos)</li>
+                        <li>Manutenção preventiva e corretiva</li>
+                        <li>Espaço físico, seguro, impostos</li>
+                        <li>Operador (em muitos casos)</li>
+                      </ul>
+                      <p>Faixas de mercado no Brasil:</p>
+                      <ul>
+                        <li><strong>1,5–3 kW</strong>: R$ 180–280/h</li>
+                        <li><strong>4–6 kW</strong>: R$ 280–420/h</li>
+                        <li><strong>8–12 kW</strong>: R$ 420–650/h</li>
+                      </ul>
+                      <p>
+                        <strong>Como descobrir a do seu fornecedor:</strong> peça uma
+                        peça-teste simples (retângulo de 100×100mm em 4mm). Divida o
+                        valor cobrado pelo tempo de corte que o simulador calcula. O
+                        quociente é a taxa efetiva dele.
+                      </p>
+                      <h4>Preço da Energia (R$/kWh)</h4>
+                      <p>
+                        Pegue da sua conta de luz industrial (fora a demanda). Faixa
+                        típica: R$ 0,65–0,95/kWh. O simulador aplica um fator de carga
+                        de 70% sobre a potência nominal — a máquina não fica no talo o
+                        tempo todo.
+                      </p>
+                      <h4>Margem do Fornecedor (%)</h4>
+                      <p>
+                        É o <strong>lucro líquido</strong> após cobrir todos os
+                        custos. Faixas típicas:
+                      </p>
+                      <ul>
+                        <li>
+                          <strong>20–30%</strong> — serviço de alta recorrência,
+                          concorrência acirrada
+                        </li>
+                        <li>
+                          <strong>30–50%</strong> — serviço sob demanda, urgência,
+                          peças pequenas em série
+                        </li>
+                        <li>
+                          <strong>50–80%</strong> — protótipo único, material exótico,
+                          prazo curto
+                        </li>
+                      </ul>
+                      <div class="highlight-box">
+                        <strong>Como usar na negociação:</strong> preencha com a margem
+                        que você <em>acha justa</em> (ex: 25%) e compare o resultado
+                        com o orçamento do fornecedor. A diferença mostra quanto ele
+                        está cobrando de margem real.
+                      </div>
+      
+                      <h4>Referências Técnicas de Custos</h4>
+                      <p>
+                        As faixas de taxa horária e estrutura de custos são baseadas em
+                        benchmarks públicos de mercado. Consulte:
+                      </p>
+                      <ul>
+                        <li>
+                          <a
+                            href="https://www.lasercalcpro.com/guides/hourly-cost-structure"
+                            target="_blank"
+                            rel="noopener"
+                            style="color: var(--primary)"
+                            >LaserCalc Pro — Estrutura de Custos Horários</a
+                          >
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+      
+              <!-- 8. FÓRMULAS -->
+              <div class="manual-item" id="laser-manual-8">
+                <div
+                  class="manual-item-header"
+                  onclick="toggleManual('laser-manual-8')"
+                >
+                <div class="manual-item-icon">📊</div>
+                  <div class="manual-item-title-block">
+                    <h3 class="manual-item-title">8. Fórmulas do Orçamento</h3>
+                    <p class="manual-item-subtitle">
+                      As contas por trás dos números
+                    </p>
+                  </div>
+                  <span class="manual-item-chevron">▶</span>
+                </div>
+                <div class="manual-item-body">
+                  <div class="manual-item-body-inner">
+                    <div class="manual-item-body-content">
+                      <h4>Tempo de corte</h4>
+                      <p>
+                        <span class="formula"
+                          >t_corte (s) = comprimento (mm) ÷ velocidade (mm/s)</span
+                        >
+                      </p>
+                      <h4>Piercing</h4>
+                      <p>
+                        <span class="formula"
+                          >t_piercing (s) = nº de furos × (0,3 + espessura × 0,4)</span
+                        >
+                      </p>
+                      <p>
+                        A cada novo contorno (furo ou novo perfil separado), o laser
+                        precisa furar a chapa antes de começar a cortar. Quanto mais
+                        grossa, mais tempo leva.
+                      </p>
+                      <h4>Tempo total</h4>
+                      <p>
+                        <span class="formula"
+                          >t_total = t_corte + t_piercing + 60s (setup)</span
+                        >
+                      </p>
+                      <h4>Custos</h4>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Componente</th>
+                            <th>Fórmula</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td><strong>Máquina</strong></td>
+                            <td>
+                              <span class="formula"
+                                >taxa (R$/h) × t_total (h)</span
+                              >
+                            </td>
+                          </tr>
+                          <tr>
+                            <td><strong>Gás</strong></td>
+                            <td>
+                              <span class="formula"
+                                >preço (R$/m³) × vazão (m³/h) × t_efetivo (h)</span
+                              >
+                            </td>
+                          </tr>
+                          <tr>
+                            <td><strong>Energia</strong></td>
+                            <td>
+                              <span class="formula"
+                                >preço (R$/kWh) × (potência_kW × 0,7) × t_total
+                                (h)</span
+                              >
+                            </td>
+                          </tr>
+                          <tr>
+                            <td><strong>Consumíveis</strong></td>
+                            <td>
+                              <span class="formula"
+                                >taxa (R$/h) × t_total (h)</span
+                              >
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <h4>Preço final</h4>
+                      <p>
+                        <span class="formula"
+                          >preço = (máquina + gás + energia + consumíveis) × (1 +
+                          margem ÷ 100)</span
+                        >
+                      </p>
+                      <div class="highlight-box">
+                        <strong>Observação:</strong> o gás só é consumido durante o
+                        corte efetivo (não no setup). Por isso a fórmula dele usa
+                        <span class="formula">t_efetivo</span> em vez de
+                        <span class="formula">t_total</span>.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+      
+          <!-- TOAST NOTIFICATION -->
     <div id="toast"></div>
 
     <!-- LOGIC SCRIPT -->
@@ -4275,6 +5899,33 @@
         }
       }
 
+      // Alterna entre os módulos (Engradados / Corte a Laser).
+      // Mostra a barra de abas correspondente e ativa sua primeira aba.
+      function switchModule(modulo) {
+        // 1. Atualiza o estado visual do switcher
+        document.querySelectorAll(".module-btn").forEach((b) => {
+          b.classList.toggle("active", b.dataset.module === modulo);
+        });
+
+        // 2. Mostra/esconde as barras de abas
+        const tabsEngradados = document.getElementById("tabs-engradados");
+        const tabsLaser = document.getElementById("tabs-laser");
+        if (tabsEngradados)
+          tabsEngradados.style.display =
+            modulo === "engradados" ? "flex" : "none";
+        if (tabsLaser)
+          tabsLaser.style.display = modulo === "laser" ? "flex" : "none";
+
+        // 3. Ativa a primeira aba do módulo
+        const primeiraAba =
+          modulo === "engradados" ? "simulador" : "laser";
+        const botao = document.querySelector(
+          `#tabs-${modulo} .tab-btn`
+        );
+        if (botao) botao.click();
+        else switchTab(primeiraAba);
+      }
+
       function switchTab(tabId) {
         document
           .querySelectorAll(".tab-content")
@@ -4284,6 +5935,10 @@
           .forEach((t) => t.classList.remove("active"));
         document.getElementById(tabId + "-tab").classList.add("active");
         event.target.classList.add("active");
+
+        // Evita o "pulo" ao alternar entre abas de alturas diferentes:
+        // rola suavemente para o topo sem animação.
+        window.scrollTo({ top: 0, behavior: "auto" });
 
         if (tabId === "simulador") {
           // Recalcula em 2 tempos: imediato e após um frame, para
@@ -7375,8 +9030,13 @@
 
       function atualizarStatusTemplate() {
         const btn = document.getElementById("btnTemplate");
+        const btnRem = document.getElementById("btnRemoverTemplate");
         if (!btn) return;
         const temTemplate = !!localStorage.getItem(TEMPLATE_KEY);
+
+        if (btnRem) {
+          btnRem.style.display = temTemplate ? "inline-flex" : "none";
+        }
 
         if (temTemplate) {
           btn.innerHTML = "✅ Template carregado (clique para trocar)";
@@ -7391,6 +9051,22 @@
           btn.style.background = "transparent";
           btn.style.color = "var(--text-muted)";
         }
+      }
+
+      // Remove o template de planilha salvo em localStorage.
+      function removerTemplateEngradados() {
+        if (!localStorage.getItem(TEMPLATE_KEY)) {
+          showToast("Nenhum template carregado.", false);
+          return;
+        }
+        if (!confirm("Remover o template da planilha carregado?")) return;
+        try {
+          localStorage.removeItem(TEMPLATE_KEY);
+        } catch (e) {
+          console.warn("Falha ao remover template:", e);
+        }
+        atualizarStatusTemplate();
+        showToast("🗑️ Template removido", false);
       }
 
       function base64ParaArrayBuffer(base64) {
@@ -9718,6 +11394,1876 @@
         }
       }
 
+      /* ============================================================
+         ABA CORTE A LASER — parser, render e cálculo
+         ============================================================ */
+
+         let laserGeometry = null;
+      let laserFileInfo = null;
+      let laserView = { zoom: 1, panX: 0, panY: 0 };
+      let laserPanState = {
+        active: false,
+        lastX: 0,
+        lastY: 0,
+        pinchDist: 0,
+      };
+      /* ============================================================
+         MEDIÇÃO POR CLIQUE — inspetor de entidades
+         ============================================================ */
+         let laserMeasure = { active: false, selected: null };
+      let laserTransform = null;
+
+      function laserToggleMeasure() {
+        laserMeasure.active = !laserMeasure.active;
+        const btn = document.getElementById("laserBtnMeasure");
+        if (btn) {
+          btn.classList.toggle("active", laserMeasure.active);
+          btn.textContent = laserMeasure.active
+            ? "✓ Medindo (Esc p/ sair)"
+            : "📏 Medir";
+        }
+        if (!laserMeasure.active) {
+          laserMeasure.selected = null;
+          laserHideMeasurePanel();
+        }
+        if (laserGeometry) laserDrawCanvas(laserGeometry);
+      }
+
+      function laserHideMeasurePanel() {
+        const panel = document.getElementById("laserMeasurePanel");
+        if (panel) panel.style.display = "none";
+      }
+
+      function laserPointToSegDist(px, py, x1, y1, x2, y2) {
+        const dx = x2 - x1,
+          dy = y2 - y1;
+        const lenSq = dx * dx + dy * dy;
+        if (lenSq < 1e-12) return Math.hypot(px - x1, py - y1);
+        let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
+        t = Math.max(0, Math.min(1, t));
+        return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+      }
+
+      function laserHitTest(sx, sy) {
+        if (!laserGeometry || !laserTransform) return null;
+        const t = laserTransform;
+        const wx = (sx - t.w / 2 - laserView.panX) / t.scale + t.cx;
+        const wy = (sy - t.h / 2 - laserView.panY) / t.scale + t.cy;
+        const tolWorld = 8 / t.scale;
+        let best = null;
+        let bestDist = Infinity;
+        laserGeometry.polylines.forEach((p, polyIdx) => {
+          const n = p.points.length;
+          const totalSegs = p.closed ? n : n - 1;
+          for (let k = 0; k < totalSegs; k++) {
+            const a = p.points[k];
+            const b = p.points[(k + 1) % n];
+            const d = laserPointToSegDist(wx, wy, a.x, a.y, b.x, b.y);
+            if (d < bestDist && d < tolWorld) {
+              bestDist = d;
+              best = { polyIdx: polyIdx, segIdx: k, start: a, end: b };
+            }
+          }
+        });
+        return best;
+      }
+
+      function laserShowMeasurePanel(hit) {
+        const panel = document.getElementById("laserMeasurePanel");
+        if (!panel || !laserGeometry) return;
+        const p = laserGeometry.polylines[hit.polyIdx];
+        const a = hit.start,
+          b = hit.end;
+        const compSeg = Math.hypot(b.x - a.x, b.y - a.y);
+        let ang = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
+        if (ang < 0) ang += 360;
+
+        let compTot = 0;
+        for (let k = 0; k < p.points.length - 1; k++) {
+          compTot += Math.hypot(
+            p.points[k + 1].x - p.points[k].x,
+            p.points[k + 1].y - p.points[k].y
+          );
+        }
+        if (p.closed && p.points.length > 2) {
+          const f = p.points[0],
+            l = p.points[p.points.length - 1];
+          compTot += Math.hypot(f.x - l.x, f.y - l.y);
+        }
+
+        let mnX = Infinity, mxX = -Infinity, mnY = Infinity, mxY = -Infinity;
+        p.points.forEach((pt) => {
+          if (pt.x < mnX) mnX = pt.x;
+          if (pt.x > mxX) mxX = pt.x;
+          if (pt.y < mnY) mnY = pt.y;
+          if (pt.y > mxY) mxY = pt.y;
+        });
+
+        const nSegs = p.closed ? p.points.length : p.points.length - 1;
+        const fmt = (v, d) =>
+          v.toLocaleString("pt-BR", {
+            minimumFractionDigits: d,
+            maximumFractionDigits: d,
+          });
+
+        let html = "";
+        html += '<div class="laser-measure-title">Segmento selecionado</div>';
+        html +=
+          '<div class="laser-measure-row"><span>Comprimento</span><strong>' +
+          fmt(compSeg, 2) +
+          " mm</strong></div>";
+        html +=
+          '<div class="laser-measure-row"><span>Ângulo</span><strong>' +
+          fmt(ang, 1) +
+          "°</strong></div>";
+        html +=
+          '<div class="laser-measure-row"><span>Início</span><strong>(' +
+          fmt(a.x, 2) +
+          ", " +
+          fmt(a.y, 2) +
+          ")</strong></div>";
+        html +=
+          '<div class="laser-measure-row"><span>Fim</span><strong>(' +
+          fmt(b.x, 2) +
+          ", " +
+          fmt(b.y, 2) +
+          ")</strong></div>";
+        html += '<div class="laser-measure-divider"></div>';
+        html += '<div class="laser-measure-title">Contorno completo</div>';
+        html +=
+          '<div class="laser-measure-row"><span>Comprimento</span><strong>' +
+          fmt(compTot, 2) +
+          " mm</strong></div>";
+        html +=
+          '<div class="laser-measure-row"><span>Nº segmentos</span><strong>' +
+          nSegs +
+          "</strong></div>";
+        html +=
+          '<div class="laser-measure-row"><span>Tipo</span><strong>' +
+          (p.closed ? "Fechado" : "Aberto") +
+          "</strong></div>";
+        html +=
+          '<div class="laser-measure-row"><span>L × A</span><strong>' +
+          fmt(mxX - mnX, 1) +
+          " × " +
+          fmt(mxY - mnY, 1) +
+          " mm</strong></div>";
+        if (p.closed && typeof p.area === "number" && Math.abs(p.area) > 0) {
+          html +=
+            '<div class="laser-measure-row"><span>Área</span><strong>' +
+            fmt(Math.abs(p.area) / 100, 2) +
+            " cm²</strong></div>";
+        }
+
+        panel.innerHTML = html;
+        panel.style.display = "block";
+      }
+
+      function laserInit() {
+        const dz = document.getElementById("laserDropzone");
+        const inp = document.getElementById("laserFileInput");
+        if (!dz || !inp || dz.dataset.bound === "1") return;
+        dz.dataset.bound = "1";
+
+        dz.addEventListener("click", () => inp.click());
+        dz.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            inp.click();
+          }
+        });
+        inp.addEventListener("change", (e) => {
+          if (e.target.files && e.target.files[0])
+            laserHandleFile(e.target.files[0]);
+        });
+
+        ["dragenter", "dragover"].forEach((ev) =>
+          dz.addEventListener(ev, (e) => {
+            e.preventDefault();
+            dz.classList.add("dragover");
+          })
+        );
+        ["dragleave", "drop"].forEach((ev) =>
+          dz.addEventListener(ev, (e) => {
+            e.preventDefault();
+            dz.classList.remove("dragover");
+          })
+        );
+        dz.addEventListener("drop", (e) => {
+          const f = e.dataTransfer.files && e.dataTransfer.files[0];
+          if (f) laserHandleFile(f);
+        });
+
+        window.addEventListener("resize", () => {
+          if (laserGeometry) laserDrawCanvas(laserGeometry);
+        });
+
+        laserInitCanvasInteraction();
+      }
+
+      // ============================================================
+      // ZOOM + PAN no canvas 2D
+      // - scroll (mouse)  → zoom ancorado no cursor
+      // - arrastar        → pan
+      // - pinch (2 dedos) → zoom nos celulares
+      // - duplo clique    → recentralizar
+      // ============================================================
+      function laserInitCanvasInteraction() {
+        const canvas = document.getElementById("laserCanvas");
+        if (!canvas || canvas.dataset.interactive === "1") return;
+        canvas.dataset.interactive = "1";
+
+        // --- Zoom com scroll do mouse ---
+        canvas.addEventListener(
+          "wheel",
+          (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+            laserZoomAt(mx, my, factor);
+            if (laserGeometry) laserDrawCanvas(laserGeometry);
+          },
+          { passive: false }
+        );
+
+        // --- Pan (1 dedo/botão) e pinch (2 dedos) ---
+        const pointers = new Map();
+
+        canvas.addEventListener("pointerdown", (e) => {
+          canvas.setPointerCapture(e.pointerId);
+          pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+          if (pointers.size === 1) {
+            laserPanState.active = true;
+            laserPanState.lastX = e.clientX;
+            laserPanState.lastY = e.clientY;
+            canvas.style.cursor = "grabbing";
+          } else if (pointers.size === 2) {
+            const pts = Array.from(pointers.values());
+            laserPanState.pinchDist = Math.hypot(
+              pts[0].x - pts[1].x,
+              pts[0].y - pts[1].y
+            );
+          }
+        });
+
+        canvas.addEventListener("pointermove", (e) => {
+          if (!pointers.has(e.pointerId)) return;
+          pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+          if (pointers.size === 1 && laserPanState.active) {
+            const dx = e.clientX - laserPanState.lastX;
+            const dy = e.clientY - laserPanState.lastY;
+            laserView.panX += dx;
+            laserView.panY += dy;
+            laserPanState.lastX = e.clientX;
+            laserPanState.lastY = e.clientY;
+            if (laserGeometry) laserDrawCanvas(laserGeometry);
+          } else if (pointers.size === 2) {
+            const pts = Array.from(pointers.values());
+            const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+            const rect = canvas.getBoundingClientRect();
+            const mx = (pts[0].x + pts[1].x) / 2 - rect.left;
+            const my = (pts[0].y + pts[1].y) / 2 - rect.top;
+            if (laserPanState.pinchDist > 0) {
+              const factor = d / laserPanState.pinchDist;
+              laserZoomAt(mx, my, factor);
+            }
+            laserPanState.pinchDist = d;
+            if (laserGeometry) laserDrawCanvas(laserGeometry);
+          }
+        });
+
+        const endPointer = (e) => {
+          pointers.delete(e.pointerId);
+          if (pointers.size === 0) {
+            laserPanState.active = false;
+            canvas.style.cursor = "grab";
+          }
+          if (pointers.size < 2) laserPanState.pinchDist = 0;
+        };
+        canvas.addEventListener("pointerup", endPointer);
+        canvas.addEventListener("pointercancel", endPointer);
+        canvas.addEventListener("pointerleave", endPointer);
+
+        // --- Duplo clique = recentralizar ---
+        canvas.addEventListener("dblclick", () => {
+          laserView = { zoom: 1, panX: 0, panY: 0 };
+          if (laserGeometry) laserDrawCanvas(laserGeometry);
+        });
+
+        // --- Modo Medir: clique curto em um segmento ---
+        let downInfo = null;
+
+        canvas.addEventListener("pointerdown", (e) => {
+          if (e.pointerType === "mouse" && e.button !== 0) return;
+          downInfo = { x: e.clientX, y: e.clientY, t: Date.now() };
+        });
+
+        canvas.addEventListener("pointerup", (e) => {
+          if (!laserMeasure.active || !laserGeometry || !downInfo) return;
+          const dx = e.clientX - downInfo.x;
+          const dy = e.clientY - downInfo.y;
+          const dt = Date.now() - downInfo.t;
+          downInfo = null;
+          // Só conta como clique curto se moveu pouco e rápido
+          if (Math.hypot(dx, dy) > 6 || dt > 500) return;
+
+          const rect = canvas.getBoundingClientRect();
+          const sx = e.clientX - rect.left;
+          const sy = e.clientY - rect.top;
+          const hit = laserHitTest(sx, sy);
+          if (hit) {
+            laserMeasure.selected = hit;
+            laserShowMeasurePanel(hit);
+          } else {
+            laserMeasure.selected = null;
+            laserHideMeasurePanel();
+          }
+          laserDrawCanvas(laserGeometry);
+        });
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && laserMeasure.active) {
+            laserMeasure.selected = null;
+            laserHideMeasurePanel();
+            if (laserGeometry) laserDrawCanvas(laserGeometry);
+          }
+        });
+
+        canvas.style.cursor = "grab";
+      }
+
+      // Zoom ancorado no cursor (o ponto sob o mouse não se move)
+      function laserZoomAt(px, py, factor) {
+        const canvas = document.getElementById("laserCanvas");
+        if (!canvas) return;
+        const w = canvas.clientWidth;
+        const h = canvas.clientHeight;
+
+        const oldZoom = laserView.zoom;
+        const newZoom = Math.max(0.1, Math.min(80, oldZoom * factor));
+        if (newZoom === oldZoom) return;
+
+        const ratio = newZoom / oldZoom;
+        laserView.panX = px - w / 2 - (px - w / 2 - laserView.panX) * ratio;
+        laserView.panY = py - h / 2 - (py - h / 2 - laserView.panY) * ratio;
+        laserView.zoom = newZoom;
+      }
+
+      // Remove o arquivo carregado e reseta todo o estado da aba laser.
+      function laserRemoverArquivo() {
+        if (!laserGeometry) return;
+
+        laserGeometry = null;
+        laserFileInfo = null;
+        laserView = { zoom: 1, panX: 0, panY: 0 };
+
+        // Dropzone volta ao estado inicial
+        const dz = document.getElementById("laserDropzone");
+        if (dz) dz.classList.remove("has-file");
+        const ic = document.getElementById("laserDropzoneIcon");
+        if (ic) ic.textContent = "📎";
+        const ti = document.getElementById("laserDropzoneTitle");
+        if (ti) ti.textContent = "Clique ou arraste o arquivo aqui";
+        const hi = document.getElementById("laserDropzoneHint");
+        if (hi) hi.textContent = "DXF ou SVG · processado no navegador";
+        const fn = document.getElementById("laserDropzoneFilename");
+        if (fn) fn.textContent = "";
+        const btnRem = document.getElementById("laserBtnRemoverArquivo");
+        if (btnRem) btnRem.style.display = "none";
+
+        // Info box
+        const infoBox = document.getElementById("laserInfoBox");
+        if (infoBox) {
+          infoBox.style.display = "none";
+          infoBox.innerHTML = "";
+        }
+
+        // Canvas volta ao estado vazio
+        const vazio = document.getElementById("laserCanvasEmpty");
+        if (vazio) vazio.style.display = "flex";
+        const legenda = document.getElementById("laserCanvasLegend");
+        if (legenda) legenda.style.display = "none";
+        const canvas = document.getElementById("laserCanvas");
+        if (canvas) {
+          const ctx = canvas.getContext("2d");
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Resultados e botão processar
+        const area = document.getElementById("laserResultsArea");
+        if (area) area.innerHTML = "";
+        const btnProc = document.getElementById("laserBtnProcess");
+        if (btnProc) btnProc.disabled = true;
+
+        // Permite recarregar o mesmo arquivo novamente
+        const inp = document.getElementById("laserFileInput");
+        if (inp) inp.value = "";
+
+        showToast("🗑️ Arquivo removido", false);
+      }
+
+      async function laserHandleFile(file) {
+        const dz = document.getElementById("laserDropzone");
+        const fn = document.getElementById("laserDropzoneFilename");
+        const infoBox = document.getElementById("laserInfoBox");
+
+        if (file.size > 10 * 1024 * 1024) {
+          showToast("❌ Arquivo muito grande (limite 10 MB)", false);
+          return;
+        }
+
+        const name = file.name.toLowerCase();
+        let tipo = null;
+        if (name.endsWith(".dxf")) tipo = "dxf";
+        else if (name.endsWith(".svg")) tipo = "svg";
+        else {
+          showToast("❌ Formato não suportado. Use DXF ou SVG.", false);
+          return;
+        }
+
+        let text;
+        try {
+          text = await file.text();
+        } catch (e) {
+          showToast("❌ Não foi possível ler o arquivo.", false);
+          return;
+        }
+
+        let geo = null;
+        try {
+          geo = tipo === "dxf" ? laserParseDXF(text) : laserParseSVG(text);
+        } catch (err) {
+          console.error("[LASER] Erro no parser:", err);
+          showToast("❌ Falha ao interpretar o arquivo.", false);
+          return;
+        }
+
+        if (!geo || !geo.polylines.length) {
+          showToast("⚠️ Nenhuma geometria encontrada no arquivo.", false);
+          return;
+        }
+
+        laserGeometry = geo;
+        laserFileInfo = { name: file.name, tipo: tipo, size: file.size };
+        // Reseta zoom/pan a cada novo arquivo
+        laserView = { zoom: 1, panX: 0, panY: 0 };
+        laserMeasure.selected = null;
+        laserHideMeasurePanel();
+
+
+        dz.classList.add("has-file");
+        document.getElementById("laserDropzoneIcon").textContent = "✅";
+        document.getElementById("laserDropzoneTitle").textContent =
+          "Arquivo carregado";
+        document.getElementById("laserDropzoneHint").textContent =
+          "Clique para trocar";
+        fn.textContent = file.name;
+
+        // Mostra o botão de remover arquivo
+        const btnRem = document.getElementById("laserBtnRemoverArquivo");
+        if (btnRem) btnRem.style.display = "inline-flex";
+
+        infoBox.style.display = "block";
+        let debugTxt = "";
+        if (geo._debug) {
+          const tipos = geo._debug.tipos || {};
+          const partes = Object.keys(tipos)
+            .sort()
+            .map((k) => k + ":" + tipos[k])
+            .join(" · ");
+          debugTxt =
+            "<br><small style='color:var(--text-muted)'>Blocos: " +
+            geo._debug.numBlocos +
+            " · Entidades no modelo: " +
+            geo._debug.entidadesModelo +
+            (partes ? " · Tipos: " + partes : "") +
+            "</small>";
+        }
+        infoBox.innerHTML =
+          "<strong>📐 Geometria lida:</strong> " +
+          geo.polylines.length +
+          " elemento(s) · Comprimento: <strong>" +
+          geo.comprimento.toFixed(1) +
+          " mm</strong> · Furos: <strong>" +
+          geo.numFuros +
+          "</strong> · Caixa: <strong>" +
+          geo.bbox.width.toFixed(1) +
+          " × " +
+          geo.bbox.height.toFixed(1) +
+          " mm</strong>";
+
+        // Se o DXF contém múltiplos desenhos separados espacialmente,
+        // oferece um seletor para escolher qual orçar.
+        let seletorHTML = "";
+        if (geo.clusters && geo.clusters.length > 1) {
+          seletorHTML +=
+            '<div style="margin-top:12px; padding:10px 12px; background: rgba(251, 191, 36, 0.12); border-left: 3px solid #f59e0b; border-radius:8px;">' +
+            '<div style="font-size:0.8rem; font-weight:700; color:#b45309; margin-bottom:6px;">' +
+            "⚠️ Este DXF contém " +
+            geo.clusters.length +
+            " desenhos separados espacialmente.</div>" +
+            '<div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">' +
+            "Selecione qual você quer orçar (o comprimento, furos, tempo e custo serão recalculados só para ele):</div>" +
+            '<select id="laserClusterSelect" class="laser-select" onchange="laserTrocarCluster(this.value)" style="font-size:0.85rem; padding:8px 10px;">' +
+            geo.clusters
+              .map(
+                (c, i) =>
+                  '<option value="' +
+                  i +
+                  '">Peça ' +
+                  String.fromCharCode(65 + i) +
+                  " — " +
+                  c.numPolylines +
+                  " elemento(s) · " +
+                  c.comprimento.toFixed(0) +
+                  " mm · " +
+                  c.bbox.width.toFixed(0) +
+                  "×" +
+                  c.bbox.height.toFixed(0) +
+                  " mm" +
+                  "</option>"
+              )
+              .join("") +
+            '<option value="-1">Todas (soma)</option>' +
+            "</select>" +
+            "</div>";
+        }
+        infoBox.innerHTML += seletorHTML;
+
+        // Aplica o primeiro cluster por padrão
+        if (geo.clusters && geo.clusters.length > 1) {
+          laserAplicarCluster(geo, 0);
+        }
+
+        document.getElementById("laserCanvasEmpty").style.display = "none";
+        document.getElementById("laserCanvasLegend").style.display = "flex";
+
+        requestAnimationFrame(() => laserDrawCanvas(geo));
+
+        document.getElementById("laserBtnProcess").disabled = false;
+        showToast("✅ Arquivo carregado: " + file.name, true);
+      }
+
+      // ---------- DXF: tokenização e parsing com suporte a BLOCKS/INSERT ----------
+      function laserTokenizeDXF(text) {
+        const lines = text.split(/\r?\n/);
+        const tokens = [];
+        for (let i = 0; i < lines.length - 1; i++) {
+          const code = (lines[i] || "").trim();
+          const value = (lines[i + 1] || "").trim();
+          if (code === "") continue;
+          tokens.push({ code: code, value: value });
+          i++; // consome o par (code, value)
+        }
+        return tokens;
+      }
+
+      // Coleta todos os pares code→value de um bloco de tokens de uma entidade
+      function laserCollectEntityData(tokens) {
+        const data = {};
+        for (let i = 0; i < tokens.length; i++) {
+          const c = tokens[i].code;
+          const v = tokens[i].value;
+          if (data[c] === undefined) data[c] = v;
+          else if (Array.isArray(data[c])) data[c].push(v);
+          else data[c] = [data[c], v];
+        }
+        return data;
+      }
+
+      // Extrai todas as entidades de um array de tokens (usado em BLOCKS e ENTITIES).
+      // Lida com POLYLINE+VERTEX+SEQEND e devolve um array "achatado" de entidades.
+      function laserParseEntitiesFromTokens(tokens, debugCounter) {
+        const entities = [];
+        let i = 0;
+        while (i < tokens.length) {
+          if (tokens[i].code !== "0") {
+            i++;
+            continue;
+          }
+          const entType = tokens[i].value;
+          let j = i + 1;
+          while (j < tokens.length && tokens[j].code !== "0") j++;
+          const entTokens = tokens.slice(i + 1, j);
+          const data = laserCollectEntityData(entTokens);
+
+          if (debugCounter && entType !== "SEQEND" && entType !== "ENDBLK") {
+            debugCounter[entType] = (debugCounter[entType] || 0) + 1;
+          }
+
+          // POLYLINE legado: consome VERTEXs até SEQEND
+          if (entType === "POLYLINE") {
+            const flag = parseInt(data["70"] || "0", 10);
+            const closed = (flag & 1) === 1;
+            const pts = [];
+            let k = j;
+            while (
+              k < tokens.length &&
+              tokens[k].code === "0" &&
+              tokens[k].value === "VERTEX"
+            ) {
+              let l = k + 1;
+              while (l < tokens.length && tokens[l].code !== "0") l++;
+              const vData = laserCollectEntityData(tokens.slice(k + 1, l));
+              const x = parseFloat(vData["10"]);
+              const y = parseFloat(vData["20"]);
+              if (isFinite(x) && isFinite(y)) pts.push({ x: x, y: y });
+              k = l;
+            }
+            if (
+              k < tokens.length &&
+              tokens[k].code === "0" &&
+              tokens[k].value === "SEQEND"
+            ) {
+              let l = k + 1;
+              while (l < tokens.length && tokens[l].code !== "0") l++;
+              k = l;
+            }
+            if (pts.length >= 2)
+              entities.push({ type: "POLYLINE", points: pts, closed: closed });
+            i = k;
+            continue;
+          }
+
+          if (entType !== "SEQEND" && entType !== "ENDBLK" && entType !== "BLOCK") {
+            const parsed = laserParseSingleEntity(entType, data, entTokens);
+            if (parsed) entities.push(parsed);
+          }
+          i = j;
+        }
+        return entities;
+      }
+
+      // Converte um segmento de LWPOLYLINE com bulge em pontos do arco.
+      // bulge = tan(θ/4), onde θ é o ângulo incluído.
+      // bulge > 0 → CCW ; bulge < 0 → CW.
+      function laserBulgeToArc(x1, y1, x2, y2, bulge) {
+        if (Math.abs(bulge) < 1e-10) return [{ x: x2, y: y2 }];
+        const theta = 4 * Math.atan(bulge);
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const chord = Math.hypot(dx, dy);
+        if (chord < 1e-9) return [{ x: x2, y: y2 }];
+        const d = chord / 2 / Math.tan(theta / 2);
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
+        const perpX = -dy / chord;
+        const perpY = dx / chord;
+        const cx = midX + perpX * d;
+        const cy = midY + perpY * d;
+        const r = Math.hypot(x1 - cx, y1 - cy);
+        const startAngle = Math.atan2(y1 - cy, x1 - cx);
+        const endAngle = Math.atan2(y2 - cy, x2 - cx);
+        let sweep;
+        if (bulge > 0) {
+          sweep = endAngle - startAngle;
+          if (sweep < 0) sweep += Math.PI * 2;
+        } else {
+          sweep = endAngle - startAngle;
+          if (sweep > 0) sweep -= Math.PI * 2;
+        }
+        const N = Math.max(8, Math.ceil(Math.abs(sweep) / (Math.PI / 24)));
+        const pts = [];
+        for (let i = 1; i <= N; i++) {
+          const a = startAngle + sweep * (i / N);
+          pts.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) });
+        }
+        return pts;
+      }
+
+      // Interpreta UMA entidade (exceto POLYLINE legado)
+      function laserParseSingleEntity(entType, data, rawTokens) {
+        const toNum = (v) => (v === undefined ? undefined : parseFloat(v));
+        const getAll = (c) => {
+          if (data[c] === undefined) return [];
+          return (Array.isArray(data[c]) ? data[c] : [data[c]])
+            .map(parseFloat)
+            .filter((n) => isFinite(n));
+        };
+
+        if (entType === "LINE") {
+          const x1 = toNum(data["10"]),
+            y1 = toNum(data["20"]);
+          const x2 = toNum(data["11"]),
+            y2 = toNum(data["21"]);
+          if ([x1, y1, x2, y2].every(isFinite)) {
+            return {
+              type: "LINE",
+              points: [
+                { x: x1, y: y1 },
+                { x: x2, y: y2 },
+              ],
+              closed: false,
+            };
+          }
+        } else if (entType === "CIRCLE") {
+          const cx = toNum(data["10"]),
+            cy = toNum(data["20"]),
+            r = toNum(data["40"]);
+          if (isFinite(cx) && isFinite(cy) && isFinite(r) && r > 0) {
+            const pts = [];
+            const N = 72;
+            for (let k = 0; k <= N; k++) {
+              const a = (k / N) * Math.PI * 2;
+              pts.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) });
+            }
+            return { type: "CIRCLE", points: pts, closed: true };
+          }
+        } else if (entType === "ARC") {
+          const cx = toNum(data["10"]),
+            cy = toNum(data["20"]),
+            r = toNum(data["40"]);
+          let sa = (toNum(data["50"]) || 0) * (Math.PI / 180);
+          let ea = (toNum(data["51"]) || 0) * (Math.PI / 180);
+          if (isFinite(cx) && isFinite(cy) && isFinite(r) && r > 0) {
+            if (ea <= sa) ea += Math.PI * 2;
+            const N = Math.max(8, Math.ceil((ea - sa) / (Math.PI / 36)));
+            const pts = [];
+            for (let k = 0; k <= N; k++) {
+              const a = sa + (ea - sa) * (k / N);
+              pts.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) });
+            }
+            return { type: "ARC", points: pts, closed: false };
+          }
+        } else if (entType === "LWPOLYLINE") {
+          // Parsing sequencial dos tokens brutos — captura os bulges (cód. 42)
+          // que representam arcos entre vértices consecutivos.
+          //
+          // ATENÇÃO: um vértice só é "commitado" quando aparece o próximo
+          // código 10 (novo vértice) ou quando os tokens acabam. Isso é
+          // essencial porque a maioria dos vértices NÃO tem bulge (cód. 42),
+          // e o algoritmo anterior os descartava silenciosamente.
+          if (rawTokens && rawTokens.length > 0) {
+            const vertices = [];
+            let curX = null,
+              curY = null,
+              curBulge = 0,
+              pending = false;
+            for (let k = 0; k < rawTokens.length; k++) {
+              const c = rawTokens[k].code;
+              const v = rawTokens[k].value;
+              if (c === "10") {
+                // Commita o vértice anterior (se houver)
+                if (pending && curX !== null && curY !== null) {
+                  vertices.push({
+                    x: curX,
+                    y: curY,
+                    bulge: curBulge,
+                  });
+                }
+                curX = parseFloat(v);
+                curY = null;
+                curBulge = 0;
+                pending = true;
+              } else if (c === "20") {
+                curY = parseFloat(v);
+              } else if (c === "42") {
+                curBulge = parseFloat(v) || 0;
+              }
+            }
+            // Commita o último vértice
+            if (pending && curX !== null && curY !== null) {
+              vertices.push({
+                x: curX,
+                y: curY,
+                bulge: curBulge,
+              });
+            }
+
+            const flag = parseInt(data["70"] || "0", 10);
+            const closed = (flag & 1) === 1;
+
+            if (vertices.length >= 2) {
+              const pts = [];
+              const nV = vertices.length;
+              for (let k = 0; k < nV; k++) {
+                const v1 = vertices[k];
+                const v2 = vertices[(k + 1) % nV];
+                pts.push({ x: v1.x, y: v1.y });
+                if (Math.abs(v1.bulge) < 1e-10) continue;
+                if (k === nV - 1 && !closed) continue;
+                const arcPts = laserBulgeToArc(
+                  v1.x,
+                  v1.y,
+                  v2.x,
+                  v2.y,
+                  v1.bulge
+                );
+                for (let m = 0; m < arcPts.length; m++) pts.push(arcPts[m]);
+              }
+              return {
+                type: "LWPOLYLINE",
+                points: pts,
+                closed: closed,
+              };
+            }
+          }
+
+          // Fallback (sem bulge) — comportamento anterior
+          const xs = getAll("10");
+          const ys = getAll("20");
+          const n = Math.min(xs.length, ys.length);
+          const pts = [];
+          for (let k = 0; k < n; k++) pts.push({ x: xs[k], y: ys[k] });
+          const flag = parseInt(data["70"] || "0", 10);
+          const closed = (flag & 1) === 1;
+          if (pts.length >= 2)
+            return { type: "LWPOLYLINE", points: pts, closed: closed };
+        } else if (entType === "ELLIPSE") {
+          const cx = toNum(data["10"]),
+            cy = toNum(data["20"]);
+          const mx = toNum(data["11"]),
+            my = toNum(data["21"]);
+          const ratio = toNum(data["40"]);
+          let sp = toNum(data["41"]);
+          let ep = toNum(data["42"]);
+          if (!isFinite(sp)) sp = 0;
+          if (!isFinite(ep)) ep = Math.PI * 2;
+          if ([cx, cy, mx, my, ratio].every(isFinite) && ratio > 0) {
+            const rx = Math.hypot(mx, my);
+            const ry = rx * ratio;
+            const ang = Math.atan2(my, mx);
+            const N = 72;
+            const pts = [];
+            for (let k = 0; k <= N; k++) {
+              const t = sp + (ep - sp) * (k / N);
+              const x = rx * Math.cos(t);
+              const y = ry * Math.sin(t);
+              const rotX = x * Math.cos(ang) - y * Math.sin(ang);
+              const rotY = x * Math.sin(ang) + y * Math.cos(ang);
+              pts.push({ x: cx + rotX, y: cy + rotY });
+            }
+            const closed = Math.abs(ep - sp) >= Math.PI * 2 - 0.001;
+            return { type: "ELLIPSE", points: pts, closed: closed };
+          }
+        } else if (entType === "SPLINE") {
+          const fitXs = getAll("11"),
+            fitYs = getAll("21");
+          const ctrlXs = getAll("10"),
+            ctrlYs = getAll("20");
+          let pts = [];
+          if (fitXs.length >= 2 && fitXs.length === fitYs.length) {
+            for (let k = 0; k < fitXs.length; k++)
+              pts.push({ x: fitXs[k], y: fitYs[k] });
+          } else if (ctrlXs.length >= 2 && ctrlXs.length === ctrlYs.length) {
+            const N = 6;
+            for (let k = 0; k < ctrlXs.length - 1; k++) {
+              for (let s = 0; s < N; s++) {
+                const t = s / N;
+                pts.push({
+                  x: ctrlXs[k] + (ctrlXs[k + 1] - ctrlXs[k]) * t,
+                  y: ctrlYs[k] + (ctrlYs[k + 1] - ctrlYs[k]) * t,
+                });
+              }
+            }
+            pts.push({
+              x: ctrlXs[ctrlXs.length - 1],
+              y: ctrlYs[ctrlYs.length - 1],
+            });
+          }
+          if (pts.length >= 2) {
+            const flag = parseInt(data["70"] || "0", 10);
+            return { type: "SPLINE", points: pts, closed: (flag & 1) === 1 };
+          }
+        } else if (entType === "INSERT") {
+          const name = data["2"];
+          const x = toNum(data["10"]) || 0;
+          const y = toNum(data["20"]) || 0;
+          const rotation = ((toNum(data["50"]) || 0) * Math.PI) / 180;
+          const scaleX = toNum(data["41"]) || 1;
+          const scaleY = toNum(data["42"]) || 1;
+          if (name)
+            return {
+              type: "INSERT",
+              name: name,
+              x: x,
+              y: y,
+              rotation: rotation,
+              scaleX: scaleX,
+              scaleY: scaleY,
+            };
+        }
+        return null;
+      }
+
+      // Aplica uma transformação (INSERT) sobre um ponto (escala → rotação → translação)
+      function laserApplyTransform(pt, t) {
+        const px = pt.x * t.scaleX;
+        const py = pt.y * t.scaleY;
+        const c = Math.cos(t.rotation);
+        const s = Math.sin(t.rotation);
+        return {
+          x: px * c - py * s + t.x,
+          y: px * s + py * c + t.y,
+        };
+      }
+
+      // Aplica uma transformação composta (INSERT dentro de INSERT)
+      function laserComposeTransform(parent, child) {
+        const c = Math.cos(parent.rotation);
+        const s = Math.sin(parent.rotation);
+        const tx = child.x * parent.scaleX;
+        const ty = child.y * parent.scaleY;
+        return {
+          x: parent.x + (tx * c - ty * s),
+          y: parent.y + (tx * s + ty * c),
+          rotation: parent.rotation + child.rotation,
+          scaleX: parent.scaleX * child.scaleX,
+          scaleY: parent.scaleY * child.scaleY,
+        };
+      }
+
+      // Parser DXF completo — suporta BLOCKS/INSERT, SPLINE, ELLIPSE, POLYLINE legado
+      function laserParseDXF(text) {
+        const tokens = laserTokenizeDXF(text);
+
+        // ---- Separa seções ----
+        const sections = {};
+        let currentSection = null;
+        let sectionStart = -1;
+        for (let i = 0; i < tokens.length; i++) {
+          const t = tokens[i];
+          if (t.code === "0" && t.value === "SECTION") {
+            const nameTok = tokens[i + 1];
+            if (nameTok && nameTok.code === "2") {
+              currentSection = nameTok.value;
+              sectionStart = i + 2;
+            }
+          } else if (t.code === "0" && t.value === "ENDSEC") {
+            if (currentSection) {
+              sections[currentSection] = tokens.slice(sectionStart, i);
+              currentSection = null;
+            }
+          }
+        }
+
+        const debugCounter = {};
+
+        // ---- BLOCKS ----
+        const blocks = {};
+        if (sections.BLOCKS) {
+          const bt = sections.BLOCKS;
+          let i = 0;
+          while (i < bt.length) {
+            if (bt[i].code === "0" && bt[i].value === "BLOCK") {
+              let j = i + 1;
+              let name = null;
+              while (j < bt.length && bt[j].code !== "0") {
+                if (bt[j].code === "2" && name === null) name = bt[j].value;
+                j++;
+              }
+              // Encontra o fim do bloco (próximo ENDBLK)
+              let end = j;
+              while (
+                end < bt.length &&
+                !(bt[end].code === "0" && bt[end].value === "ENDBLK")
+              ) {
+                end++;
+              }
+              const blockBody = bt.slice(j, end);
+              if (name) {
+                blocks[name] = laserParseEntitiesFromTokens(blockBody, null);
+              }
+              // Pula até depois de ENDBLK
+              i = end + 1;
+              continue;
+            }
+            i++;
+          }
+        }
+
+        // ---- ENTITIES ----
+        const entities = sections.ENTITIES
+          ? laserParseEntitiesFromTokens(sections.ENTITIES, debugCounter)
+          : [];
+
+        // ---- Expansão de INSERTs recursiva ----
+        const polylines = [];
+        const identity = {
+          x: 0,
+          y: 0,
+          rotation: 0,
+          scaleX: 1,
+          scaleY: 1,
+        };
+
+        function expand(ent, transform) {
+          if (ent.type === "INSERT") {
+            const blockEntities = blocks[ent.name];
+            if (!blockEntities) return;
+            const subTransform = laserComposeTransform(transform, ent);
+            for (let k = 0; k < blockEntities.length; k++) {
+              expand(blockEntities[k], subTransform);
+            }
+          } else if (ent.points && ent.points.length >= 2) {
+            const transformed = ent.points.map((pt) =>
+              laserApplyTransform(pt, transform)
+            );
+            polylines.push({ points: transformed, closed: !!ent.closed });
+          }
+        }
+
+        for (let k = 0; k < entities.length; k++) {
+          expand(entities[k], identity);
+        }
+
+        // Inverte Y (DXF é Y-up, canvas é Y-down)
+        polylines.forEach((p) => {
+          p.points = p.points.map((pt) => ({ x: pt.x, y: -pt.y }));
+        });
+
+        const geo = laserFinalizeGeometry(polylines);
+        geo._debug = {
+          tipos: debugCounter,
+          numBlocos: Object.keys(blocks).length,
+          entidadesModelo: entities.length,
+        };
+        return geo;
+      }
+
+      function laserParseSVG(text) {
+        const doc = new DOMParser().parseFromString(text, "image/svg+xml");
+        const els = doc.querySelectorAll(
+          "path, circle, rect, line, polyline, polygon, ellipse"
+        );
+        const polylines = [];
+
+        els.forEach((el) => {
+          const tag = el.tagName.toLowerCase();
+
+          if (tag === "line") {
+            const x1 = parseFloat(el.getAttribute("x1") || 0);
+            const y1 = parseFloat(el.getAttribute("y1") || 0);
+            const x2 = parseFloat(el.getAttribute("x2") || 0);
+            const y2 = parseFloat(el.getAttribute("y2") || 0);
+            polylines.push({
+              points: [
+                { x: x1, y: y1 },
+                { x: x2, y: y2 },
+              ],
+              closed: false,
+            });
+          } else if (tag === "rect") {
+            const x = parseFloat(el.getAttribute("x") || 0);
+            const y = parseFloat(el.getAttribute("y") || 0);
+            const w = parseFloat(el.getAttribute("width") || 0);
+            const h = parseFloat(el.getAttribute("height") || 0);
+            if (w > 0 && h > 0) {
+              polylines.push({
+                points: [
+                  { x: x, y: y },
+                  { x: x + w, y: y },
+                  { x: x + w, y: y + h },
+                  { x: x, y: y + h },
+                ],
+                closed: true,
+              });
+            }
+          } else if (tag === "circle") {
+            const cx = parseFloat(el.getAttribute("cx") || 0);
+            const cy = parseFloat(el.getAttribute("cy") || 0);
+            const r = parseFloat(el.getAttribute("r") || 0);
+            if (r > 0) {
+              const pts = [];
+              const N = 72;
+              for (let k = 0; k <= N; k++) {
+                const a = (k / N) * Math.PI * 2;
+                pts.push({
+                  x: cx + r * Math.cos(a),
+                  y: cy + r * Math.sin(a),
+                });
+              }
+              polylines.push({ points: pts, closed: true });
+            }
+          } else if (tag === "ellipse") {
+            const cx = parseFloat(el.getAttribute("cx") || 0);
+            const cy = parseFloat(el.getAttribute("cy") || 0);
+            const rx = parseFloat(el.getAttribute("rx") || 0);
+            const ry = parseFloat(el.getAttribute("ry") || 0);
+            if (rx > 0 && ry > 0) {
+              const pts = [];
+              const N = 72;
+              for (let k = 0; k <= N; k++) {
+                const a = (k / N) * Math.PI * 2;
+                pts.push({
+                  x: cx + rx * Math.cos(a),
+                  y: cy + ry * Math.sin(a),
+                });
+              }
+              polylines.push({ points: pts, closed: true });
+            }
+          } else if (tag === "polygon" || tag === "polyline") {
+            const raw = (el.getAttribute("points") || "").trim();
+            if (raw) {
+              const arr = raw
+                .split(/[\s,]+/)
+                .map(Number)
+                .filter((v) => isFinite(v));
+              const pts = [];
+              for (let k = 0; k + 1 < arr.length; k += 2)
+                pts.push({ x: arr[k], y: arr[k + 1] });
+              if (pts.length >= 2)
+                polylines.push({ points: pts, closed: tag === "polygon" });
+            }
+          } else if (tag === "path") {
+            const d = el.getAttribute("d") || "";
+            if (!d) return;
+            const temp = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "path"
+            );
+            temp.setAttribute("d", d);
+            temp.style.visibility = "hidden";
+            temp.style.position = "absolute";
+            temp.style.left = "-9999px";
+            document.body.appendChild(temp);
+            try {
+              const len = temp.getTotalLength();
+              if (len > 0) {
+                const N = Math.max(16, Math.min(600, Math.ceil(len / 1.5)));
+                const pts = [];
+                for (let k = 0; k <= N; k++) {
+                  const pt = temp.getPointAtLength((k / N) * len);
+                  pts.push({ x: pt.x, y: pt.y });
+                }
+                const closed = /z\s*$/i.test(d.trim());
+                polylines.push({ points: pts, closed: closed });
+              }
+            } catch (e) {
+              console.warn("[LASER] path não pôde ser medido:", e);
+            } finally {
+              document.body.removeChild(temp);
+            }
+          }
+        });
+
+        return laserFinalizeGeometry(polylines);
+      }
+
+      function laserFinalizeGeometry(polylines) {
+        polylines = polylines.filter((p) => p.points && p.points.length >= 2);
+
+        let minX = Infinity,
+          maxX = -Infinity,
+          minY = Infinity,
+          maxY = -Infinity;
+        polylines.forEach((p) =>
+          p.points.forEach((pt) => {
+            if (pt.x < minX) minX = pt.x;
+            if (pt.x > maxX) maxX = pt.x;
+            if (pt.y < minY) minY = pt.y;
+            if (pt.y > maxY) maxY = pt.y;
+          })
+        );
+
+        let comprimento = 0;
+        polylines.forEach((p) => {
+          for (let k = 0; k < p.points.length - 1; k++) {
+            comprimento += Math.hypot(
+              p.points[k + 1].x - p.points[k].x,
+              p.points[k + 1].y - p.points[k].y
+            );
+          }
+          if (p.closed && p.points.length > 2) {
+            const a = p.points[0],
+              b = p.points[p.points.length - 1];
+            comprimento += Math.hypot(a.x - b.x, a.y - b.y);
+          }
+        });
+
+        polylines.forEach((p) => {
+          if (!p.closed || p.points.length < 3) {
+            p.area = 0;
+            return;
+          }
+          let a = 0;
+          const pts = p.points;
+          for (let k = 0; k < pts.length; k++) {
+            const j = (k + 1) % pts.length;
+            a += pts[k].x * pts[j].y - pts[j].x * pts[k].y;
+          }
+          p.area = a / 2;
+          if (Math.abs(p.area) < 1e-9) {
+            p.centroid = pts[0];
+            return;
+          }
+          let cx = 0,
+            cy = 0;
+          for (let k = 0; k < pts.length; k++) {
+            const j = (k + 1) % pts.length;
+            const f = pts[k].x * pts[j].y - pts[j].x * pts[k].y;
+            cx += (pts[k].x + pts[j].x) * f;
+            cy += (pts[k].y + pts[j].y) * f;
+          }
+          p.centroid = { x: cx / (6 * p.area), y: cy / (6 * p.area) };
+        });
+
+        const closeds = polylines.filter(
+          (p) => p.closed && p.points.length >= 3
+        );
+        closeds.forEach((p) => {
+          p.nesting = 0;
+          closeds.forEach((q) => {
+            if (p === q) return;
+            if (
+              Math.abs(q.area) > Math.abs(p.area) &&
+              laserPointInPolygon(p.centroid, q.points)
+            )
+              p.nesting++;
+          });
+        });
+
+        const numFuros = closeds.filter((p) => p.nesting % 2 === 1).length;
+
+        const resultado = {
+          polylines: polylines,
+          bbox: {
+            minX: minX,
+            maxX: maxX,
+            minY: minY,
+            maxY: maxY,
+            width: maxX - minX,
+            height: maxY - minY,
+          },
+          comprimento: comprimento,
+          numFuros: numFuros,
+        };
+
+        // Detecta clusters (grupos espaciais separados) no model space.
+        // Um DXF pode conter vários desenhos em coordenadas distantes —
+        // este passo os separa para o usuário escolher qual orçar.
+        resultado.clusters = laserDetectarClusters(polylines);
+        resultado.clusterAtivo = 0;
+        return resultado;
+      }
+
+      // Agrupa polylines por proximidade espacial (union-find por bbox).
+      function laserDetectarClusters(polylines) {
+        const n = polylines.length;
+        if (n === 0) return [];
+
+        const bboxes = polylines.map((p) => {
+          let mnX = Infinity,
+            mxX = -Infinity,
+            mnY = Infinity,
+            mxY = -Infinity;
+          p.points.forEach((pt) => {
+            if (pt.x < mnX) mnX = pt.x;
+            if (pt.x > mxX) mxX = pt.x;
+            if (pt.y < mnY) mnY = pt.y;
+            if (pt.y > mxY) mxY = pt.y;
+          });
+          return { minX: mnX, maxX: mxX, minY: mnY, maxY: mxY };
+        });
+
+        // Threshold adaptativo: 5% da maior dimensão, com piso e teto.
+        let globalMinX = Infinity,
+          globalMaxX = -Infinity,
+          globalMinY = Infinity,
+          globalMaxY = -Infinity;
+        bboxes.forEach((b) => {
+          if (b.minX < globalMinX) globalMinX = b.minX;
+          if (b.maxX > globalMaxX) globalMaxX = b.maxX;
+          if (b.minY < globalMinY) globalMinY = b.minY;
+          if (b.maxY > globalMaxY) globalMaxY = b.maxY;
+        });
+        const dimMax = Math.max(
+          globalMaxX - globalMinX,
+          globalMaxY - globalMinY
+        );
+        let threshold = dimMax * 0.05;
+        if (threshold < 20) threshold = 20;
+        if (threshold > 500) threshold = 500;
+
+        const parent = Array.from({ length: n }, (_, i) => i);
+        const find = (x) => {
+          while (parent[x] !== x) {
+            parent[x] = parent[parent[x]];
+            x = parent[x];
+          }
+          return x;
+        };
+        const union = (a, b) => {
+          const ra = find(a),
+            rb = find(b);
+          if (ra !== rb) parent[ra] = rb;
+        };
+
+        for (let i = 0; i < n; i++) {
+          for (let j = i + 1; j < n; j++) {
+            const a = bboxes[i],
+              b = bboxes[j];
+            const dx = Math.max(0, Math.max(a.minX - b.maxX, b.minX - a.maxX));
+            const dy = Math.max(0, Math.max(a.minY - b.maxY, b.minY - a.maxY));
+            if (Math.hypot(dx, dy) <= threshold) union(i, j);
+          }
+        }
+
+        const mapa = new Map();
+        for (let i = 0; i < n; i++) {
+          const r = find(i);
+          if (!mapa.has(r)) mapa.set(r, []);
+          mapa.get(r).push(i);
+        }
+
+        // Para cada cluster, calcula métricas locais
+        const clusters = [];
+        mapa.forEach((indices) => {
+          const polylinesDoCluster = indices.map((i) => polylines[i]);
+          let mnX = Infinity,
+            mxX = -Infinity,
+            mnY = Infinity,
+            mxY = -Infinity;
+          let comp = 0;
+          let nfuros = 0;
+          polylinesDoCluster.forEach((p) => {
+            p.points.forEach((pt) => {
+              if (pt.x < mnX) mnX = pt.x;
+              if (pt.x > mxX) mxX = pt.x;
+              if (pt.y < mnY) mnY = pt.y;
+              if (pt.y > mxY) mxY = pt.y;
+            });
+            for (let k = 0; k < p.points.length - 1; k++) {
+              comp += Math.hypot(
+                p.points[k + 1].x - p.points[k].x,
+                p.points[k + 1].y - p.points[k].y
+              );
+            }
+            if (p.closed && p.points.length > 2) {
+              const a = p.points[0],
+                b = p.points[p.points.length - 1];
+              comp += Math.hypot(a.x - b.x, a.y - b.y);
+            }
+            if (p.closed && p.nesting !== undefined && p.nesting % 2 === 1) {
+              nfuros++;
+            }
+          });
+          clusters.push({
+            bbox: {
+              minX: mnX,
+              maxX: mxX,
+              minY: mnY,
+              maxY: mxY,
+              width: mxX - mnX,
+              height: mxY - mnY,
+            },
+            comprimento: comp,
+            numFuros: nfuros,
+            numPolylines: polylinesDoCluster.length,
+            indices: indices,
+          });
+        });
+
+        // Ordena clusters por área (maior primeiro)
+        clusters.sort(
+          (a, b) =>
+            b.bbox.width * b.bbox.height - a.bbox.width * a.bbox.height
+        );
+
+        return clusters;
+      }
+
+      // Aplica o cluster selecionado ao geo (recalcula bbox/comprimento/furos
+      // apenas com as polylines do cluster).
+      function laserAplicarCluster(geo, index) {
+        if (!geo.clusters || geo.clusters.length === 0) return geo;
+        geo.clusterAtivo = index;
+        if (index < 0) {
+          // "Todos" — restaura as métricas globais
+          let comp = 0,
+            nfuros = 0;
+          let mnX = Infinity,
+            mxX = -Infinity,
+            mnY = Infinity,
+            mxY = -Infinity;
+          geo.polylines.forEach((p) => {
+            p.points.forEach((pt) => {
+              if (pt.x < mnX) mnX = pt.x;
+              if (pt.x > mxX) mxX = pt.x;
+              if (pt.y < mnY) mnY = pt.y;
+              if (pt.y > mxY) mxY = pt.y;
+            });
+            for (let k = 0; k < p.points.length - 1; k++) {
+              comp += Math.hypot(
+                p.points[k + 1].x - p.points[k].x,
+                p.points[k + 1].y - p.points[k].y
+              );
+            }
+            if (p.closed && p.points.length > 2) {
+              const a = p.points[0],
+                b = p.points[p.points.length - 1];
+              comp += Math.hypot(a.x - b.x, a.y - b.y);
+            }
+            if (p.closed && p.nesting !== undefined && p.nesting % 2 === 1)
+              nfuros++;
+          });
+          geo.bbox = {
+            minX: mnX,
+            maxX: mxX,
+            minY: mnY,
+            maxY: mxY,
+            width: mxX - mnX,
+            height: mxY - mnY,
+          };
+          geo.comprimento = comp;
+          geo.numFuros = nfuros;
+        } else {
+          const c = geo.clusters[index];
+          if (!c) return geo;
+          geo.bbox = { ...c.bbox };
+          geo.comprimento = c.comprimento;
+          geo.numFuros = c.numFuros;
+        }
+        return geo;
+      }
+
+      function laserPointInPolygon(pt, poly) {
+        let inside = false;
+        for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+          const xi = poly[i].x,
+            yi = poly[i].y;
+          const xj = poly[j].x,
+            yj = poly[j].y;
+          const it =
+            yi > pt.y !== yj > pt.y &&
+            pt.x < ((xj - xi) * (pt.y - yi)) / (yj - yi + 1e-12) + xi;
+          if (it) inside = !inside;
+        }
+        return inside;
+      }
+
+      function laserDrawCanvas(geo) {
+        const canvas = document.getElementById("laserCanvas");
+        const wrap = document.getElementById("laserCanvasWrap");
+        if (!canvas || !wrap) return;
+
+        const dpr = window.devicePixelRatio || 1;
+        const w = wrap.clientWidth;
+        const h = wrap.clientHeight;
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+        canvas.style.width = w + "px";
+        canvas.style.height = h + "px";
+
+        const ctx = canvas.getContext("2d");
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+
+        if (!geo) return;
+
+        const pad = 40;
+        const baseScale = Math.min(
+          (w - pad * 2) / Math.max(geo.bbox.width, 1e-6),
+          (h - pad * 2) / Math.max(geo.bbox.height, 1e-6)
+        );
+        const cx = (geo.bbox.minX + geo.bbox.maxX) / 2;
+        const cy = (geo.bbox.minY + geo.bbox.maxY) / 2;
+
+        // Aplica o zoom/pan do usuário por cima da escala-base
+        const scale = baseScale * laserView.zoom;
+        const toScreen = (pt) => ({
+          x: w / 2 + (pt.x - cx) * scale + laserView.panX,
+          y: h / 2 + (pt.y - cy) * scale + laserView.panY,
+        });
+
+        geo.polylines.forEach((p) => {
+          const isOuter = !p.closed || p.nesting % 2 === 0;
+          ctx.beginPath();
+          p.points.forEach((pt, k) => {
+            const s = toScreen(pt);
+            if (k === 0) ctx.moveTo(s.x, s.y);
+            else ctx.lineTo(s.x, s.y);
+          });
+          // Fecha o path para polylines marcadas como fechadas pelo CAD.
+          // Sem isso, o segmento do último vértice de volta ao primeiro
+          // nunca era desenhado.
+          if (p.closed) ctx.closePath();
+          ctx.strokeStyle = isOuter ? "#3b82f6" : "#f97316";
+          ctx.lineWidth = 1.5;
+          ctx.lineJoin = "round";
+          ctx.stroke();
+        });
+        // Salva a transformação atual para o hit-test
+        laserTransform = { scale: scale, cx: cx, cy: cy, w: w, h: h };
+
+        // Destaca o segmento selecionado no modo Medir
+        if (laserMeasure.selected && geo === laserGeometry) {
+          const sel = laserMeasure.selected;
+          const p = geo.polylines[sel.polyIdx];
+          if (p && sel.segIdx >= 0 && sel.segIdx < p.points.length) {
+            const a = toScreen(p.points[sel.segIdx]);
+            const b = toScreen(p.points[(sel.segIdx + 1) % p.points.length]);
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = "#fbbf24";
+            ctx.lineWidth = 3.5;
+            ctx.lineCap = "round";
+            ctx.stroke();
+            [a, b].forEach((pt) => {
+              ctx.beginPath();
+              ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+              ctx.fillStyle = "#fbbf24";
+              ctx.fill();
+              ctx.strokeStyle = "#1e293b";
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+            });
+          }
+        }
+
+        geo.polylines.forEach((p) => {
+          if (!p.closed || p.nesting % 2 === 0 || !p.centroid) return;
+          const s = toScreen(p.centroid);
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, 3, 0, Math.PI * 2);
+          ctx.fillStyle = "#ef4444";
+          ctx.fill();
+        });
+      }
+
+      function laserGetCutParams(material, espessura, potencia, gas) {
+        const base = {
+          1:  { 1500: 250, 2000: 300, 3000: 500, 4000: 600, 6000: 700, 8000: 800, 12000: 900 },
+          2:  { 1500: 120, 2000: 160, 3000: 300, 4000: 380, 6000: 500, 8000: 600, 12000: 700 },
+          3:  { 1500: 70,  2000: 100, 3000: 180, 4000: 240, 6000: 350, 8000: 420, 12000: 500 },
+          4:  { 1500: 40,  2000: 60,  3000: 100, 4000: 140, 6000: 200, 8000: 270, 12000: 350 },
+          5:  { 1500: 25,  2000: 38,  3000: 65,  4000: 95,  6000: 150, 8000: 200, 12000: 260 },
+          6:  { 1500: 15,  2000: 24,  3000: 45,  4000: 68,  6000: 105, 8000: 145, 12000: 200 },
+          8:  { 1500: 0,   2000: 0,   3000: 25,  4000: 40,  6000: 65,  8000: 95,  12000: 130 },
+          10: { 1500: 0,   2000: 0,   3000: 15,  4000: 24,  6000: 40,  8000: 60,  12000: 90 },
+          12: { 1500: 0,   2000: 0,   3000: 0,   4000: 15,  6000: 25,  8000: 40,  12000: 60 },
+          16: { 1500: 0,   2000: 0,   3000: 0,   4000: 0,   6000: 12,  8000: 22,  12000: 35 },
+          20: { 1500: 0,   2000: 0,   3000: 0,   4000: 0,   6000: 0,   8000: 12,  12000: 20 },
+          25: { 1500: 0,   2000: 0,   3000: 0,   4000: 0,   6000: 0,   8000: 0,   12000: 12 },
+        };
+
+        const chavesEsp = Object.keys(base).map(Number).sort((a, b) => a - b);
+        let espChave = null,
+          menorDif = Infinity;
+        chavesEsp.forEach((k) => {
+          const dif = Math.abs(k - espessura);
+          if (dif < menorDif) {
+            menorDif = dif;
+            espChave = k;
+          }
+        });
+        if (espChave === null) return null;
+
+        const row = base[espChave];
+        const chavesPot = Object.keys(row).map(Number).sort((a, b) => a - b);
+        let potChave = null,
+          menorDifPot = Infinity;
+        chavesPot.forEach((k) => {
+          const dif = Math.abs(k - potencia);
+          if (dif < menorDifPot) {
+            menorDifPot = dif;
+            potChave = k;
+          }
+        });
+        if (potChave === null || row[potChave] === 0) return null;
+
+        let speed = row[potChave];
+
+        const matFactors = {
+          inox304: 1.0, inox316: 0.9, aluminio5052: 1.8, aluminio6061: 1.6,
+          aco1020: 1.5, aco1045: 1.3, latao: 1.9, cobre: 0.7,
+        };
+        speed *= matFactors[material] || 1.0;
+
+        const gasFactors = { n2: 1.0, o2: 1.6, ar: 1.2, nenhum: 0.9 };
+        speed *= gasFactors[gas] || 1.0;
+
+        const pierce = 0.3 + espessura * 0.4;
+        const gasFlow = gas === "nenhum" ? 0 : 12 + espessura * 1.2;
+
+        return { speed: speed, pierce: pierce, gasFlow: gasFlow };
+      }
+
+      function laserTrocarCluster(valor) {
+        if (!laserGeometry) return;
+        const idx = parseInt(valor, 10);
+        laserAplicarCluster(laserGeometry, idx);
+        // Atualiza o infoBox com as métricas recalculadas
+        const infoBox = document.getElementById("laserInfoBox");
+        const sel = document.getElementById("laserClusterSelect");
+        const selHTML = sel ? sel.outerHTML : "";
+        const g = laserGeometry;
+        infoBox.innerHTML =
+          "<strong>📐 Geometria lida:</strong> " +
+          g.polylines.length +
+          " elemento(s) · Comprimento: <strong>" +
+          g.comprimento.toFixed(1) +
+          " mm</strong> · Furos: <strong>" +
+          g.numFuros +
+          "</strong> · Caixa: <strong>" +
+          g.bbox.width.toFixed(1) +
+          " × " +
+          g.bbox.height.toFixed(1) +
+          " mm</strong>";
+        if (g.clusters && g.clusters.length > 1) {
+          infoBox.innerHTML +=
+            '<div style="margin-top:12px; padding:10px 12px; background: rgba(251, 191, 36, 0.12); border-left: 3px solid #f59e0b; border-radius:8px;">' +
+            '<div style="font-size:0.8rem; font-weight:700; color:#b45309; margin-bottom:6px;">' +
+            "⚠️ Este DXF contém " +
+            g.clusters.length +
+            " desenhos separados espacialmente.</div>" +
+            '<div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">' +
+            "Selecione qual você quer orçar:</div>" +
+            '<select id="laserClusterSelect" class="laser-select" onchange="laserTrocarCluster(this.value)" style="font-size:0.85rem; padding:8px 10px;">' +
+            g.clusters
+              .map(
+                (c, i) =>
+                  '<option value="' +
+                  i +
+                  '"' +
+                  (i === g.clusterAtivo ? " selected" : "") +
+                  ">Peça " +
+                  String.fromCharCode(65 + i) +
+                  " — " +
+                  c.numPolylines +
+                  " elemento(s) · " +
+                  c.comprimento.toFixed(0) +
+                  " mm · " +
+                  c.bbox.width.toFixed(0) +
+                  "×" +
+                  c.bbox.height.toFixed(0) +
+                  " mm" +
+                  "</option>"
+              )
+              .join("") +
+            '<option value="-1"' +
+            (g.clusterAtivo === -1 ? " selected" : "") +
+            ">Todas (soma)</option>" +
+            "</select>" +
+            "</div>";
+        }
+        requestAnimationFrame(() => laserDrawCanvas(laserGeometry));
+      }
+
+      function laserProcessar() {
+        if (!laserGeometry) {
+          showToast("⚠️ Carregue um arquivo primeiro.", false);
+          return;
+        }
+
+        const d = laserGeometry;
+        const material = document.getElementById("laserMaterial").value;
+        const espessura =
+          parseFloat(document.getElementById("laserThickness").value) || 4;
+        const tech = document.getElementById("laserTech").value;
+        const potencia = parseInt(
+          document.getElementById("laserPower").value,
+          10
+        );
+        const gas = document.getElementById("laserGas").value;
+        const machineRate =
+          parseFloat(document.getElementById("laserMachineRate").value) || 0;
+        const gasPrice =
+          parseFloat(document.getElementById("laserGasPrice").value) || 0;
+        const energyPrice =
+          parseFloat(document.getElementById("laserEnergyPrice").value) || 0;
+        const consumablesRate =
+          parseFloat(document.getElementById("laserConsumablesRate").value) || 0;
+        const marginPct =
+          parseFloat(document.getElementById("laserMargin").value) || 0;
+
+        const params = laserGetCutParams(material, espessura, potencia, gas);
+        if (!params) {
+          showToast(
+            "❌ Combinação não suportada (potência baixa para essa espessura).",
+            false
+          );
+          return;
+        }
+
+        const tempoCorteS = d.comprimento / params.speed;
+        const tempoPiercingS = d.numFuros * params.pierce;
+        const tempoEfetivoS = tempoCorteS + tempoPiercingS;
+        const tempoSetupS = 60;
+        const tempoTotalS = tempoEfetivoS + tempoSetupS;
+        const tempoTotalH = tempoTotalS / 3600;
+
+        const custoMaquina = machineRate * tempoTotalH;
+        const custoGas =
+          gasPrice * params.gasFlow * (tempoEfetivoS / 3600);
+        const potenciaKW = potencia / 1000;
+        const consumoKW = potenciaKW * 0.7;
+        const custoEnergia =
+          energyPrice * consumoKW * (tempoTotalS / 3600);
+        const custoConsumiveis = consumablesRate * tempoTotalH;
+        const custoDireto =
+          custoMaquina + custoGas + custoEnergia + custoConsumiveis;
+        const custoTotal = custoDireto * (1 + marginPct / 100);
+
+        laserRenderResults({
+          comprimento: d.comprimento,
+          numFuros: d.numFuros,
+          tempoCorteS: tempoCorteS,
+          tempoPiercingS: tempoPiercingS,
+          tempoSetupS: tempoSetupS,
+          tempoTotalS: tempoTotalS,
+          custoMaquina: custoMaquina,
+          custoGas: custoGas,
+          custoEnergia: custoEnergia,
+          custoConsumiveis: custoConsumiveis,
+          custoDireto: custoDireto,
+          custoTotal: custoTotal,
+          params: params,
+        });
+
+        showToast("✅ Corte processado!", true);
+      }
+
+      function laserRenderResults(r) {
+        const area = document.getElementById("laserResultsArea");
+        if (!area) return;
+
+        const fmtBRL = (v) =>
+          v.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+        const fmtTempo = (s) => {
+          const m = Math.floor(s / 60);
+          const sec = Math.round(s % 60);
+          return m + ":" + String(sec).padStart(2, "0") + " min";
+        };
+        const fmtNum = (v, d) =>
+          v.toLocaleString("pt-BR", {
+            minimumFractionDigits: d,
+            maximumFractionDigits: d,
+          });
+
+        // Métricas derivadas para o resumo comparativo
+        const metros = r.comprimento / 1000;
+        const custoPorMetro = metros > 0 ? r.custoTotal / metros : 0;
+        const segundosTotais = r.tempoTotalS;
+
+        area.innerHTML =
+          '<div class="laser-results-panel">' +
+          "  <h2>Resultado do Orçamento</h2>" +
+          '  <div class="laser-results-grid">' +
+
+          // ------- Card: Geometria -------
+          '    <div class="laser-result-card card-geo">' +
+          '      <h3><span class="icon">📐</span> Geometria</h3>' +
+          '      <div class="card-subtitle">Comprimento e perfil da peça</div>' +
+          '      <div class="laser-result-row"><strong>Comprimento de corte</strong><span>' +
+          fmtNum(r.comprimento, 1) +
+          " mm</span></div>" +
+          '      <div class="laser-result-row"><strong>Metros lineares</strong><span>' +
+          fmtNum(metros, 3) +
+          " m</span></div>" +
+          '      <div class="laser-result-row"><strong>Furos / internos</strong><span>' +
+          r.numFuros +
+          "</span></div>" +
+          '      <div class="laser-result-row"><strong>Velocidade de corte</strong><span>' +
+          fmtNum(r.params.speed, 1) +
+          " mm/s</span></div>" +
+          "    </div>" +
+
+          // ------- Card: Tempo -------
+          '    <div class="laser-result-card card-tempo">' +
+          '      <h3><span class="icon">⏱️</span> Tempo</h3>' +
+          '      <div class="card-subtitle">Cronoanálise do processo</div>' +
+          '      <div class="laser-result-row"><strong>Corte efetivo</strong><span>' +
+          fmtTempo(r.tempoCorteS) +
+          "</span></div>" +
+          '      <div class="laser-result-row"><strong>Piercing</strong><span>' +
+          fmtTempo(r.tempoPiercingS) +
+          "</span></div>" +
+          '      <div class="laser-result-row"><strong>Setup</strong><span>' +
+          fmtTempo(r.tempoSetupS) +
+          "</span></div>" +
+          '      <div class="laser-result-row destaque"><strong>Tempo total</strong><span>' +
+          fmtTempo(r.tempoTotalS) +
+          "</span></div>" +
+          "    </div>" +
+
+          // ------- Card: Custo -------
+          '    <div class="laser-result-card card-custo">' +
+          '      <h3><span class="icon">💰</span> Custo</h3>' +
+          '      <div class="card-subtitle">Composição por insumo</div>' +
+          '      <div class="laser-result-row"><strong>Máquina</strong><span>' +
+          fmtBRL(r.custoMaquina) +
+          "</span></div>" +
+          '      <div class="laser-result-row"><strong>Gás auxiliar</strong><span>' +
+          fmtBRL(r.custoGas) +
+          "</span></div>" +
+          '      <div class="laser-result-row"><strong>Energia</strong><span>' +
+          fmtBRL(r.custoEnergia) +
+          "</span></div>" +
+          '      <div class="laser-result-row"><strong>Consumíveis</strong><span>' +
+          fmtBRL(r.custoConsumiveis) +
+          "</span></div>" +
+          '      <div class="laser-result-row destaque"><strong>Custo direto</strong><span>' +
+          fmtBRL(r.custoDireto) +
+          "</span></div>" +
+          '      <div class="laser-result-row destaque final"><strong>Preço final</strong><span>' +
+          fmtBRL(r.custoTotal) +
+          "</span></div>" +
+          "    </div>" +
+
+          "  </div>" +
+
+          // ------- Rodapé comparativo -------
+          '  <div class="laser-summary">' +
+          '    <div class="laser-summary-item"><span class="label">Custo por metro linear:</span><span class="value">' +
+          fmtBRL(custoPorMetro) +
+          "/m</span></div>" +
+          '    <div class="laser-summary-item"><span class="label">Tempo total:</span><span class="value">' +
+          Math.round(segundosTotais) +
+          " s</span></div>" +
+          '    <div class="laser-summary-item"><span class="label">Furos / piercing:</span><span class="value">' +
+          r.numFuros +
+          "</span></div>" +
+          "  </div>" +
+
+          "</div>";
+      }
+
+      /* ============================================================
+         FIM DA ABA CORTE A LASER
+         ============================================================ */
+
+         function laserLimparEmojis() {
+        const reEmoji =
+          /^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{2190}-\u{21FF}\u{2300}-\u{23FF}]+\s*/u;
+
+        document.querySelectorAll(".result-card h3").forEach((el) => {
+          el.textContent = el.textContent.replace(reEmoji, "").trim();
+        });
+
+        document
+          .querySelectorAll(
+            ".btn-calc, .btn-export, #btnSalvarHistorico, .laser-btn-process, .btn-explode, #btnInspector"
+          )
+          .forEach((el) => {
+            el.childNodes.forEach((node) => {
+              if (node.nodeType === 3 && node.textContent.trim()) {
+                node.textContent = node.textContent
+                  .replace(reEmoji, "")
+                  .replace(/^[\s]+/, " ");
+              }
+            });
+          });
+
+        document.querySelectorAll(".module-btn").forEach((el) => {
+          el.textContent = el.textContent.replace(reEmoji, "").trim();
+        });
+
+        document.querySelectorAll(".historico-secao-titulo").forEach((el) => {
+          el.textContent = el.textContent.replace(reEmoji, "").trim();
+        });
+      }
+
       window.onload = function () {
         // Tenta restaurar uma sessão salva no localStorage.
         // Se existir, pula a tela de login e entra direto no app.
@@ -9750,6 +13296,8 @@
 
         init3D();
         atualizarStatusTemplate();
+        laserInit();
+        laserLimparEmojis();
 
         // Quando as fontes terminarem de baixar, força um recálculo geral.
         if (document.fonts && document.fonts.ready) {
