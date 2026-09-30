@@ -1,4 +1,4 @@
-﻿﻿﻿<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -1633,7 +1633,7 @@
       }
 
       .filtro-dropdown-item.selected {
-        background: rgba(0, 113, 227, 0.1);
+        background: var(--primary-subtle);
         color: var(--primary);
         font-weight: 600;
       }
@@ -1641,10 +1641,11 @@
       .filtro-dropdown-item.selected::after {
         content: "";
         margin-left: auto;
-        width: 6px;
-        height: 6px;
+        width: 5px;
+        height: 5px;
         border-radius: 50%;
         background: var(--primary);
+        opacity: 0.7;
       }
 
       /* ============================================================
@@ -2109,14 +2110,25 @@
          ABA CORTE A LASER — estilos isolados (prefixo "laser-")
          ============================================================ */
 
-      /* Grid principal: sidebar + área de visualização/resultados */
+      /* Layout: sidebar (config) + canvas. align-items:stretch faz
+         ambos os painéis ficarem da mesma altura — a sidebar define o
+         tamanho, o painel do canvas estica junto. Assim NÃO sobra
+         espaço vazio abaixo do desenho. */
       .laser-dashboard {
         display: grid;
         grid-template-columns: 340px minmax(0, 1fr);
         gap: 20px;
         max-width: 1400px;
         margin: 0 auto;
-        align-items: start;
+        align-items: stretch;
+      }
+
+      /* Painel do canvas vira uma coluna flex, para o .laser-canvas-wrap
+         esticar e preencher toda a altura disponível. */
+      .laser-dashboard > .panel:nth-child(2) {
+        display: flex;
+        flex-direction: column;
+        min-height: 560px;
       }
 
       /* Compactação da sidebar — reduz alturas sem esconder nada */
@@ -2167,7 +2179,7 @@
         margin-top: 10px;
       }
 
-      /* Linha de 2 colunas para compactar a sidebar sem esconder campos */
+      /* Linha de 2 colunas usada dentro dos parâmetros de custo */
       .laser-row-2col {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -2252,25 +2264,37 @@
         white-space: nowrap;
       }
 
-      /* Reaproveita o visual do select existente para a aba laser */
+      /* Select custom — remove aparência nativa (Windows 98) e
+         desenha uma seta própria, discreta */
       .laser-select {
         width: 100%;
-        padding: 13px 16px;
-        background: var(--canvas-bg);
-        border: 1.5px solid transparent;
-        border-radius: 13px;
+        padding: 10px 36px 10px 13px;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
         color: var(--text-main);
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         font-weight: 500;
         font-family: inherit;
         outline: none;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease,
+          background 0.15s ease;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        text-overflow: ellipsis;
+      }
+      .laser-select:hover {
+        border-color: var(--border-strong);
       }
       .laser-select:focus {
         border-color: var(--primary);
         background: var(--bg-panel);
-        box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12);
+        box-shadow: 0 0 0 3px var(--primary-subtle);
       }
 
                   /* ---------- Container do canvas 2D ---------- */
@@ -2284,13 +2308,34 @@
         border: 1px solid var(--border-light);
         overflow: hidden;
         position: relative;
-        aspect-ratio: 3 / 2;
+        /* flex:1 = preenche toda a altura disponível do painel,
+           eliminando o vazio abaixo do desenho. min-height garante
+           um tamanho mínimo confortável em telas pequenas. */
+        flex: 1;
+        min-height: 420px;
       }
       .laser-canvas-wrap canvas {
         display: block;
         width: 100%;
         height: 100%;
         touch-action: none;
+        /* Estado padrão: mãozinha aberta (pan) */
+        cursor: grab;
+      }
+      /* Arrastando: mãozinha fechada */
+      .laser-canvas-wrap canvas.panning {
+        cursor: grabbing;
+      }
+      /* Modo Medir: crosshair amarelo, com hotspot no centro.
+         Fallback para o crosshair nativo em navegadores antigos. */
+      .laser-canvas-wrap canvas.measuring {
+        cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><line x1='14' y1='2' x2='14' y2='10' stroke='%23fbbf24' stroke-width='1.5' stroke-linecap='round'/><line x1='14' y1='18' x2='14' y2='26' stroke='%23fbbf24' stroke-width='1.5' stroke-linecap='round'/><line x1='2' y1='14' x2='10' y2='14' stroke='%23fbbf24' stroke-width='1.5' stroke-linecap='round'/><line x1='18' y1='14' x2='26' y2='14' stroke='%23fbbf24' stroke-width='1.5' stroke-linecap='round'/><circle cx='14' cy='14' r='1.5' fill='%23fbbf24'/><circle cx='14' cy='14' r='5' fill='none' stroke='%23fbbf24' stroke-width='0.75' opacity='0.5'/></svg>")
+            14 14,
+          crosshair;
+      }
+      /* Se estiver medindo E arrastando: cursor de pan mesmo */
+      .laser-canvas-wrap canvas.measuring.panning {
+        cursor: grabbing;
       }
       .laser-canvas-empty {
         position: absolute;
@@ -3065,6 +3110,549 @@
         height: 1px;
         background: rgba(255, 255, 255, 0.1);
         margin: 10px 0 8px 0;
+      }
+      /* ============================================================
+         PAINEL DE SUGESTÕES INTELIGENTES
+         ============================================================ */
+      .laser-suggestions-panel {
+        background: var(--bg-panel);
+        border-radius: var(--radius-xl);
+        padding: 22px 24px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid var(--border-light);
+        margin-top: 20px;
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .laser-suggestions-panel h2 {
+        margin: 0 0 16px 0;
+        padding-bottom: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .laser-suggestions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .laser-suggestion {
+        display: flex;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: var(--radius-md);
+        background: var(--bg-panel-2);
+        border-left: 3px solid var(--primary);
+        font-size: 0.85rem;
+        line-height: 1.5;
+      }
+      .laser-suggestion.tipo-ok {
+        border-left-color: var(--accent-success);
+        background: rgba(22, 163, 74, 0.05);
+      }
+      .laser-suggestion.tipo-info {
+        border-left-color: var(--primary);
+        background: var(--primary-subtle);
+      }
+      .laser-suggestion.tipo-tip {
+        border-left-color: var(--accent-warning);
+        background: rgba(217, 119, 6, 0.05);
+      }
+      .laser-suggestion.tipo-warning {
+        border-left-color: #d97706;
+        background: rgba(217, 119, 6, 0.08);
+      }
+      .laser-suggestion.tipo-danger {
+        border-left-color: var(--accent-danger);
+        background: var(--danger-bg);
+      }
+      .laser-suggestion-icon {
+        font-size: 1.1rem;
+        line-height: 1.3;
+        flex-shrink: 0;
+      }
+      .laser-suggestion-body {
+        flex: 1;
+        min-width: 0;
+      }
+      .laser-suggestion-title {
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 3px;
+        font-size: 0.85rem;
+      }
+      .laser-suggestion-text {
+        color: var(--text-muted);
+        font-size: 0.8rem;
+      }
+      .laser-suggestion-text strong {
+        color: var(--text-main);
+        font-weight: 600;
+      }
+      .laser-suggestions-empty {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-radius: var(--radius-md);
+        background: rgba(22, 163, 74, 0.06);
+        border-left: 3px solid var(--accent-success);
+        color: var(--text-main);
+        font-size: 0.85rem;
+      }
+      /* ============================================================
+         SIMULAÇÃO 3D DO CORTE
+         ============================================================ */
+      .laser-canvas-3d {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        background: #0a0a0b;
+        z-index: 2;
+        cursor: grab;
+      }
+      .laser-canvas-3d.dragging {
+        cursor: grabbing;
+      }
+      .laser-canvas-3d canvas {
+        display: block !important;
+        width: 100% !important;
+        height: 100% !important;
+        cursor: inherit;
+      }
+
+      /* Toggle 2D/3D — flutua no canto superior direito do canvas */
+      .laser-view-toggle {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 10;
+        display: inline-flex;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+        padding: 3px;
+        gap: 2px;
+      }
+      .laser-view-btn {
+        padding: 5px 12px;
+        border: none;
+        background: transparent;
+        color: #cbd5e1;
+        font-family: inherit;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        letter-spacing: 0.02em;
+      }
+      .laser-view-btn:hover {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .laser-view-btn.active {
+        background: var(--primary);
+        color: #ffffff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      }
+      /* No modo 3D, some a legenda e o botão Medir */
+      .laser-canvas-wrap.mode-3d .laser-canvas-legend,
+      .laser-canvas-wrap.mode-3d #laserBtnMeasure,
+      .laser-canvas-wrap.mode-3d #laserMeasurePanel {
+        display: none !important;
+      }
+
+      /* Controles abaixo do canvas */
+      .laser-3d-controls {
+        margin-top: 14px;
+        padding: 12px 16px;
+        background: var(--bg-panel-2);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .laser-3d-btn {
+        padding: 8px 16px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-strong);
+        background: var(--bg-panel);
+        color: var(--text-main);
+        font-family: inherit;
+        font-size: 0.82rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .laser-3d-btn:hover {
+        background: var(--bg-subtle);
+      }
+      .laser-3d-btn-primary {
+        background: var(--primary);
+        color: #ffffff;
+        border-color: var(--primary);
+      }
+      .laser-3d-btn-primary:hover {
+        background: var(--primary-hover);
+      }
+      .laser-3d-speed {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+      .laser-3d-speed label {
+        margin: 0;
+        font-size: 0.78rem;
+      }
+      .laser-3d-speed select {
+        padding: 6px 10px;
+        font-size: 0.82rem;
+        min-height: 36px;
+        width: auto;
+      }
+      .laser-3d-progress-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: auto;
+        min-width: 200px;
+        flex: 1;
+        max-width: 380px;
+      }
+      .laser-3d-progress-bar {
+        flex: 1;
+        height: 6px;
+        background: var(--bg-subtle);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .laser-3d-progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #3b82f6, #fbbf24);
+        border-radius: 3px;
+        transition: width 0.1s linear;
+      }
+      .laser-3d-progress-text {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-main);
+        font-variant-numeric: tabular-nums;
+        min-width: 42px;
+        text-align: right;
+      }
+      @media (max-width: 700px) {
+        .laser-3d-controls {
+          padding: 10px 12px;
+          gap: 8px;
+        }
+        .laser-3d-progress-wrap {
+          min-width: 100%;
+          margin-left: 0;
+        }
+      }
+      /* ============================================================
+         SOBRIEDADE — reduzir cores saturadas
+         ============================================================ */
+
+      /* Remove a faixa colorida do topo dos cards de resultado.
+         A hierarquia passa a ser feita só por tipografia e espaçamento. */
+      .laser-result-card::before {
+        height: 2px;
+        opacity: 0.35;
+      }
+
+      /* Cards de sugestão: fundo quase neutro, só a borda esquerda
+         carrega a cor. Menos "semáforo", mais editorial. */
+      .laser-suggestion {
+        background: var(--bg-panel-2);
+        border-left-width: 3px;
+      }
+      .laser-suggestion.tipo-ok {
+        background: var(--bg-panel-2);
+      }
+      .laser-suggestion.tipo-info {
+        background: var(--bg-panel-2);
+      }
+      .laser-suggestion.tipo-tip {
+        background: var(--bg-panel-2);
+      }
+      .laser-suggestion.tipo-warning {
+        background: var(--bg-panel-2);
+      }
+      .laser-suggestion.tipo-danger {
+        background: var(--bg-panel-2);
+      }
+
+      /* Dropdown custom: some a borda grossa e a sombra pesada */
+      .filtro-dropdown-btn {
+        border-radius: var(--radius-md);
+        background: var(--bg-panel);
+        border: 1px solid var(--border-light);
+      }
+      .filtro-dropdown-panel {
+        border-radius: var(--radius-md);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      }
+      .filtro-dropdown-item.selected {
+        background: var(--primary-subtle);
+      }
+
+      /* Seletor de módulo: fundo cinza neutro, sem sombra colorida */
+      .module-switcher {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-light);
+      }
+      .module-btn.active {
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      }
+
+      /* Caixas de alerta (⚠️ amarelas) — menos berrantes */
+      .laser-info-box {
+        background: var(--bg-panel-2);
+        border-left: 3px solid var(--accent-warning);
+        color: var(--text-main);
+      }
+
+      /* Aviso de "múltiplas peças no arquivo" — cria classe própria
+         para não usar laranja saturado inline */
+      .laser-cluster-warning {
+        margin-top: 12px;
+        padding: 10px 12px;
+        background: var(--bg-panel-2);
+        border-left: 3px solid var(--accent-warning);
+        border-radius: var(--radius-md);
+        font-size: 0.78rem;
+        line-height: 1.5;
+      }
+      .laser-cluster-warning .titulo {
+        font-weight: 700;
+        color: var(--text-main);
+        font-size: 0.82rem;
+        margin-bottom: 4px;
+        letter-spacing: -0.005em;
+      }
+      .laser-cluster-warning .texto {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        margin-bottom: 8px;
+      }
+
+      /* O select do cluster dentro do info-box — mais compacto e
+         coerente com o resto da UI */
+      .laser-cluster-select {
+        width: 100%;
+        padding: 8px 32px 8px 11px;
+        font-size: 0.82rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-light);
+        background-color: var(--bg-panel);
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        color: var(--text-main);
+        font-family: inherit;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        outline: none;
+        cursor: pointer;
+      }
+      .laser-cluster-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-subtle);
+      }
+
+      /* Botão "Remover arquivo" — centralização correta */
+      #laserBtnRemoverArquivo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 6px 14px !important;
+        font-size: 0.75rem !important;
+        line-height: 1.2;
+        border-radius: var(--radius-md) !important;
+      }
+      /* ---------- Dropdown custom de cluster (aba Laser) ---------- */
+      /* Reaproveita a base do .filtro-dropdown do Histórico, mas com
+         ajustes de altura e tipografia para casar com os outros
+         controles da sidebar. */
+      .laser-cluster-dd-wrap {
+        margin-top: 2px;
+      }
+      .laser-cluster-dd-btn {
+        width: 100%;
+        padding: 8px 11px;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        color: var(--text-main);
+        font-family: inherit;
+        font-size: 0.82rem;
+        font-weight: 500;
+        text-align: left;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        min-height: 36px;
+        transition: border-color 0.15s ease, background 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .laser-cluster-dd-btn:hover {
+        border-color: var(--border-strong);
+        background: var(--bg-panel);
+      }
+      .laser-cluster-dd-btn.open {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-subtle);
+      }
+      .laser-cluster-dd-btn #laserClusterLabel {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+        min-width: 0;
+      }
+      .laser-cluster-dd-btn .filtro-dropdown-arrow {
+        width: 13px;
+        height: 13px;
+        flex-shrink: 0;
+        opacity: 0.55;
+        transition: transform 0.2s ease;
+      }
+      .laser-cluster-dd-btn.open .filtro-dropdown-arrow {
+        transform: rotate(180deg);
+        opacity: 1;
+        color: var(--primary);
+      }
+      .laser-cluster-dd-panel {
+        position: absolute;
+        top: calc(100% + 5px);
+        left: 0;
+        right: 0;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08),
+          0 1px 3px rgba(0, 0, 0, 0.05);
+        padding: 4px;
+        z-index: 500;
+        display: none;
+        max-height: 260px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .laser-cluster-dd-panel.open {
+        display: block;
+        animation: laserDdIn 0.15s ease-out;
+      }
+      @keyframes laserDdIn {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .laser-cluster-dd-item {
+        padding: 8px 10px;
+        border-radius: var(--radius-sm);
+        font-size: 0.78rem;
+        color: var(--text-main);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.12s ease;
+        user-select: none;
+        line-height: 1.35;
+      }
+      .laser-cluster-dd-item:hover {
+        background: var(--bg-subtle);
+      }
+      .laser-cluster-dd-item.selected {
+        background: var(--primary-subtle);
+        color: var(--primary);
+        font-weight: 600;
+      }
+      .laser-cluster-dd-item.selected::after {
+        content: "";
+        margin-left: auto;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--primary);
+        flex-shrink: 0;
+      }
+      /* ---------- Lista de quantidades por peça ---------- */
+      .laser-quantities-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin: 6px 0 10px 0;
+      }
+      .laser-quantity-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 5px 8px;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-sm);
+        font-size: 0.76rem;
+      }
+      .laser-quantity-label {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text-main);
+      }
+      .laser-quantity-input {
+        width: 56px;
+        padding: 4px 6px;
+        text-align: center;
+        font-size: 0.78rem;
+        font-weight: 600;
+        font-family: inherit;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-sm);
+        color: var(--text-main);
+        outline: none;
+        font-variant-numeric: tabular-nums;
+        -moz-appearance: textfield;
+      }
+      .laser-quantity-input::-webkit-outer-spin-button,
+      .laser-quantity-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      .laser-quantity-input:focus {
+        border-color: var(--primary);
+        background: var(--bg-panel);
+        box-shadow: 0 0 0 2px var(--primary-subtle);
       }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -4796,7 +5384,7 @@
             </select>
           </div>
 
-          <!-- Espessura -->
+          <!-- Espessura + Potência em 2 colunas (compacta a sidebar) -->
           <div class="laser-row-2col">
             <div class="input-group">
               <label>Espessura (mm)</label>
@@ -4840,6 +5428,49 @@
               <option value="ar">Ar Comprimido — econômico</option>
               <option value="nenhum">Nenhum (fusão)</option>
             </select>
+          </div>
+
+          <div class="input-group">
+            <label>Chapa Padrão</label>
+            <select id="laserSheetSize" class="laser-select">
+              <option value="1000x2000">1000 × 2000 mm</option>
+              <option value="1250x2500">1250 × 2500 mm</option>
+              <option value="1500x3000" selected>1500 × 3000 mm (padrão do mercado)</option>
+              <option value="2000x4000">2000 × 4000 mm</option>
+            </select>
+          </div>
+                    <!-- Margem da borda + gap entre peças -->
+          <div class="laser-row-2col" style="margin-top: 12px">
+            <div class="input-group">
+              <label>Margem da borda</label>
+              <div class="laser-field-row">
+                <input
+                  type="number"
+                  id="laserSheetMargin"
+                  value="15"
+                  min="0"
+                  max="100"
+                  step="1"
+                  inputmode="decimal"
+                />
+                <span class="laser-unit-tag">mm</span>
+              </div>
+            </div>
+            <div class="input-group">
+              <label>Espaçamento entre peças</label>
+              <div class="laser-field-row">
+                <input
+                  type="number"
+                  id="laserSheetGap"
+                  value="10"
+                  min="0"
+                  max="100"
+                  step="1"
+                  inputmode="decimal"
+                />
+                <span class="laser-unit-tag">mm</span>
+              </div>
+            </div>
           </div>
 
           <!-- Custos (collapsible) -->
@@ -4888,6 +5519,24 @@
             </div>
           </details>
 
+          <details class="laser-speed-details" style="margin-top: 10px">
+            <summary>Comparar com preço cotado (opcional)</summary>
+            <div style="padding: 10px 12px">
+              <div class="input-group">
+                <label>Preço cotado pelo fornecedor</label>
+                <div class="laser-field-row">
+                  <input type="number" id="laserQuotedPrice" value="" min="0" step="0.01" placeholder="0,00" inputmode="decimal" />
+                  <span class="laser-unit-tag">R$/peça</span>
+                </div>
+              </div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.5;">
+                Preencha se você já recebeu um orçamento do fornecedor.
+                A ferramenta vai calcular a <strong>margem real</strong> que
+                ele está aplicando sobre o custo direto.
+              </div>
+            </div>
+          </details>
+
           <button
             class="laser-btn-process"
             id="laserBtnProcess"
@@ -4906,6 +5555,28 @@
 
           <div class="laser-canvas-wrap" id="laserCanvasWrap">
             <canvas id="laserCanvas"></canvas>
+            <div id="laserCanvas3D" class="laser-canvas-3d"></div>
+
+            <!-- Toggle 2D / 3D -->
+            <div class="laser-view-toggle" id="laserViewToggle">
+              <button
+                type="button"
+                class="laser-view-btn active"
+                data-view="2d"
+                onclick="laserToggleView('2d')"
+              >
+                2D
+              </button>
+              <button
+                type="button"
+                class="laser-view-btn"
+                data-view="3d"
+                onclick="laserToggleView('3d')"
+              >
+                3D
+              </button>
+            </div>
+
             <button
             type="button"
             id="laserBtnMeasure"
@@ -4936,6 +5607,55 @@
             </div>
           </div>
 
+                    <!-- Controles da Simulação 3D (visíveis apenas no modo 3D) -->
+          <div
+            id="laser3DControls"
+            class="laser-3d-controls"
+            style="display: none"
+          >
+            <button
+              type="button"
+              id="laser3DPlay"
+              class="laser-3d-btn laser-3d-btn-primary"
+              onclick="laser3DTogglePlay()"
+            >
+              ▶ Simular
+            </button>
+            <button
+              type="button"
+              id="laser3DReset"
+              class="laser-3d-btn"
+              onclick="laser3DReset()"
+            >
+              ⟲ Reiniciar
+            </button>
+            <div class="laser-3d-speed">
+              <label for="laser3DSpeed">Velocidade</label>
+              <select
+                id="laser3DSpeed"
+                class="laser-select"
+                onchange="laser3DSetSpeed(this.value)"
+              >
+                <option value="0.25">0,25×</option>
+                <option value="0.5">0,5×</option>
+                <option value="1" selected>1×</option>
+                <option value="2">2×</option>
+                <option value="4">4×</option>
+              </select>
+            </div>
+            <div class="laser-3d-progress-wrap">
+              <div class="laser-3d-progress-bar">
+                <div
+                  id="laser3DProgressFill"
+                  class="laser-3d-progress-fill"
+                ></div>
+              </div>
+              <span id="laser3DProgressText" class="laser-3d-progress-text"
+                >0%</span
+              >
+            </div>
+          </div>
+
           <div
           style="
             margin-top: 12px;
@@ -4945,18 +5665,22 @@
             gap: 12px;
           "
         >
-        <span style="font-size: 0.78rem; color: var(--text-muted)">
-          💡 Scroll = zoom · arraste = mover · duplo clique =
-          recentralizar
-        </span>
-      </div>
-      </div>
+          <span style="font-size: 0.78rem; color: var(--text-muted)">
+            💡 Scroll = zoom · arraste = mover · duplo clique = recentralizar
+            · no modo Medir: <strong>clique</strong> = segmento ·
+            <strong>Shift+clique</strong> = contorno ·
+            <strong>Alt+clique</strong> = trecho entre quinas ·
+            <strong>Ctrl+clique</strong> = somar segmentos
+          </span>
+        </div>
+        </div>
     </div>
 
       <!-- ============================================================
            ÁREA DE RESULTADOS — preenchida pelo Passo 4
            ============================================================ -->
            <div id="laserResultsArea" style="max-width: 1400px; margin: 20px auto 0 auto"></div>
+           <div id="laserSuggestionsArea"></div>
           </div>
       
           <!-- ABA MANUAL DO CORTE A LASER -->
@@ -5357,8 +6081,9 @@
                         </li>
                         <li>
                           Consumo típico: <span class="formula"
-                            >12 + (espessura × 1,2) m³/h</span
+                            >12 + (espessura × 1,5) m³/h</span
                           >
+                          — calibrado para 4 mm → 18 m³/h e 12 mm → 30 m³/h
                         </li>
                       </ul>
                       <h4>Oxigênio (O₂)</h4>
@@ -5657,13 +6382,17 @@
                       <h4>Piercing</h4>
                       <p>
                         <span class="formula"
-                          >t_piercing (s) = nº de furos × (0,3 + espessura × 0,4)</span
+                          >t_piercing (s) = nº de furos × (0,3 + 0,05 × espessura²) ×
+                          fator_gás</span
                         >
                       </p>
                       <p>
                         A cada novo contorno (furo ou novo perfil separado), o laser
-                        precisa furar a chapa antes de começar a cortar. Quanto mais
-                        grossa, mais tempo leva.
+                        precisa furar a chapa antes de começar a cortar. O tempo cresce
+                        <strong>ao quadrado</strong> com a espessura (não é linear):
+                        4 mm fura em ~1 s; 20 mm leva ~20 s por furo. O fator de gás é
+                        1,0 para N₂, 0,7 para O₂ (fura mais rápido) e 0,85 para ar
+                        comprimido.
                       </p>
                       <h4>Tempo total</h4>
                       <p>
@@ -11410,20 +12139,29 @@
       /* ============================================================
          MEDIÇÃO POR CLIQUE — inspetor de entidades
          ============================================================ */
-         let laserMeasure = { active: false, selected: null };
+         let laserMeasure = { active: false, selected: null, multi: [] };
       let laserTransform = null;
 
       function laserToggleMeasure() {
         laserMeasure.active = !laserMeasure.active;
         const btn = document.getElementById("laserBtnMeasure");
+        const canvas = document.getElementById("laserCanvas");
+
         if (btn) {
           btn.classList.toggle("active", laserMeasure.active);
           btn.textContent = laserMeasure.active
             ? "✓ Medindo (Esc p/ sair)"
             : "📏 Medir";
         }
+
+        // Troca o cursor do canvas: mãozinha (pan) ↔ crosshair (medir)
+        if (canvas) {
+          canvas.classList.toggle("measuring", laserMeasure.active);
+        }
+
         if (!laserMeasure.active) {
           laserMeasure.selected = null;
+          laserMeasure.multi = [];
           laserHideMeasurePanel();
         }
         if (laserGeometry) laserDrawCanvas(laserGeometry);
@@ -11468,6 +12206,141 @@
         return best;
       }
 
+      function laserShowMultiPanel() {
+        const panel = document.getElementById("laserMeasurePanel");
+        if (!panel || !laserGeometry) return;
+        const multi = laserMeasure.multi;
+        if (!multi || multi.length === 0) {
+          panel.style.display = "none";
+          return;
+        }
+
+        const fmt = (v, d) =>
+          v.toLocaleString("pt-BR", {
+            minimumFractionDigits: d,
+            maximumFractionDigits: d,
+          });
+
+        let total = 0;
+        multi.forEach((s) => {
+          total += s.comprimento || 0;
+        });
+
+        let html = "";
+        html +=
+          '<div class="laser-measure-title">' +
+          multi.length +
+          " parte" +
+          (multi.length > 1 ? "s" : "") +
+          " selecionada" +
+          (multi.length > 1 ? "s" : "") +
+          "</div>";
+
+        html +=
+          '<div class="laser-measure-row" style="padding:6px 0;"><span>Comprimento total</span><strong style="font-size:1.2em; color:#f59e0b;">' +
+          fmt(total, 2) +
+          " mm</strong></div>";
+
+        html += '<div class="laser-measure-divider"></div>';
+        html += '<div class="laser-measure-title">Detalhes</div>';
+
+        const LIMITE = 10;
+        multi.slice(0, LIMITE).forEach((s, i) => {
+          let label = "";
+          if (s.tipo === "segmento") {
+            label = "#" + (i + 1) + " · segmento";
+          } else if (s.tipo === "trecho") {
+            label = "#" + (i + 1) + " · trecho entre quinas";
+          } else if (s.tipo === "contorno") {
+            label = "#" + (i + 1) + " · contorno inteiro";
+          } else {
+            label = "#" + (i + 1);
+          }
+          html +=
+            '<div class="laser-measure-row" style="font-size:0.72rem;"><span>' +
+            label +
+            "</span><strong>" +
+            fmt(s.comprimento || 0, 2) +
+            " mm</strong></div>";
+        });
+        if (multi.length > LIMITE) {
+          html +=
+            '<div style="font-size:0.7rem; color:#94a3b8; text-align:center; padding:4px 0;">…e mais ' +
+            (multi.length - LIMITE) +
+            " parte(s)</div>";
+        }
+
+        html += '<div class="laser-measure-divider"></div>';
+        html +=
+          '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">Ctrl+clique soma/remove segmentos · Alt+clique soma trechos entre quinas · clique fora ou Esc limpa.</div>';
+
+        panel.innerHTML = html;
+        panel.style.display = "block";
+      }
+
+      // ── Calcula o trecho entre as duas quinas que cercam um segmento ──
+      // Retorna { startIdx, endIdx, comprimento, pathPts, isReta } ou null.
+      function laserComputarTrecho(p, segIdx) {
+        if (!p.corners || p.corners.length < 2) return null;
+        const n = p.points.length;
+        const cornersArr = p.corners.slice().sort((a, b) => a - b);
+        let prevCorner = null,
+          nextCorner = null;
+        for (let i = 0; i < cornersArr.length; i++) {
+          if (cornersArr[i] <= segIdx) prevCorner = cornersArr[i];
+          if (cornersArr[i] > segIdx) {
+            nextCorner = cornersArr[i];
+            break;
+          }
+        }
+        if (nextCorner === null && p.closed) nextCorner = cornersArr[0];
+        if (prevCorner === null) prevCorner = cornersArr[cornersArr.length - 1];
+        if (nextCorner === null && !p.closed) nextCorner = n - 1;
+        if (prevCorner === null || nextCorner === null || nextCorner === prevCorner)
+          return null;
+
+        let comp = 0;
+        const pathPts = [];
+        if (nextCorner > prevCorner) {
+          for (let k = prevCorner; k < nextCorner; k++) {
+            const a = p.points[k];
+            const b = p.points[k + 1];
+            comp += Math.hypot(b.x - a.x, b.y - a.y);
+            pathPts.push({ x: a.x, y: a.y });
+          }
+          pathPts.push(p.points[nextCorner]);
+        } else {
+          // Wraparound (polyline fechada)
+          for (let k = prevCorner; k < n; k++) {
+            const a = p.points[k];
+            const b = p.points[(k + 1) % n];
+            comp += Math.hypot(b.x - a.x, b.y - a.y);
+            pathPts.push({ x: a.x, y: a.y });
+          }
+          for (let k = 0; k < nextCorner; k++) {
+            const a = p.points[k];
+            const b = p.points[k + 1];
+            comp += Math.hypot(b.x - a.x, b.y - a.y);
+            pathPts.push({ x: a.x, y: a.y });
+          }
+          pathPts.push(p.points[nextCorner]);
+        }
+
+        const straight = Math.hypot(
+          p.points[nextCorner].x - p.points[prevCorner].x,
+          p.points[nextCorner].y - p.points[prevCorner].y
+        );
+        const isReta = comp / Math.max(straight, 1e-6) <= 1.05;
+
+        return {
+          startIdx: prevCorner,
+          endIdx: nextCorner,
+          comprimento: comp,
+          pathPts,
+          isReta,
+        };
+      }
+
       function laserShowMeasurePanel(hit) {
         const panel = document.getElementById("laserMeasurePanel");
         if (!panel || !laserGeometry) return;
@@ -11491,7 +12364,10 @@
           compTot += Math.hypot(f.x - l.x, f.y - l.y);
         }
 
-        let mnX = Infinity, mxX = -Infinity, mnY = Infinity, mxY = -Infinity;
+        let mnX = Infinity,
+          mxX = -Infinity,
+          mnY = Infinity,
+          mxY = -Infinity;
         p.points.forEach((pt) => {
           if (pt.x < mnX) mnX = pt.x;
           if (pt.x > mxX) mxX = pt.x;
@@ -11506,53 +12382,171 @@
             maximumFractionDigits: d,
           });
 
+        // Detecção de círculo: polyline fechada, com bbox quase quadrada
+        // e muitos segmentos (> 30). Funciona para os círculos do parser
+        // (72 segmentos) e para elipses quase circulares.
+        const bboxW = mxX - mnX;
+        const bboxH = mxY - mnY;
+        const isCircle =
+          p.closed &&
+          nSegs >= 30 &&
+          Math.abs(bboxW - bboxH) / Math.max(bboxW, bboxH, 1e-6) < 0.02;
+
+        const isContour = !!hit.fullContour;
+        const isCornerSpan = !!hit.cornerSpan;
+
+        // ── Modo "trecho entre quinas" ─────────────────────────────
+        const spanInfo = isCornerSpan
+          ? laserComputarTrecho(p, hit.segIdx)
+          : null;
+
         let html = "";
-        html += '<div class="laser-measure-title">Segmento selecionado</div>';
-        html +=
-          '<div class="laser-measure-row"><span>Comprimento</span><strong>' +
-          fmt(compSeg, 2) +
-          " mm</strong></div>";
-        html +=
-          '<div class="laser-measure-row"><span>Ângulo</span><strong>' +
-          fmt(ang, 1) +
-          "°</strong></div>";
-        html +=
-          '<div class="laser-measure-row"><span>Início</span><strong>(' +
-          fmt(a.x, 2) +
-          ", " +
-          fmt(a.y, 2) +
-          ")</strong></div>";
-        html +=
-          '<div class="laser-measure-row"><span>Fim</span><strong>(' +
-          fmt(b.x, 2) +
-          ", " +
-          fmt(b.y, 2) +
-          ")</strong></div>";
-        html += '<div class="laser-measure-divider"></div>';
-        html += '<div class="laser-measure-title">Contorno completo</div>';
-        html +=
-          '<div class="laser-measure-row"><span>Comprimento</span><strong>' +
-          fmt(compTot, 2) +
-          " mm</strong></div>";
-        html +=
-          '<div class="laser-measure-row"><span>Nº segmentos</span><strong>' +
-          nSegs +
-          "</strong></div>";
-        html +=
-          '<div class="laser-measure-row"><span>Tipo</span><strong>' +
-          (p.closed ? "Fechado" : "Aberto") +
-          "</strong></div>";
-        html +=
-          '<div class="laser-measure-row"><span>L × A</span><strong>' +
-          fmt(mxX - mnX, 1) +
-          " × " +
-          fmt(mxY - mnY, 1) +
-          " mm</strong></div>";
-        if (p.closed && typeof p.area === "number" && Math.abs(p.area) > 0) {
+
+        if (isCornerSpan && spanInfo) {
+          // ── Modo trecho entre quinas ────────────────────────────────
+          html += '<div class="laser-measure-title">Trecho selecionado</div>';
           html +=
-            '<div class="laser-measure-row"><span>Área</span><strong>' +
-            fmt(Math.abs(p.area) / 100, 2) +
-            " cm²</strong></div>";
+            '<div class="laser-measure-row" style="padding:6px 0;"><span>Comprimento</span><strong style="font-size:1.1em; color:#fbbf24;">' +
+            fmt(spanInfo.comprimento, 2) +
+            " mm</strong></div>";
+          html +=
+            '<div class="laser-measure-row"><span>Tipo</span><strong>' +
+            (spanInfo.isReta ? "Reto" : "Curvo") +
+            "</strong></div>";
+          html +=
+            '<div class="laser-measure-row"><span>Quina início</span><strong>vértice ' +
+            (spanInfo.startIdx + 1) +
+            "</strong></div>";
+          html +=
+            '<div class="laser-measure-row"><span>Quina fim</span><strong>vértice ' +
+            (spanInfo.endIdx + 1) +
+            "</strong></div>";
+          html += '<div class="laser-measure-divider"></div>';
+          html += '<div class="laser-measure-title">Contorno completo</div>';
+          html +=
+            '<div class="laser-measure-row"><span>Comprimento</span><strong>' +
+            fmt(compTot, 2) +
+            " mm</strong></div>";
+          html +=
+            '<div class="laser-measure-row"><span>Nº quinas</span><strong>' +
+            (p.corners ? p.corners.length : 0) +
+            "</strong></div>";
+          html += '<div class="laser-measure-divider"></div>';
+          html +=
+            '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">Ctrl+clique mediu o trecho entre duas quinas. Clique simples mede um segmento. Shift+clique mede o contorno inteiro.</div>';
+        } else if (isContour) {
+          // ── Modo contorno inteiro ──────────────────────────────────
+          html +=
+            '<div class="laser-measure-title">' +
+            (isCircle ? "Circunferência" : "Contorno inteiro") +
+            "</div>";
+
+          html +=
+            '<div class="laser-measure-row" style="padding:6px 0;"><span>Comprimento total</span><strong style="font-size:1.1em; color:#fbbf24;">' +
+            fmt(compTot, 2) +
+            " mm</strong></div>";
+
+          if (isCircle) {
+            const diametro = (bboxW + bboxH) / 2;
+            const raio = diametro / 2;
+            html += '<div class="laser-measure-divider"></div>';
+            html += '<div class="laser-measure-title">Círculo</div>';
+            html +=
+              '<div class="laser-measure-row"><span>Diâmetro</span><strong>' +
+              fmt(diametro, 2) +
+              " mm</strong></div>";
+            html +=
+              '<div class="laser-measure-row"><span>Raio</span><strong>' +
+              fmt(raio, 2) +
+              " mm</strong></div>";
+            html +=
+              '<div class="laser-measure-row"><span>Área</span><strong>' +
+              fmt(Math.abs(p.area) / 100, 2) +
+              " cm²</strong></div>";
+          } else {
+            html += '<div class="laser-measure-divider"></div>';
+            html += '<div class="laser-measure-title">Detalhes</div>';
+            html +=
+              '<div class="laser-measure-row"><span>Nº segmentos</span><strong>' +
+              nSegs +
+              "</strong></div>";
+            html +=
+              '<div class="laser-measure-row"><span>Tipo</span><strong>' +
+              (p.closed ? "Fechado" : "Aberto") +
+              "</strong></div>";
+            html +=
+              '<div class="laser-measure-row"><span>L × A</span><strong>' +
+              fmt(bboxW, 1) +
+              " × " +
+              fmt(bboxH, 1) +
+              " mm</strong></div>";
+            if (
+              p.closed &&
+              typeof p.area === "number" &&
+              Math.abs(p.area) > 0
+            ) {
+              html +=
+                '<div class="laser-measure-row"><span>Área</span><strong>' +
+                fmt(Math.abs(p.area) / 100, 2) +
+                " cm²</strong></div>";
+            }
+          }
+
+          html += '<div class="laser-measure-divider"></div>';
+          html +=
+            '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">Shift+clique mediu o contorno inteiro. Clique simples mede apenas um segmento. Ctrl+clique mede o trecho entre quinas.</div>';
+        } else {
+          // ── Modo segmento único ────────────────────────────────────
+          html += '<div class="laser-measure-title">Segmento selecionado</div>';
+          html +=
+            '<div class="laser-measure-row"><span>Comprimento</span><strong>' +
+            fmt(compSeg, 2) +
+            " mm</strong></div>";
+          html +=
+            '<div class="laser-measure-row"><span>Ângulo</span><strong>' +
+            fmt(ang, 1) +
+            "°</strong></div>";
+          html +=
+            '<div class="laser-measure-row"><span>Início</span><strong>(' +
+            fmt(a.x, 2) +
+            ", " +
+            fmt(a.y, 2) +
+            ")</strong></div>";
+          html +=
+            '<div class="laser-measure-row"><span>Fim</span><strong>(' +
+            fmt(b.x, 2) +
+            ", " +
+            fmt(b.y, 2) +
+            ")</strong></div>";
+          html += '<div class="laser-measure-divider"></div>';
+          html += '<div class="laser-measure-title">Contorno completo</div>';
+          html +=
+            '<div class="laser-measure-row"><span>Comprimento</span><strong>' +
+            fmt(compTot, 2) +
+            " mm</strong></div>";
+          html +=
+            '<div class="laser-measure-row"><span>Nº segmentos</span><strong>' +
+            nSegs +
+            "</strong></div>";
+          html +=
+            '<div class="laser-measure-row"><span>Tipo</span><strong>' +
+            (p.closed ? "Fechado" : "Aberto") +
+            "</strong></div>";
+          html +=
+            '<div class="laser-measure-row"><span>L × A</span><strong>' +
+            fmt(bboxW, 1) +
+            " × " +
+            fmt(bboxH, 1) +
+            " mm</strong></div>";
+          if (p.closed && typeof p.area === "number" && Math.abs(p.area) > 0) {
+            html +=
+              '<div class="laser-measure-row"><span>Área</span><strong>' +
+              fmt(Math.abs(p.area) / 100, 2) +
+              " cm²</strong></div>";
+          }
+          html += '<div class="laser-measure-divider"></div>';
+          html +=
+            '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">Dica: Shift+clique para medir o contorno inteiro (círculo, arco, polyline fechada).</div>';
         }
 
         panel.innerHTML = html;
@@ -11613,6 +12607,10 @@
         if (!canvas || canvas.dataset.interactive === "1") return;
         canvas.dataset.interactive = "1";
 
+        // Bloqueia o menu de contexto — necessário porque Ctrl+clique
+        // dispara o menu do navegador (que atrapalharia o modo Medir).
+        canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+
         // --- Zoom com scroll do mouse ---
         canvas.addEventListener(
           "wheel",
@@ -11639,7 +12637,7 @@
             laserPanState.active = true;
             laserPanState.lastX = e.clientX;
             laserPanState.lastY = e.clientY;
-            canvas.style.cursor = "grabbing";
+            canvas.classList.add("panning");
           } else if (pointers.size === 2) {
             const pts = Array.from(pointers.values());
             laserPanState.pinchDist = Math.hypot(
@@ -11680,7 +12678,7 @@
           pointers.delete(e.pointerId);
           if (pointers.size === 0) {
             laserPanState.active = false;
-            canvas.style.cursor = "grab";
+            canvas.classList.remove("panning");
           }
           if (pointers.size < 2) laserPanState.pinchDist = 0;
         };
@@ -11716,9 +12714,121 @@
           const sy = e.clientY - rect.top;
           const hit = laserHitTest(sx, sy);
           if (hit) {
-            laserMeasure.selected = hit;
-            laserShowMeasurePanel(hit);
+            const p = laserGeometry.polylines[hit.polyIdx];
+
+            if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+              // ── Ctrl+clique → soma/remove segmento da multi ────────
+              laserMeasure.selected = null;
+              const idx = laserMeasure.multi.findIndex(
+                (s) =>
+                  s.tipo === "segmento" &&
+                  s.polyIdx === hit.polyIdx &&
+                  s.segIdx === hit.segIdx
+              );
+              if (idx >= 0) {
+                laserMeasure.multi.splice(idx, 1);
+              } else {
+                laserMeasure.multi.push({
+                  tipo: "segmento",
+                  polyIdx: hit.polyIdx,
+                  segIdx: hit.segIdx,
+                  comprimento: Math.hypot(
+                    hit.end.x - hit.start.x,
+                    hit.end.y - hit.start.y
+                  ),
+                });
+              }
+              if (laserMeasure.multi.length === 0) laserHideMeasurePanel();
+              else laserShowMultiPanel();
+            } else if (e.altKey && !e.shiftKey && !e.ctrlKey) {
+              // ── Alt+clique → soma trecho entre quinas à multi ──────
+              const trecho = laserComputarTrecho(p, hit.segIdx);
+              if (!trecho) {
+                // Não deu para calcular (polyline sem quinas) — cai como single
+                hit.cornerSpan = true;
+                laserMeasure.selected = hit;
+                laserShowMeasurePanel(hit);
+              } else if (
+                laserMeasure.multi.length === 0 &&
+                !laserMeasure.selected
+              ) {
+                // Primeiro Alt+clique: mostra o trecho sozinho (detalhes)
+                hit.cornerSpan = true;
+                laserMeasure.selected = hit;
+                laserShowMeasurePanel(hit);
+              } else {
+                // Já tem algo: adiciona trecho à multi (converte single
+                // em multi se for o caso)
+                if (laserMeasure.selected) {
+                  const sel = laserMeasure.selected;
+                  const pSel = laserGeometry.polylines[sel.polyIdx];
+                  if (sel.cornerSpan) {
+                    const t = laserComputarTrecho(pSel, sel.segIdx);
+                    if (t) {
+                      laserMeasure.multi.push({
+                        tipo: "trecho",
+                        polyIdx: sel.polyIdx,
+                        startIdx: t.startIdx,
+                        endIdx: t.endIdx,
+                        comprimento: t.comprimento,
+                      });
+                    }
+                  } else if (sel.fullContour) {
+                    laserMeasure.multi.push({
+                      tipo: "contorno",
+                      polyIdx: sel.polyIdx,
+                      comprimento: (function () {
+                        let c = 0;
+                        const pp = pSel.points;
+                        for (let i = 0; i < pp.length - 1; i++)
+                          c += Math.hypot(
+                            pp[i + 1].x - pp[i].x,
+                            pp[i + 1].y - pp[i].y
+                          );
+                        if (pSel.closed && pp.length > 2)
+                          c += Math.hypot(
+                            pp[0].x - pp[pp.length - 1].x,
+                            pp[0].y - pp[pp.length - 1].y
+                          );
+                        return c;
+                      })(),
+                    });
+                  }
+                  laserMeasure.selected = null;
+                }
+                // Verifica se o trecho clicado já está no multi (toggle)
+                const idx = laserMeasure.multi.findIndex(
+                  (s) =>
+                    s.tipo === "trecho" &&
+                    s.polyIdx === hit.polyIdx &&
+                    s.startIdx === trecho.startIdx &&
+                    s.endIdx === trecho.endIdx
+                );
+                if (idx >= 0) {
+                  laserMeasure.multi.splice(idx, 1);
+                } else {
+                  laserMeasure.multi.push({
+                    tipo: "trecho",
+                    polyIdx: hit.polyIdx,
+                    startIdx: trecho.startIdx,
+                    endIdx: trecho.endIdx,
+                    comprimento: trecho.comprimento,
+                  });
+                }
+                if (laserMeasure.multi.length === 0) laserHideMeasurePanel();
+                else laserShowMultiPanel();
+              }
+            } else {
+              // ── Clique / Shift → seleção única ─────────────────────
+              laserMeasure.multi = [];
+              hit.fullContour = !!e.shiftKey;
+              hit.cornerSpan = false;
+              laserMeasure.selected = hit;
+              laserShowMeasurePanel(hit);
+            }
           } else {
+            // Clique no vazio: limpa tudo
+            laserMeasure.multi = [];
             laserMeasure.selected = null;
             laserHideMeasurePanel();
           }
@@ -11726,14 +12836,28 @@
         });
 
         document.addEventListener("keydown", (e) => {
-          if (e.key === "Escape" && laserMeasure.active) {
+          if (e.key !== "Escape") return;
+          if (!laserMeasure.active) return;
+
+          // 1º Esc: se há multi, limpa
+          if (laserMeasure.multi && laserMeasure.multi.length > 0) {
+            laserMeasure.multi = [];
+            laserHideMeasurePanel();
+            if (laserGeometry) laserDrawCanvas(laserGeometry);
+            return;
+          }
+
+          // 2º Esc: se há seleção única, limpa
+          if (laserMeasure.selected) {
             laserMeasure.selected = null;
             laserHideMeasurePanel();
             if (laserGeometry) laserDrawCanvas(laserGeometry);
+            return;
           }
-        });
 
-        canvas.style.cursor = "grab";
+          // 3º Esc (nada selecionado): sai do modo Medir
+          laserToggleMeasure();
+        });
       }
 
       // Zoom ancorado no cursor (o ponto sob o mouse não se move)
@@ -11782,7 +12906,32 @@
           infoBox.innerHTML = "";
         }
 
-        // Canvas volta ao estado vazio
+        // ── Reset do 3D ──────────────────────────────────────
+        // Se a simulação 3D estiver ativa, volta para o modo 2D
+        // (é onde o placeholder "Nenhum arquivo carregado" vive).
+        if (laser3D.active) {
+          laserToggleView("2d");
+        }
+        // Se a cena foi inicializada alguma vez, desmonta tudo que
+        // pertence à simulação (chapas, contornos, trails, cabeça).
+        if (laser3D.initialized && laser3D.scene) {
+          const toRemove = [];
+          laser3D.scene.children.forEach((c) => {
+            if (c.userData && c.userData.laser3d) toRemove.push(c);
+          });
+          toRemove.forEach((c) => laser3D.scene.remove(c));
+          laser3D.pathPoints = [];
+          laser3D.cumLengths = [];
+          laser3D.segmentLengths = [];
+          laser3D.ops = [];
+          laser3D.pointTypes = [];
+          laser3D.totalLength = 0;
+          laser3D.progress = 0;
+          laser3D.playing = false;
+          laser3D.laserHead = null;
+        }
+
+        // Canvas 2D volta ao estado vazio
         const vazio = document.getElementById("laserCanvasEmpty");
         if (vazio) vazio.style.display = "flex";
         const legenda = document.getElementById("laserCanvasLegend");
@@ -11796,6 +12945,8 @@
         // Resultados e botão processar
         const area = document.getElementById("laserResultsArea");
         if (area) area.innerHTML = "";
+        const sugestoesArea = document.getElementById("laserSuggestionsArea");
+        if (sugestoesArea) sugestoesArea.innerHTML = "";
         const btnProc = document.getElementById("laserBtnProcess");
         if (btnProc) btnProc.disabled = true;
 
@@ -11803,7 +12954,7 @@
         const inp = document.getElementById("laserFileInput");
         if (inp) inp.value = "";
 
-        showToast("🗑️ Arquivo removido", false);
+        showToast("✕ Arquivo removido", false);
       }
 
       async function laserHandleFile(file) {
@@ -11849,10 +13000,29 @@
 
         laserGeometry = geo;
         laserFileInfo = { name: file.name, tipo: tipo, size: file.size };
+
+        // Inicializa quantidades (default = 1 por peça)
+        laserGeometry.quantities = {};
+        if (geo.clusters && geo.clusters.length > 0) {
+          geo.clusters.forEach((_, i) => {
+            laserGeometry.quantities[i] = 1;
+          });
+        } else {
+          laserGeometry.quantities[0] = 1;
+        }
+
         // Reseta zoom/pan a cada novo arquivo
         laserView = { zoom: 1, panX: 0, panY: 0 };
         laserMeasure.selected = null;
         laserHideMeasurePanel();
+
+        // Se a simulação 3D está ativa, reconstrói com a nova geometria
+        if (laser3D.active) {
+          requestAnimationFrame(() => {
+            laser3DResize();
+            laser3DBuild(laserGeometry);
+          });
+        }
 
 
         dz.classList.add("has-file");
@@ -11900,37 +13070,11 @@
         // oferece um seletor para escolher qual orçar.
         let seletorHTML = "";
         if (geo.clusters && geo.clusters.length > 1) {
-          seletorHTML +=
-            '<div style="margin-top:12px; padding:10px 12px; background: rgba(251, 191, 36, 0.12); border-left: 3px solid #f59e0b; border-radius:8px;">' +
-            '<div style="font-size:0.8rem; font-weight:700; color:#b45309; margin-bottom:6px;">' +
-            "⚠️ Este DXF contém " +
-            geo.clusters.length +
-            " desenhos separados espacialmente.</div>" +
-            '<div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">' +
-            "Selecione qual você quer orçar (o comprimento, furos, tempo e custo serão recalculados só para ele):</div>" +
-            '<select id="laserClusterSelect" class="laser-select" onchange="laserTrocarCluster(this.value)" style="font-size:0.85rem; padding:8px 10px;">' +
-            geo.clusters
-              .map(
-                (c, i) =>
-                  '<option value="' +
-                  i +
-                  '">Peça ' +
-                  String.fromCharCode(65 + i) +
-                  " — " +
-                  c.numPolylines +
-                  " elemento(s) · " +
-                  c.comprimento.toFixed(0) +
-                  " mm · " +
-                  c.bbox.width.toFixed(0) +
-                  "×" +
-                  c.bbox.height.toFixed(0) +
-                  " mm" +
-                  "</option>"
-              )
-              .join("") +
-            '<option value="-1">Todas (soma)</option>' +
-            "</select>" +
-            "</div>";
+          seletorHTML = laserClusterWarningHTML(
+            geo.clusters,
+            0,
+            laserGeometry.quantities
+          );
         }
         infoBox.innerHTML += seletorHTML;
 
@@ -12544,8 +13688,159 @@
         return laserFinalizeGeometry(polylines);
       }
 
+      // Detecta "quinas" (vértices onde a direção muda bruscamente).
+      // Serve para o modo Alt+clique, que mede o trecho entre duas quinas
+      // consecutivas — por exemplo, uma pétala inteira de uma estrela.
+      function laserDetectCorners(points, closed, angleThresholdDeg) {
+        const n = points.length;
+        const corners = [];
+        if (n < 2) return corners;
+        const threshold = (angleThresholdDeg * Math.PI) / 180;
+        for (let i = 0; i < n; i++) {
+          // Extremidades de polylines abertas sempre são "quinas"
+          if (!closed && (i === 0 || i === n - 1)) {
+            corners.push(i);
+            continue;
+          }
+          const prev = points[(i - 1 + n) % n];
+          const cur = points[i];
+          const next = points[(i + 1) % n];
+          const v1x = cur.x - prev.x,
+            v1y = cur.y - prev.y;
+          const v2x = next.x - cur.x,
+            v2y = next.y - cur.y;
+          const len1 = Math.hypot(v1x, v1y);
+          const len2 = Math.hypot(v2x, v2y);
+          if (len1 < 1e-9 || len2 < 1e-9) continue;
+          const dot = (v1x * v2x + v1y * v2y) / (len1 * len2);
+          const clamped = Math.max(-1, Math.min(1, dot));
+          const angle = Math.acos(clamped);
+          if (angle > threshold) corners.push(i);
+        }
+        // Garante que sempre exista ao menos 1 "quina" (evita divisão por 0)
+        if (corners.length === 0 && n >= 2) corners.push(0);
+        return corners;
+      }
+
       function laserFinalizeGeometry(polylines) {
         polylines = polylines.filter((p) => p.points && p.points.length >= 2);
+
+        // ── Normalização "quase-fechada" ─────────────────────────────
+        // Muitos CADs exportam contornos fechados SEM a flag `70=1`, ou
+        // com pontos duplicados (consecutivos ou primeiro=último). Este
+        // bloco limpa esses artefatos. Sem isso, o comprimento fica
+        // inflado e o destaque visual não fecha o contorno.
+        polylines.forEach((p) => {
+          if (p.closed) return;
+          if (!p.points || p.points.length < 3) return;
+
+          // 1. Bounding box — define tolerância adaptativa
+          let mnX = Infinity, mxX = -Infinity, mnY = Infinity, mxY = -Infinity;
+          p.points.forEach((pt) => {
+            if (pt.x < mnX) mnX = pt.x;
+            if (pt.x > mxX) mxX = pt.x;
+            if (pt.y < mnY) mnY = pt.y;
+            if (pt.y > mxY) mxY = pt.y;
+          });
+          const diag = Math.hypot(mxX - mnX, mxY - mnY);
+          // Tolerância: 0,5 mm fixo OU 0,1% da diagonal (o que for maior)
+          const tol = Math.max(0.5, diag * 0.001);
+
+          // 2. Remove pontos consecutivos duplicados
+          const cleaned = [p.points[0]];
+          for (let i = 1; i < p.points.length; i++) {
+            const prev = cleaned[cleaned.length - 1];
+            const cur = p.points[i];
+            if (Math.hypot(cur.x - prev.x, cur.y - prev.y) > tol) {
+              cleaned.push(cur);
+            }
+          }
+          p.points = cleaned;
+          if (p.points.length < 3) return;
+
+          // 3. Se o primeiro e o último coincidem, fecha a polyline
+          const first = p.points[0];
+          const last = p.points[p.points.length - 1];
+          if (Math.hypot(last.x - first.x, last.y - first.y) <= tol) {
+            p.closed = true;
+            p.points = p.points.slice(0, -1);
+          }
+        });
+
+        // ── Encadeamento de polylines abertas ───────────────────────
+        // Muitos CADs fracionam um contorno em várias polylines abertas
+        // conectadas ponta a ponta (retângulos = base + "volta", arcos
+        // complementares, etc). Este bloco as concatena numa única
+        // polyline. Se o resultado voltar ao ponto inicial, marca como
+        // fechada. Sem isso, o Shift+clique mediria só um pedaço.
+        (function laserChainPolylines() {
+          const tol = 0.5;
+          const fechadas = [];
+          let abertas = [];
+          polylines.forEach((p) => {
+            if (p.closed) fechadas.push(p);
+            else abertas.push(p);
+          });
+
+          let progresso = true;
+          while (progresso) {
+            progresso = false;
+            for (let i = 0; i < abertas.length; i++) {
+              const a = abertas[i];
+              if (!a) continue;
+              const aStart = a.points[0];
+              const aEnd = a.points[a.points.length - 1];
+              for (let j = 0; j < abertas.length; j++) {
+                if (i === j || !abertas[j]) continue;
+                const b = abertas[j];
+                const bStart = b.points[0];
+                const bEnd = b.points[b.points.length - 1];
+                let merged = null;
+                if (Math.hypot(aEnd.x - bStart.x, aEnd.y - bStart.y) <= tol) {
+                  merged = a.points.concat(b.points.slice(1));
+                } else if (Math.hypot(aEnd.x - bEnd.x, aEnd.y - bEnd.y) <= tol) {
+                  merged = a.points.concat(b.points.slice(0, -1).reverse());
+                } else if (
+                  Math.hypot(aStart.x - bEnd.x, aStart.y - bEnd.y) <= tol
+                ) {
+                  merged = b.points.concat(a.points.slice(1));
+                } else if (
+                  Math.hypot(aStart.x - bStart.x, aStart.y - bStart.y) <= tol
+                ) {
+                  merged = b.points
+                    .slice(0, -1)
+                    .reverse()
+                    .concat(a.points);
+                }
+                if (merged) {
+                  const mStart = merged[0];
+                  const mEnd = merged[merged.length - 1];
+                  const fechou =
+                    Math.hypot(mStart.x - mEnd.x, mStart.y - mEnd.y) <= tol;
+                  const nova = {
+                    points: fechou ? merged.slice(0, -1) : merged,
+                    closed: fechou,
+                  };
+                  if (fechou) {
+                    fechadas.push(nova);
+                    abertas[i] = null;
+                  } else {
+                    abertas[i] = nova;
+                  }
+                  abertas[j] = null;
+                  progresso = true;
+                  break;
+                }
+              }
+              if (progresso) break;
+            }
+            abertas = abertas.filter((p) => p);
+          }
+
+          polylines.length = 0;
+          fechadas.forEach((p) => polylines.push(p));
+          abertas.forEach((p) => polylines.push(p));
+        })();
 
         let minX = Infinity,
           maxX = -Infinity,
@@ -12600,6 +13895,15 @@
             cy += (pts[k].y + pts[j].y) * f;
           }
           p.centroid = { x: cx / (6 * p.area), y: cy / (6 * p.area) };
+        });
+
+        // Detecta quinas em cada polyline (para o modo Alt+clique medir
+        // trechos entre quinas — ex.: uma pétala da estrela ou o topo de
+        // um retângulo). Threshold de 20° é generoso o bastante para pegar
+        // até transições suaves entre arcos e retas, sem marcar cada
+        // microssegmento da curva.
+        polylines.forEach((p) => {
+          p.corners = laserDetectCorners(p.points, !!p.closed, 20);
         });
 
         const closeds = polylines.filter(
@@ -12821,6 +14125,31 @@
         return geo;
       }
 
+      // Diagnóstico: rode `laserDebugPolylines()` no console (F12) com um
+      // DXF carregado para ver os pontos e o estado de cada polyline.
+      window.laserDebugPolylines = function () {
+        if (!laserGeometry) {
+          console.log("Sem geometria carregada.");
+          return;
+        }
+        console.log(
+          "Total:",
+          laserGeometry.polylines.length,
+          "polyline(s)"
+        );
+        laserGeometry.polylines.forEach((p, i) => {
+          const first = p.points[0];
+          const last = p.points[p.points.length - 1];
+          const dist = Math.hypot(last.x - first.x, last.y - first.y);
+          console.log(
+            `#${i} — ${p.points.length} pts · closed=${!!p.closed} · ` +
+              `1º=(${first.x.toFixed(2)}, ${first.y.toFixed(2)}) · ` +
+              `últ=(${last.x.toFixed(2)}, ${last.y.toFixed(2)}) · ` +
+              `dist 1º↔últ=${dist.toFixed(3)} mm`
+          );
+        });
+      };
+
       function laserPointInPolygon(pt, poly) {
         let inside = false;
         for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
@@ -12873,14 +14202,32 @@
         geo.polylines.forEach((p) => {
           const isOuter = !p.closed || p.nesting % 2 === 0;
           ctx.beginPath();
-          p.points.forEach((pt, k) => {
-            const s = toScreen(pt);
+
+          // Detecta se o último ponto coincide com o primeiro — nesse
+          // caso ele é redundante e o closePath() já faz o fechamento.
+          // Sem essa checagem, o Canvas desenha uma linha "extra" de
+          // volta que às vezes aparece como uma diagonal.
+          const nPts = p.points.length;
+          let ultimoRedundante = false;
+          if (p.closed && nPts >= 2) {
+            const first = p.points[0];
+            const last = p.points[nPts - 1];
+            if (Math.hypot(last.x - first.x, last.y - first.y) < 1e-6) {
+              ultimoRedundante = true;
+            }
+          }
+
+          const limite = p.closed
+            ? ultimoRedundante
+              ? nPts - 1
+              : nPts
+            : nPts;
+
+          for (let k = 0; k < limite; k++) {
+            const s = toScreen(p.points[k]);
             if (k === 0) ctx.moveTo(s.x, s.y);
             else ctx.lineTo(s.x, s.y);
-          });
-          // Fecha o path para polylines marcadas como fechadas pelo CAD.
-          // Sem isso, o segmento do último vértice de volta ao primeiro
-          // nunca era desenhado.
+          }
           if (p.closed) ctx.closePath();
           ctx.strokeStyle = isOuter ? "#3b82f6" : "#f97316";
           ctx.lineWidth = 1.5;
@@ -12890,29 +14237,185 @@
         // Salva a transformação atual para o hit-test
         laserTransform = { scale: scale, cx: cx, cy: cy, w: w, h: h };
 
-        // Destaca o segmento selecionado no modo Medir
+        // ── Destaque da seleção múltipla em laranja ──
+        if (
+          laserMeasure.multi &&
+          laserMeasure.multi.length > 0 &&
+          geo === laserGeometry
+        ) {
+          laserMeasure.multi.forEach((sel) => {
+            const p = geo.polylines[sel.polyIdx];
+            if (!p) return;
+
+            if (sel.tipo === "segmento") {
+              const a = toScreen(p.points[sel.segIdx]);
+              const b = toScreen(
+                p.points[(sel.segIdx + 1) % p.points.length]
+              );
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.strokeStyle = "#f59e0b";
+              ctx.lineWidth = 3.5;
+              ctx.lineCap = "round";
+              ctx.stroke();
+              [a, b].forEach((pt) => {
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = "#f59e0b";
+                ctx.fill();
+                ctx.strokeStyle = "#1e293b";
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+              });
+            } else if (sel.tipo === "trecho") {
+              // Reconstrói o path entre as duas quinas
+              const n = p.points.length;
+              const path = [];
+              if (sel.endIdx > sel.startIdx) {
+                for (let k = sel.startIdx; k <= sel.endIdx; k++)
+                  path.push(p.points[k]);
+              } else {
+                for (let k = sel.startIdx; k < n; k++) path.push(p.points[k]);
+                for (let k = 0; k <= sel.endIdx; k++) path.push(p.points[k]);
+              }
+              ctx.beginPath();
+              path.forEach((pt, k) => {
+                const s = toScreen(pt);
+                if (k === 0) ctx.moveTo(s.x, s.y);
+                else ctx.lineTo(s.x, s.y);
+              });
+              ctx.strokeStyle = "#f59e0b";
+              ctx.lineWidth = 3.5;
+              ctx.lineJoin = "round";
+              ctx.lineCap = "round";
+              ctx.stroke();
+              // Marcadores nas duas quinas do trecho
+              [path[0], path[path.length - 1]].forEach((pt) => {
+                const s = toScreen(pt);
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = "#f59e0b";
+                ctx.fill();
+                ctx.strokeStyle = "#1e293b";
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+              });
+            } else if (sel.tipo === "contorno") {
+              ctx.beginPath();
+              p.points.forEach((pt, k) => {
+                const s = toScreen(pt);
+                if (k === 0) ctx.moveTo(s.x, s.y);
+                else ctx.lineTo(s.x, s.y);
+              });
+              if (p.closed) ctx.closePath();
+              ctx.strokeStyle = "#f59e0b";
+              ctx.lineWidth = 3.5;
+              ctx.lineJoin = "round";
+              ctx.lineCap = "round";
+              ctx.stroke();
+            }
+          });
+        }
+
+        // Destaca o segmento OU o contorno inteiro no modo Medir
         if (laserMeasure.selected && geo === laserGeometry) {
           const sel = laserMeasure.selected;
           const p = geo.polylines[sel.polyIdx];
-          if (p && sel.segIdx >= 0 && sel.segIdx < p.points.length) {
-            const a = toScreen(p.points[sel.segIdx]);
-            const b = toScreen(p.points[(sel.segIdx + 1) % p.points.length]);
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = "#fbbf24";
-            ctx.lineWidth = 3.5;
-            ctx.lineCap = "round";
-            ctx.stroke();
-            [a, b].forEach((pt) => {
+          if (p) {
+            if (sel.cornerSpan) {
+              // Trecho entre quinas: recalcula o path e traça em amarelo
+              const n = p.points.length;
+              const cornersArr = (p.corners || []).slice().sort((a, b) => a - b);
+              const segIdx = sel.segIdx;
+              let prevCorner = null,
+                nextCorner = null;
+              for (let i = 0; i < cornersArr.length; i++) {
+                if (cornersArr[i] <= segIdx) prevCorner = cornersArr[i];
+                if (cornersArr[i] > segIdx) {
+                  nextCorner = cornersArr[i];
+                  break;
+                }
+              }
+              if (nextCorner === null && p.closed)
+                nextCorner = cornersArr[0];
+              if (prevCorner === null)
+                prevCorner = cornersArr[cornersArr.length - 1];
+              if (nextCorner === null && !p.closed) nextCorner = n - 1;
+
+              if (
+                prevCorner !== null &&
+                nextCorner !== null &&
+                nextCorner !== prevCorner
+              ) {
+                const path = [];
+                if (nextCorner > prevCorner) {
+                  for (let k = prevCorner; k <= nextCorner; k++)
+                    path.push(p.points[k]);
+                } else {
+                  for (let k = prevCorner; k < n; k++) path.push(p.points[k]);
+                  for (let k = 0; k <= nextCorner; k++) path.push(p.points[k]);
+                }
+                ctx.beginPath();
+                path.forEach((pt, k) => {
+                  const s = toScreen(pt);
+                  if (k === 0) ctx.moveTo(s.x, s.y);
+                  else ctx.lineTo(s.x, s.y);
+                });
+                ctx.strokeStyle = "#fbbf24";
+                ctx.lineWidth = 3.5;
+                ctx.lineJoin = "round";
+                ctx.lineCap = "round";
+                ctx.stroke();
+                // Marcadores nas duas quinas do trecho
+                [path[0], path[path.length - 1]].forEach((pt) => {
+                  const s = toScreen(pt);
+                  ctx.beginPath();
+                  ctx.arc(s.x, s.y, 5, 0, Math.PI * 2);
+                  ctx.fillStyle = "#fbbf24";
+                  ctx.fill();
+                  ctx.strokeStyle = "#1e293b";
+                  ctx.lineWidth = 1.5;
+                  ctx.stroke();
+                });
+              }
+            } else if (sel.fullContour) {
+              // Contorno inteiro: traça toda a polyline em amarelo grosso
               ctx.beginPath();
-              ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
-              ctx.fillStyle = "#fbbf24";
-              ctx.fill();
-              ctx.strokeStyle = "#1e293b";
-              ctx.lineWidth = 1.5;
+              p.points.forEach((pt, k) => {
+                const s = toScreen(pt);
+                if (k === 0) ctx.moveTo(s.x, s.y);
+                else ctx.lineTo(s.x, s.y);
+              });
+              if (p.closed) ctx.closePath();
+              ctx.strokeStyle = "#fbbf24";
+              ctx.lineWidth = 3.5;
+              ctx.lineJoin = "round";
+              ctx.lineCap = "round";
               ctx.stroke();
-            });
+            } else if (sel.segIdx >= 0 && sel.segIdx < p.points.length) {
+              // Segmento único: só o traço entre dois vértices
+              const a = toScreen(p.points[sel.segIdx]);
+              const b = toScreen(
+                p.points[(sel.segIdx + 1) % p.points.length]
+              );
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.strokeStyle = "#fbbf24";
+              ctx.lineWidth = 3.5;
+              ctx.lineCap = "round";
+              ctx.stroke();
+              [a, b].forEach((pt) => {
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+                ctx.fillStyle = "#fbbf24";
+                ctx.fill();
+                ctx.strokeStyle = "#1e293b";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+              });
+            }
           }
         }
 
@@ -12927,6 +14430,16 @@
       }
 
       function laserGetCutParams(material, espessura, potencia, gas) {
+        // ─── Fatores de correção (no topo, antes de qualquer uso) ───
+        const matFactors = {
+          inox304: 1.0, inox316: 0.9, aluminio5052: 1.8, aluminio6061: 1.6,
+          aco1020: 1.5, aco1045: 1.3, latao: 1.9, cobre: 0.7,
+        };
+        const gasSpeedFactors = { n2: 1.0, o2: 1.6, ar: 1.2, nenhum: 0.9 };
+        const gasPierceFactors = { n2: 1.0, o2: 0.7, ar: 0.85, nenhum: 1.4 };
+        const gasFlowBase = { n2: 12, o2: 10, ar: 8, nenhum: 0 };
+
+        // ─── Tabela base: velocidade (mm/s) para INOX 304 + N₂ ──────
         const base = {
           1:  { 1500: 250, 2000: 300, 3000: 500, 4000: 600, 6000: 700, 8000: 800, 12000: 900 },
           2:  { 1500: 120, 2000: 160, 3000: 300, 4000: 380, 6000: 500, 8000: 600, 12000: 700 },
@@ -12941,48 +14454,248 @@
           20: { 1500: 0,   2000: 0,   3000: 0,   4000: 0,   6000: 0,   8000: 12,  12000: 20 },
           25: { 1500: 0,   2000: 0,   3000: 0,   4000: 0,   6000: 0,   8000: 0,   12000: 12 },
         };
-
+        const chavesPot = [1500, 2000, 3000, 4000, 6000, 8000, 12000];
         const chavesEsp = Object.keys(base).map(Number).sort((a, b) => a - b);
-        let espChave = null,
-          menorDif = Infinity;
-        chavesEsp.forEach((k) => {
-          const dif = Math.abs(k - espessura);
-          if (dif < menorDif) {
-            menorDif = dif;
-            espChave = k;
-          }
-        });
-        if (espChave === null) return null;
 
-        const row = base[espChave];
-        const chavesPot = Object.keys(row).map(Number).sort((a, b) => a - b);
-        let potChave = null,
-          menorDifPot = Infinity;
-        chavesPot.forEach((k) => {
-          const dif = Math.abs(k - potencia);
-          if (dif < menorDifPot) {
-            menorDifPot = dif;
-            potChave = k;
-          }
-        });
-        if (potChave === null || row[potChave] === 0) return null;
-
-        let speed = row[potChave];
-
-        const matFactors = {
-          inox304: 1.0, inox316: 0.9, aluminio5052: 1.8, aluminio6061: 1.6,
-          aco1020: 1.5, aco1045: 1.3, latao: 1.9, cobre: 0.7,
+        // ─── Interpolação log-log ──────────────────────────────────
+        // A relação física velocidade × espessura segue uma lei de
+        // potência (v ∝ 1/t^1.5), então interpolamos em escala
+        // logarítmica. O resultado é coerente: dobrar a espessura
+        // sempre multiplica o tempo pelo mesmo fator.
+        const logLerp = (x, x1, x2, y1, y2) => {
+          if (x1 === x2) return y1;
+          if (x <= x1) return y1;
+          if (x >= x2) return y2;
+          const t = Math.log(x / x1) / Math.log(x2 / x1);
+          return Math.exp(Math.log(y1) * (1 - t) + Math.log(y2) * t);
         };
-        speed *= matFactors[material] || 1.0;
 
-        const gasFactors = { n2: 1.0, o2: 1.6, ar: 1.2, nenhum: 0.9 };
-        speed *= gasFactors[gas] || 1.0;
+        // Interpola em POTÊNCIA dentro de uma linha da tabela
+        const interpolarPotencia = (row, pot) => {
+          const validas = chavesPot.filter((k) => row[k] > 0);
+          if (validas.length === 0) return null;
+          if (pot <= validas[0]) return row[validas[0]];
+          if (pot >= validas[validas.length - 1])
+            return row[validas[validas.length - 1]];
+          for (let i = 0; i < validas.length - 1; i++) {
+            if (pot >= validas[i] && pot <= validas[i + 1]) {
+              return logLerp(
+                pot,
+                validas[i],
+                validas[i + 1],
+                row[validas[i]],
+                row[validas[i + 1]]
+              );
+            }
+          }
+          return null;
+        };
 
-        const pierce = 0.3 + espessura * 0.4;
-        const gasFlow = gas === "nenhum" ? 0 : 12 + espessura * 1.2;
+        // 1. Filtra espessuras que suportam a potência escolhida
+        const espValidas = chavesEsp.filter((e) => {
+          const v = interpolarPotencia(base[e], potencia);
+          return v !== null && v > 0;
+        });
+        if (espValidas.length === 0) return null;
+
+        // 2. Acha as 2 espessuras vizinhas
+        let espA, espB;
+        if (espessura <= espValidas[0]) {
+          espA = espB = espValidas[0];
+        } else if (espessura >= espValidas[espValidas.length - 1]) {
+          espA = espB = espValidas[espValidas.length - 1];
+        } else {
+          espA = espValidas[0];
+          espB = espValidas[espValidas.length - 1];
+          for (let i = 0; i < espValidas.length - 1; i++) {
+            if (espessura >= espValidas[i] && espessura <= espValidas[i + 1]) {
+              espA = espValidas[i];
+              espB = espValidas[i + 1];
+              break;
+            }
+          }
+        }
+
+        // 3. Velocidade bruta em A e B, interpola entre elas
+        const vA = interpolarPotencia(base[espA], potencia);
+        const vB = interpolarPotencia(base[espB], potencia);
+        let speedRaw;
+        if (espA === espB) speedRaw = vA;
+        else speedRaw = logLerp(espessura, espA, espB, vA, vB);
+
+        if (!speedRaw || speedRaw <= 0) return null;
+
+        // 4. Aplica fatores de material e de gás
+        const speed =
+          speedRaw *
+          (matFactors[material] || 1.0) *
+          (gasSpeedFactors[gas] || 1.0);
+
+        // ─── Piercing — lei de potência calibrada ──────────────────
+        // Fórmula antiga (0,3 + t×0,4) subestimava muito chapas grossas.
+        // Nova fórmula: 0,3 + 0,05 × t² × fator_gás
+        //   4 mm  →  0,3 + 0,8    = 1,1 s (antes: 1,9 s)
+        //   8 mm  →  0,3 + 3,2    = 3,5 s (antes: 3,5 s) ✓
+        //   12 mm →  0,3 + 7,2    = 7,5 s (antes: 5,1 s)
+        //   20 mm →  0,3 + 20     = 20,3 s (antes: 8,3 s)
+        const pierceBase = 0.3 + 0.05 * espessura * espessura;
+        const pierce = pierceBase * (gasPierceFactors[gas] || 1.0);
+
+        // ─── Vazão de gás — cresce linearmente com a espessura ─────
+        // N₂: 12 m³/h base + 1,5 por mm de espessura
+        //     4 mm → 18 m³/h,  12 mm → 30 m³/h
+        const gasFlow =
+          gas === "nenhum" ? 0 : (gasFlowBase[gas] || 12) + espessura * 1.5;
 
         return { speed: speed, pierce: pierce, gasFlow: gasFlow };
       }
+
+      // ─── Gera o HTML do aviso de múltiplas peças ────────────────
+      // Inclui a lista de quantidades por peça + o dropdown de
+      // visualização no 2D.
+      function laserClusterWarningHTML(clusters, ativo, quantities) {
+        let html = '<div class="laser-cluster-warning">';
+        html +=
+          '<div class="titulo">Arquivo com ' +
+          clusters.length +
+          " peças separadas</div>";
+        html +=
+          '<div class="texto">Defina as quantidades para orçar o conjunto completo. O cálculo e o 3D somam todas as peças.</div>';
+
+        html += '<div class="laser-quantities-list">';
+        clusters.forEach((c, i) => {
+          const q = (quantities && quantities[i]) || 1;
+          html +=
+            '<div class="laser-quantity-row">' +
+            '<span class="laser-quantity-label">Peça ' +
+            String.fromCharCode(65 + i) +
+            " · " +
+            c.comprimento.toFixed(0) +
+            " mm</span>" +
+            '<input type="number" class="laser-quantity-input" ' +
+            'value="' +
+            q +
+            '" min="1" max="999" step="1" ' +
+            "onchange=\"laserSetClusterQuantity(" +
+            i +
+            ", this.value)\" " +
+            'onclick="event.stopPropagation()" ' +
+            " />" +
+            "</div>";
+        });
+        html += "</div>";
+
+        html += '<div class="texto" style="margin-top: 6px;">Ver no 2D:</div>';
+        html += laserClusterDropdownHTML(clusters, ativo);
+        html += "</div>";
+        return html;
+      }
+
+      // ─── Atualiza a quantidade de um cluster ────────────────────
+      function laserSetClusterQuantity(idx, val) {
+        if (!laserGeometry) return;
+        const q = Math.max(1, Math.min(999, parseInt(val, 10) || 1));
+        if (!laserGeometry.quantities) laserGeometry.quantities = {};
+        laserGeometry.quantities[idx] = q;
+
+        // Reconstrói o 3D se estiver ativo
+        if (laser3D && laser3D.active) {
+          requestAnimationFrame(() => laser3DBuild(laserGeometry));
+        }
+      }
+
+      // ─── Dropdown custom de cluster ────────────────────────────
+      function laserClusterDropdownHTML(clusters, ativo) {
+        let labelAtual;
+        if (ativo >= 0 && clusters[ativo]) {
+          labelAtual =
+            "Peça " +
+            String.fromCharCode(65 + ativo) +
+            " · " +
+            clusters[ativo].numPolylines +
+            " elemento(s)";
+        } else {
+          labelAtual = "Todas (soma)";
+        }
+
+        let html = '<div class="filtro-dropdown laser-cluster-dd-wrap">';
+        html +=
+          '<button type="button" class="laser-cluster-dd-btn" id="laserClusterBtn" onclick="laserToggleClusterDropdown(event)">';
+        html += '<span id="laserClusterLabel">' + labelAtual + "</span>";
+        html +=
+          '<svg class="filtro-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+        html += "</button>";
+        html +=
+          '<div class="laser-cluster-dd-panel" id="laserClusterPanel">';
+
+        clusters.forEach((c, i) => {
+          const sel = i === ativo ? " selected" : "";
+          html +=
+            '<div class="laser-cluster-dd-item' +
+            sel +
+            '" data-value="' +
+            i +
+            '" onclick="laserSelecionarCluster(' +
+            i +
+            ')">' +
+            "Peça " +
+            String.fromCharCode(65 + i) +
+            " · " +
+            c.numPolylines +
+            " elemento(s) · " +
+            c.comprimento.toFixed(0) +
+            " mm · " +
+            c.bbox.width.toFixed(0) +
+            "×" +
+            c.bbox.height.toFixed(0) +
+            " mm" +
+            "</div>";
+        });
+
+        const selTodos = ativo === -1 ? " selected" : "";
+        html +=
+          '<div class="laser-cluster-dd-item' +
+          selTodos +
+          '" data-value="-1" onclick="laserSelecionarCluster(-1)">' +
+          "Todas (soma)" +
+          "</div>";
+
+        html += "</div></div>";
+        return html;
+      }
+
+      function laserToggleClusterDropdown(e) {
+        if (e) e.stopPropagation();
+        const panel = document.getElementById("laserClusterPanel");
+        const btn = document.getElementById("laserClusterBtn");
+        if (!panel || !btn) return;
+        const abrir = !panel.classList.contains("open");
+        panel.classList.toggle("open", abrir);
+        btn.classList.toggle("open", abrir);
+      }
+
+      function laserFecharClusterDropdown() {
+        const panel = document.getElementById("laserClusterPanel");
+        const btn = document.getElementById("laserClusterBtn");
+        if (panel) panel.classList.remove("open");
+        if (btn) btn.classList.remove("open");
+      }
+
+      function laserSelecionarCluster(idx) {
+        laserFecharClusterDropdown();
+        if (!laserGeometry) return;
+        laserAplicarCluster(laserGeometry, idx);
+        // Reconstrói o infoBox com o dropdown atualizado
+        laserTrocarCluster(idx);
+      }
+
+      // Fecha o dropdown ao clicar fora
+      document.addEventListener("click", function (e) {
+        const wrap = document.querySelector(".laser-cluster-dd-wrap");
+        if (wrap && !wrap.contains(e.target)) {
+          laserFecharClusterDropdown();
+        }
+      });
 
       function laserTrocarCluster(valor) {
         if (!laserGeometry) return;
@@ -13006,43 +14719,16 @@
           g.bbox.height.toFixed(1) +
           " mm</strong>";
         if (g.clusters && g.clusters.length > 1) {
-          infoBox.innerHTML +=
-            '<div style="margin-top:12px; padding:10px 12px; background: rgba(251, 191, 36, 0.12); border-left: 3px solid #f59e0b; border-radius:8px;">' +
-            '<div style="font-size:0.8rem; font-weight:700; color:#b45309; margin-bottom:6px;">' +
-            "⚠️ Este DXF contém " +
-            g.clusters.length +
-            " desenhos separados espacialmente.</div>" +
-            '<div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">' +
-            "Selecione qual você quer orçar:</div>" +
-            '<select id="laserClusterSelect" class="laser-select" onchange="laserTrocarCluster(this.value)" style="font-size:0.85rem; padding:8px 10px;">' +
-            g.clusters
-              .map(
-                (c, i) =>
-                  '<option value="' +
-                  i +
-                  '"' +
-                  (i === g.clusterAtivo ? " selected" : "") +
-                  ">Peça " +
-                  String.fromCharCode(65 + i) +
-                  " — " +
-                  c.numPolylines +
-                  " elemento(s) · " +
-                  c.comprimento.toFixed(0) +
-                  " mm · " +
-                  c.bbox.width.toFixed(0) +
-                  "×" +
-                  c.bbox.height.toFixed(0) +
-                  " mm" +
-                  "</option>"
-              )
-              .join("") +
-            '<option value="-1"' +
-            (g.clusterAtivo === -1 ? " selected" : "") +
-            ">Todas (soma)</option>" +
-            "</select>" +
-            "</div>";
+          infoBox.innerHTML += laserClusterWarningHTML(
+            g.clusters,
+            g.clusterAtivo,
+            g.quantities || {}
+          );
         }
-        requestAnimationFrame(() => laserDrawCanvas(laserGeometry));
+        requestAnimationFrame(() => {
+          laserDrawCanvas(laserGeometry);
+          if (laser3D.active) laser3DBuild(laserGeometry);
+        });
       }
 
       function laserProcessar() {
@@ -13052,6 +14738,85 @@
         }
 
         const d = laserGeometry;
+
+        // Se o usuário mudou a chapa, recalcula o packing antes de orçar
+        (function garantirPackingAtualizado() {
+          try {
+            const sheetKey =
+              (document.getElementById("laserSheetSize") || {}).value ||
+              "1500x3000";
+            const sheetDef =
+              LASER_SHEETS[sheetKey] || LASER_SHEETS["1500x3000"];
+
+            const instances = [];
+            const qtds = d.quantities || {};
+            if (d.clusters && d.clusters.length > 1) {
+              d.clusters.forEach((cluster, cIdx) => {
+                const q = Math.max(1, parseInt(qtds[cIdx], 10) || 1);
+                for (let copy = 0; copy < q; copy++) {
+                  const polylines = cluster.indices
+                    .map((i) => d.polylines[i])
+                    .filter(Boolean)
+                    .map((p) => ({
+                      closed: p.closed,
+                      nesting:
+                        typeof p.nesting === "number" ? p.nesting : 0,
+                      points: p.points.map((pt) => ({ x: pt.x, y: pt.y })),
+                    }));
+                  if (polylines.length > 0) {
+                    instances.push({ polylines });
+                  }
+                }
+              });
+            } else {
+              const q = Math.max(1, parseInt(qtds[0], 10) || 1);
+              for (let copy = 0; copy < q; copy++) {
+                instances.push({
+                  polylines: d.polylines.map((p) => ({
+                    closed: p.closed,
+                    nesting:
+                      typeof p.nesting === "number" ? p.nesting : 0,
+                    points: p.points.map((pt) => ({ x: pt.x, y: pt.y })),
+                  })),
+                });
+              }
+            }
+
+            instances.forEach((inst) => {
+              let mnX = Infinity,
+                mxX = -Infinity,
+                mnY = Infinity,
+                mxY = -Infinity;
+              inst.polylines.forEach((p) =>
+                p.points.forEach((pt) => {
+                  if (pt.x < mnX) mnX = pt.x;
+                  if (pt.x > mxX) mxX = pt.x;
+                  if (pt.y < mnY) mnY = pt.y;
+                  if (pt.y > mxY) mxY = pt.y;
+                })
+              );
+              inst.bbox = {
+                minX: mnX,
+                maxX: mxX,
+                minY: mnY,
+                maxY: mxY,
+                width: mxX - mnX,
+                height: mxY - mnY,
+              };
+            });
+
+            const sheets = laserPackSheets(
+              instances,
+              sheetDef.w,
+              sheetDef.h
+            );
+            d.numSheets = sheets.length;
+            d._sheetDef = sheetDef;
+          } catch (e) {
+            console.warn("[LASER] Falha ao recalcular packing:", e);
+            d.numSheets = d.numSheets || 1;
+          }
+        })();
         const material = document.getElementById("laserMaterial").value;
         const espessura =
           parseFloat(document.getElementById("laserThickness").value) || 4;
@@ -13081,10 +14846,38 @@
           return;
         }
 
-        const tempoCorteS = d.comprimento / params.speed;
-        const tempoPiercingS = d.numFuros * params.pierce;
+        // ─── Soma ponderada pelas quantidades ──────────────────────
+        // O usuário pode orçar um kit (ex: 3× Peça A + 2× Peça B).
+        // Somamos comprimento e furos de todas as peças × qtd.
+        let comprimentoTotal = 0;
+        let furosTotal = 0;
+        let totalPecas = 0;
+        const qtds = d.quantities || {};
+
+        if (d.clusters && d.clusters.length > 1) {
+          d.clusters.forEach((c, i) => {
+            const q = Math.max(1, parseInt(qtds[i], 10) || 1);
+            comprimentoTotal += c.comprimento * q;
+            furosTotal += c.numFuros * q;
+            totalPecas += q;
+          });
+        } else {
+          const q = Math.max(1, parseInt(qtds[0], 10) || 1);
+          comprimentoTotal = d.comprimento * q;
+          furosTotal = d.numFuros * q;
+          totalPecas = q;
+        }
+
+        const tempoCorteS = comprimentoTotal / params.speed;
+        const tempoPiercingS = furosTotal * params.pierce;
         const tempoEfetivoS = tempoCorteS + tempoPiercingS;
-        const tempoSetupS = 60;
+
+        // ─── Setup × número de chapas ──────────────────────────────
+        // Cada chapa consome 60s de setup (posicionar, alinhar, iniciar).
+        // Se as peças cabem numa só chapa, é um setup. Se espalham por
+        // N chapas, são N setups.
+        const numSheets = laserGeometry.numSheets || 1;
+        const tempoSetupS = 60 * numSheets;
         const tempoTotalS = tempoEfetivoS + tempoSetupS;
         const tempoTotalH = tempoTotalS / 3600;
 
@@ -13100,9 +14893,9 @@
           custoMaquina + custoGas + custoEnergia + custoConsumiveis;
         const custoTotal = custoDireto * (1 + marginPct / 100);
 
-        laserRenderResults({
-          comprimento: d.comprimento,
-          numFuros: d.numFuros,
+        const resultados = {
+          comprimento: comprimentoTotal,
+          numFuros: furosTotal,
           tempoCorteS: tempoCorteS,
           tempoPiercingS: tempoPiercingS,
           tempoSetupS: tempoSetupS,
@@ -13114,9 +14907,338 @@
           custoDireto: custoDireto,
           custoTotal: custoTotal,
           params: params,
-        });
+          totalPecas: totalPecas,
+          numSheets: numSheets,
+          sheetDef: laserGeometry._sheetDef,
+        };
+
+        laserRenderResults(resultados);
+
+        // Gera e renderiza as sugestões inteligentes
+        const quotedPrice =
+          parseFloat(document.getElementById("laserQuotedPrice").value) || 0;
+
+        const inputs = {
+          material: material,
+          espessura: espessura,
+          potencia: potencia,
+          gas: gas,
+          marginPct: marginPct,
+          quotedPrice: quotedPrice,
+        };
+
+        laserRenderSugestoes(laserGerarSugestoes(resultados, inputs));
 
         showToast("✅ Corte processado!", true);
+      }
+
+      // ─── Dicionários auxiliares ─────────────────────────────────
+      const LASER_MAT_NOMES = {
+        inox304: "Aço Inox 304",
+        inox316: "Aço Inox 316L",
+        aluminio5052: "Alumínio 5052",
+        aluminio6061: "Alumínio 6061",
+        aco1020: "Aço Carbono 1020",
+        aco1045: "Aço Carbono 1045",
+        latao: "Latão",
+        cobre: "Cobre",
+      };
+
+      const LASER_GAS_NOMES = {
+        n2: "Nitrogênio (N₂)",
+        o2: "Oxigênio (O₂)",
+        ar: "Ar Comprimido",
+        nenhum: "Nenhum",
+      };
+
+      // Potência mínima recomendada por material + espessura
+      // (tabela de referência de mercado)
+      function laserPotenciaIdeal(material, espessura) {
+        const tab = {
+          inox304:      [[2, 1500], [4, 3000], [6, 4000], [10, 6000], [16, 8000], [25, 12000]],
+          inox316:      [[2, 2000], [4, 3000], [6, 6000], [10, 8000], [16, 12000]],
+          aluminio5052: [[2, 1500], [4, 3000], [6, 4000], [10, 6000], [16, 8000], [25, 12000]],
+          aluminio6061: [[2, 1500], [4, 3000], [6, 4000], [10, 6000], [16, 8000]],
+          aco1020:      [[1, 1500], [3, 2000], [6, 3000], [10, 4000], [16, 6000], [25, 12000]],
+          aco1045:      [[1, 1500], [3, 3000], [6, 4000], [10, 6000], [16, 8000]],
+          latao:        [[2, 2000], [4, 3000], [6, 4000], [10, 6000]],
+          cobre:        [[1, 2000], [2, 3000], [4, 6000], [6, 8000]],
+        };
+        const linhas = tab[material] || tab.inox304;
+        for (let i = 0; i < linhas.length; i++) {
+          if (espessura <= linhas[i][0]) return linhas[i][1];
+        }
+        return linhas[linhas.length - 1][1];
+      }
+
+      // Gás ideal por material + espessura
+      function laserGasIdeal(material, espessura) {
+        // Aço carbono → O₂ (velocidade); todos os outros → N₂ (borda limpa)
+        if (material === "aco1020" || material === "aco1045") {
+          return espessura <= 6 ? "o2" : "o2";
+        }
+        return "n2";
+      }
+
+      // ─── Geração das sugestões ──────────────────────────────────
+      function laserGerarSugestoes(r, inputs) {
+        const sugestoes = [];
+        const mat = inputs.material;
+        const esp = inputs.espessura;
+        const pot = inputs.potencia;
+        const gas = inputs.gas;
+
+        // 1. Potência ideal
+        const potIdeal = laserPotenciaIdeal(mat, esp);
+        if (pot < potIdeal) {
+          sugestoes.push({
+            tipo: "danger",
+            icone: "⚡",
+            titulo: "Potência insuficiente",
+            texto:
+              "Para <strong>" +
+              esp +
+              " mm de " +
+              LASER_MAT_NOMES[mat] +
+              "</strong>, a potência mínima recomendada é <strong>" +
+              (potIdeal / 1000).toFixed(potIdeal % 1000 === 0 ? 0 : 1) +
+              " kW</strong>. Você configurou " +
+              (pot / 1000).toFixed(pot % 1000 === 0 ? 0 : 1) +
+              " kW. O cálculo pode estar subestimado — peça ao fornecedor para confirmar a máquina dele.",
+          });
+        } else if (pot >= potIdeal * 2 && pot >= 6000) {
+          sugestoes.push({
+            tipo: "tip",
+            icone: "⚡",
+            titulo: "Máquina superdimensionada para esta espessura",
+            texto:
+              "Uma máquina de <strong>" +
+              (potIdeal / 1000).toFixed(potIdeal % 1000 === 0 ? 0 : 1) +
+              " kW</strong> já cortaria essa peça. Sua simulação está com " +
+              (pot / 1000).toFixed(pot % 1000 === 0 ? 0 : 1) +
+              " kW — o que é normal se o fornecedor tem uma máquina grande e dilui o custo entre várias peças.",
+          });
+        } else if (pot === potIdeal) {
+          sugestoes.push({
+            tipo: "ok",
+            icone: "⚡",
+            titulo: "Potência adequada",
+            texto:
+              "A escolha de <strong>" +
+              (pot / 1000).toFixed(pot % 1000 === 0 ? 0 : 1) +
+              " kW</strong> está alinhada com o recomendado para " +
+              esp +
+              " mm de " +
+              LASER_MAT_NOMES[mat] +
+              ".",
+          });
+        }
+
+        // 2. Gás recomendado
+        const gasIdeal = laserGasIdeal(mat, esp);
+        if (gas !== gasIdeal) {
+          const extra = [];
+          if (mat === "aco1020" || mat === "aco1045") {
+            extra.push(
+              "O <strong>O₂</strong> reage com o ferro e corta até 3× mais rápido em aço carbono."
+            );
+            extra.push(
+              "O <strong>N₂</strong> (que você escolheu) gera borda limpa, mas mais lento."
+            );
+          } else {
+            extra.push(
+              "O <strong>N₂</strong> é praticamente obrigatório para " +
+                LASER_MAT_NOMES[mat] +
+                " com borda limpa."
+            );
+          }
+          sugestoes.push({
+            tipo: "info",
+            icone: "💨",
+            titulo:
+              "Gás recomendado: " +
+              LASER_GAS_NOMES[gasIdeal] +
+              " (você escolheu " +
+              LASER_GAS_NOMES[gas] +
+              ")",
+            texto: extra.join(" "),
+          });
+        } else {
+          sugestoes.push({
+            tipo: "ok",
+            icone: "💨",
+            titulo: "Gás adequado: " + LASER_GAS_NOMES[gas],
+            texto:
+              "Escolha correta para " +
+              LASER_MAT_NOMES[mat] +
+              " com " +
+              esp +
+              " mm.",
+          });
+        }
+
+        // 3. Alerta de lote (setup domina o tempo)
+        const razaoSetup = r.tempoSetupS / r.tempoTotalS;
+        if (razaoSetup > 0.3 && r.tempoTotalS < 200) {
+          // Quantas peças diluiriam o setup para ~10%?
+          const pecasPara10 = Math.ceil(
+            r.tempoSetupS / (0.1 * (r.tempoTotalS - r.tempoSetupS))
+          );
+          const tempoPorPeca =
+            (r.tempoTotalS + (pecasPara10 - 1) * (r.tempoTotalS - r.tempoSetupS)) /
+            pecasPara10;
+          sugestoes.push({
+            tipo: "tip",
+            icone: "📦",
+            titulo:
+              "Peça pequena — o setup representa " +
+              (razaoSetup * 100).toFixed(0) +
+              "% do tempo",
+            texto:
+              "Produzir em lote de <strong>" +
+              pecasPara10 +
+              " peças</strong> diluiria o setup para ~10% do tempo total. O tempo médio por peça cairia de <strong>" +
+              r.tempoTotalS.toFixed(0) +
+              " s</strong> para <strong>" +
+              tempoPorPeca.toFixed(0) +
+              " s</strong>.",
+          });
+        }
+
+        // 4. Densidade de furos (piercing domina)
+        if (r.numFuros > 0 && r.tempoCorteS > 0) {
+          const razaoPiercing = r.tempoPiercingS / (r.tempoCorteS + r.tempoPiercingS);
+          if (razaoPiercing > 0.4) {
+            sugestoes.push({
+              tipo: "info",
+              icone: "🔢",
+              titulo:
+                "Alta densidade de furos (" +
+                (razaoPiercing * 100).toFixed(0) +
+                "% do tempo efetivo)",
+              texto:
+                r.numFuros +
+                " furos consomem <strong>" +
+                r.tempoPiercingS.toFixed(1) +
+                " s</strong> só em piercing. Se o projeto permite, aumentar o diâmetro dos furos ou reduzir a espessura diminui bastante o tempo total.",
+            });
+          }
+        }
+
+        // 5. Margem implícita do fornecedor (se preço cotado)
+        if (inputs.quotedPrice && inputs.quotedPrice > 0) {
+          const cotado = inputs.quotedPrice;
+          const margemImplicita =
+            (cotado / r.custoDireto - 1) * 100;
+          const diff = cotado - r.custoTotal;
+          const diffPct = (cotado / r.custoTotal - 1) * 100;
+
+          const fmtBRL = (v) =>
+            v.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            });
+
+          let tipo = "info";
+          let titulo = "Comparação com preço cotado";
+          let texto = "";
+
+          if (margemImplicita < 15) {
+            tipo = "ok";
+            texto =
+              "O fornecedor está cobrando <strong>" +
+              fmtBRL(cotado) +
+              "</strong> contra um custo direto calculado de <strong>" +
+              fmtBRL(r.custoDireto) +
+              "</strong>. A margem implícita é de apenas <strong>" +
+              margemImplicita.toFixed(1) +
+              "%</strong> — preço justo, sem espaço grande para negociar.";
+          } else if (margemImplicita < 40) {
+            tipo = "info";
+            texto =
+              "O fornecedor está cobrando <strong>" +
+              fmtBRL(cotado) +
+              "</strong> contra um custo direto calculado de <strong>" +
+              fmtBRL(r.custoDireto) +
+              "</strong>. A margem implícita é de <strong>" +
+              margemImplicita.toFixed(1) +
+              "%</strong>. Diferença de " +
+              fmtBRL(diff) +
+              " (" +
+              diffPct.toFixed(0) +
+              "% acima do nosso cálculo com margem de " +
+              inputs.marginPct +
+              "%). Há espaço para negociação.";
+          } else if (margemImplicita < 80) {
+            tipo = "tip";
+            texto =
+              "O fornecedor está cobrando <strong>" +
+              fmtBRL(cotado) +
+              "</strong> contra um custo direto de <strong>" +
+              fmtBRL(r.custoDireto) +
+              "</strong>. A margem implícita é de <strong>" +
+              margemImplicita.toFixed(1) +
+              "%</strong> — acima do padrão de mercado (20–50%). Vale tentar desconto de 20–30%.";
+          } else {
+            tipo = "warning";
+            texto =
+              "⚠️ O fornecedor está cobrando <strong>" +
+              fmtBRL(cotado) +
+              "</strong> contra um custo direto de <strong>" +
+              fmtBRL(r.custoDireto) +
+              "</strong>. A margem implícita é de <strong>" +
+              margemImplicita.toFixed(1) +
+              "%</strong> — muito acima do padrão. Peça justificativa detalhada ou busque alternativa.";
+          }
+
+          sugestoes.push({
+            tipo: tipo,
+            icone: "💸",
+            titulo: titulo,
+            texto: texto,
+          });
+        }
+
+        return sugestoes;
+      }
+
+      // ─── Renderização das sugestões ─────────────────────────────
+      function laserRenderSugestoes(sugestoes) {
+        const area = document.getElementById("laserSuggestionsArea");
+        if (!area) return;
+
+        if (!sugestoes || sugestoes.length === 0) {
+          area.innerHTML = "";
+          return;
+        }
+
+        let html = '<div class="laser-suggestions-panel">';
+        html += "<h2>Sugestões para este orçamento</h2>";
+        html += '<div class="laser-suggestions-list">';
+
+        sugestoes.forEach((s) => {
+          html +=
+            '<div class="laser-suggestion tipo-' +
+            s.tipo +
+            '">' +
+            '<span class="laser-suggestion-icon">' +
+            s.icone +
+            "</span>" +
+            '<div class="laser-suggestion-body">' +
+            '<div class="laser-suggestion-title">' +
+            s.titulo +
+            "</div>" +
+            '<div class="laser-suggestion-text">' +
+            s.texto +
+            "</div>" +
+            "</div>" +
+            "</div>";
+        });
+
+        html += "</div></div>";
+        area.innerHTML = html;
       }
 
       function laserRenderResults(r) {
@@ -13167,6 +15289,18 @@
           '      <div class="laser-result-row"><strong>Velocidade de corte</strong><span>' +
           fmtNum(r.params.speed, 1) +
           " mm/s</span></div>" +
+          (r.numSheets
+            ? '      <div class="laser-result-row"><strong>Chapas necessárias</strong><span>' +
+              r.numSheets +
+              (r.sheetDef
+                ? " · " +
+                  r.sheetDef.w +
+                  "×" +
+                  r.sheetDef.h +
+                  " mm"
+                : "") +
+              "</span></div>"
+            : "") +
           "    </div>" +
 
           // ------- Card: Tempo -------
@@ -13227,6 +15361,1169 @@
           "  </div>" +
 
           "</div>";
+      }
+
+      /* ============================================================
+         SIMULAÇÃO 3D DO CORTE — cabeça de laser percorrendo o contorno
+         ============================================================ */
+      const laser3D = {
+        scene: null,
+        camera: null,
+        renderer: null,
+        controls: null,
+        sheetMesh: null,
+        trailLine: null,
+        trailGeom: null,
+        laserHead: null,
+        pathPoints: [],
+        cumLengths: [],
+        segmentLengths: [],
+        totalLength: 0,
+        progress: 0,
+        playing: false,
+        speed: 1,
+        rafId: null,
+        initialized: false,
+        active: false,
+        lastTime: 0,
+        userData: [],
+      };
+
+      function laser3DInit() {
+        if (laser3D.initialized) return;
+        const container = document.getElementById("laserCanvas3D");
+        if (!container) return;
+
+        const w = container.clientWidth || 800;
+        const h = container.clientHeight || 400;
+
+        laser3D.scene = new THREE.Scene();
+        laser3D.scene.background = new THREE.Color(0x0a0a0b);
+
+        laser3D.camera = new THREE.PerspectiveCamera(45, w / h, 0.001, 100);
+        laser3D.camera.position.set(0.8, 1.0, 0.8);
+
+        laser3D.renderer = new THREE.WebGLRenderer({
+          antialias: true,
+          alpha: false,
+        });
+        laser3D.renderer.setSize(w, h);
+        laser3D.renderer.setPixelRatio(
+          Math.min(window.devicePixelRatio || 1, 2)
+        );
+        container.appendChild(laser3D.renderer.domElement);
+
+        laser3D.controls = new THREE.OrbitControls(
+          laser3D.camera,
+          laser3D.renderer.domElement
+        );
+        laser3D.controls.enableDamping = true;
+        laser3D.controls.dampingFactor = 0.08;
+        laser3D.controls.maxPolarAngle = Math.PI / 2.05;
+
+        // Iluminação
+        const amb = new THREE.AmbientLight(0xffffff, 0.45);
+        laser3D.scene.add(amb);
+        const key = new THREE.DirectionalLight(0xffffff, 1.0);
+        key.position.set(2, 4, 2);
+        laser3D.scene.add(key);
+        const fill = new THREE.DirectionalLight(0xffffff, 0.35);
+        fill.position.set(-2, 1, -2);
+        laser3D.scene.add(fill);
+
+        // Grid de chão sutil
+        const gridSize = 20;
+        const grid = new THREE.GridHelper(
+          gridSize,
+          gridSize * 10,
+          0x1f2937,
+          0x111827
+        );
+        grid.position.y = -0.01;
+        grid.userData.laser3d = true;
+        laser3D.scene.add(grid);
+
+        // Cursor grab/grabbing — funciona com botão esquerdo E direito.
+        // Pointer events capturam os dois botões por padrão.
+        const c3d = document.getElementById("laserCanvas3D");
+        if (c3d) {
+          const addGrab = () => c3d.classList.add("dragging");
+          const removeGrab = () => c3d.classList.remove("dragging");
+          c3d.addEventListener("pointerdown", addGrab);
+          c3d.addEventListener("pointerup", removeGrab);
+          c3d.addEventListener("pointerleave", removeGrab);
+          c3d.addEventListener("pointercancel", removeGrab);
+          // Impede menu de contexto ao arrastar com botão direito
+          c3d.addEventListener("contextmenu", (e) => e.preventDefault());
+        }
+
+        laser3D.initialized = true;
+
+        window.addEventListener("resize", laser3DResize);
+      }
+
+      // ─── Ordenação de cortes para a animação ─────────────────────
+      // Regras:
+      //   1. Se há múltiplos clusters e o usuário escolheu "Todas",
+      //      processa um cluster inteiro antes de passar para o próximo.
+      //   2. Dentro de cada cluster, o contorno de maior área (peça
+      //      externa) vem primeiro.
+      //   3. Os demais contornos são ordenados por proximidade
+      //      (nearest-neighbor), evitando zigue-zague.
+      function laser3DOrdenarCortes(polylines, geoOriginal, applyNesting) {
+        if (!polylines || polylines.length === 0) return polylines;
+
+        // Área de cada polyline (usamos bbox se não houver `area`)
+        const areaOf = (p) => {
+          if (typeof p.area === "number" && Math.abs(p.area) > 0) {
+            return Math.abs(p.area);
+          }
+          let mnX = Infinity,
+            mxX = -Infinity,
+            mnY = Infinity,
+            mxY = -Infinity;
+          p.points.forEach((pt) => {
+            if (pt.x < mnX) mnX = pt.x;
+            if (pt.x > mxX) mxX = pt.x;
+            if (pt.y < mnY) mnY = pt.y;
+            if (pt.y > mxY) mxY = pt.y;
+          });
+          return (mxX - mnX) * (mxY - mnY);
+        };
+
+        // Centroide aproximado
+        const centroidOf = (p) => {
+          if (p.centroid && typeof p.centroid.x === "number")
+            return p.centroid;
+          let sx = 0,
+            sy = 0;
+          p.points.forEach((pt) => {
+            sx += pt.x;
+            sy += pt.y;
+          });
+          return { x: sx / p.points.length, y: sy / p.points.length };
+        };
+
+        // Se há múltiplos clusters e o usuário não escolheu um específico,
+        // agrupa por cluster. Ordem dos clusters = ordem em geoOriginal.clusters.
+        let grupos;
+        if (
+          !applyNesting &&
+          geoOriginal.clusters &&
+          geoOriginal.clusters.length > 1
+        ) {
+          // Já veio de um cluster específico — só um grupo
+          grupos = [polylines];
+        } else if (
+          applyNesting &&
+          geoOriginal.clusters &&
+          geoOriginal.clusters.length > 1
+        ) {
+          // Precisamos remapear índices após nesting. Como o nesting
+          // só muda coordenadas (não reordena), os índices continuam
+          // válidos dentro de cada cluster.
+          grupos = geoOriginal.clusters.map((c) =>
+            c.indices.map((i) => polylines[i]).filter(Boolean)
+          );
+        } else {
+          grupos = [polylines];
+        }
+
+        const ordenado = [];
+        grupos.forEach((grupo) => {
+          if (grupo.length === 0) return;
+
+          // 1. Contorno externo = maior área
+          const idxMaior = grupo.reduce(
+            (best, cur, i, arr) =>
+              areaOf(cur) > areaOf(arr[best]) ? i : best,
+            0
+          );
+          const primeira = grupo[idxMaior];
+          ordenado.push(primeira);
+
+          const restantes = grupo.filter((_, i) => i !== idxMaior);
+
+          // 2. Nearest-neighbor: do fim da polyline atual para o
+          //    início da próxima mais próxima
+          let ultimoPonto =
+            primeira.points[primeira.points.length - 1] || primeira.points[0];
+
+          while (restantes.length > 0) {
+            let melhorIdx = 0;
+            let melhorDist = Infinity;
+            restantes.forEach((p, i) => {
+              const c = centroidOf(p);
+              const d = Math.hypot(
+                c.x - ultimoPonto.x,
+                c.y - ultimoPonto.y
+              );
+              if (d < melhorDist) {
+                melhorDist = d;
+                melhorIdx = i;
+              }
+            });
+            const escolhida = restantes.splice(melhorIdx, 1)[0];
+            ordenado.push(escolhida);
+            ultimoPonto =
+              escolhida.points[escolhida.points.length - 1] ||
+              escolhida.points[0];
+          }
+        });
+
+        return ordenado;
+      }
+
+      // ─── Configuração de chapas ────────────────────────────────
+      const LASER_SHEETS = {
+        "1000x2000": { w: 1000, h: 2000 },
+        "1250x2500": { w: 1250, h: 2500 },
+        "1500x3000": { w: 1500, h: 3000 },
+        "2000x4000": { w: 2000, h: 4000 },
+      };
+      const SHEET_MARGIN = 8; // borda de segurança (mm)
+      const SHEET_GAP = 6;    // espaçamento entre peças (mm)
+            // Lê margem e gap dos inputs da sidebar. Se os campos não existirem
+      // por algum motivo, cai nos padrões seguros (15 mm / 10 mm).
+      function laserGetSheetSpacing() {
+        const mEl = document.getElementById("laserSheetMargin");
+        const gEl = document.getElementById("laserSheetGap");
+        const m = mEl ? parseFloat(mEl.value) : 15;
+        const g = gEl ? parseFloat(gEl.value) : 10;
+        return {
+          margin: isFinite(m) && m >= 0 ? m : 15,
+          gap: isFinite(g) && g >= 0 ? g : 10,
+        };
+      }
+
+          // ─── Aplica offset + (opcional) rotação 90° a uma instância ──
+      // IMPORTANTE: sempre atualiza inst.bbox depois de mover, para que
+      // as próximas decisões de empacotamento usem as coordenadas reais.
+      function laserAplicarOffsetInstancia(inst, offsetX, offsetY, rotacionar) {
+        const bb = inst.bbox;
+        const w0 = bb.maxX - bb.minX;
+        const h0 = bb.maxY - bb.minY;
+
+        if (rotacionar) {
+          // Rotação 90° horário em torno do canto (minX, minY), depois
+          // traduz para (offsetX, offsetY). A nova bbox tem largura =
+          // altura original e altura = largura original.
+          inst.polylines.forEach((p) => {
+            p.points = p.points.map((pt) => ({
+              x: pt.y - bb.minY + offsetX,
+              y: bb.maxX - pt.x + offsetY,
+            }));
+          });
+          inst.bbox = {
+            minX: offsetX,
+            minY: offsetY,
+            maxX: offsetX + h0,
+            maxY: offsetY + w0,
+            width: h0,
+            height: w0,
+          };
+        } else {
+          const dx = offsetX - bb.minX;
+          const dy = offsetY - bb.minY;
+          inst.polylines.forEach((p) => {
+            p.points = p.points.map((pt) => ({
+              x: pt.x + dx,
+              y: pt.y + dy,
+            }));
+          });
+          inst.bbox = {
+            minX: offsetX,
+            minY: offsetY,
+            maxX: offsetX + w0,
+            maxY: offsetY + h0,
+            width: w0,
+            height: h0,
+          };
+        }
+        inst._rotacionado = !!rotacionar;
+      }
+
+      // ─── Bottom-Left Fill: acha a posição mais baixa/esquerda ─────
+      // Percorre combinações de (Y, X) — sempre de baixo para cima e da
+      // esquerda para a direita — e devolve a primeira onde a caixa
+      // (w, h) caiba sem sobrepor nenhuma peça já colocada. Se nada
+      // couber, devolve null (nova chapa).
+      function laserAcharPosicaoBLF(ocupados, w, h, usableW, usableH, gap) {
+        // Candidatos: canto útil (0,0) + bordas direitas/superiores
+        // das peças já colocadas. Esse conjunto sempre contém a posição
+        // ótima para BLF.
+        const xs = new Set([0]);
+        const ys = new Set([0]);
+        ocupados.forEach((o) => {
+          xs.add(o.x + o.w + gap);
+          ys.add(o.y + o.h + gap);
+        });
+
+        const xsArr = Array.from(xs).sort((a, b) => a - b);
+        const ysArr = Array.from(ys).sort((a, b) => a - b);
+
+        for (let yi = 0; yi < ysArr.length; yi++) {
+          const y = ysArr[yi];
+          if (y + h > usableH) continue;
+          for (let xi = 0; xi < xsArr.length; xi++) {
+            const x = xsArr[xi];
+            if (x + w > usableW) continue;
+
+            // Colisão com bbox expandida por `gap`
+            let colide = false;
+            for (let k = 0; k < ocupados.length; k++) {
+              const o = ocupados[k];
+              if (
+                !(
+                  x >= o.x + o.w + gap ||
+                  x + w + gap <= o.x ||
+                  y >= o.y + o.h + gap ||
+                  y + h + gap <= o.y
+                )
+              ) {
+                colide = true;
+                break;
+              }
+            }
+            if (!colide) return { x: x, y: y };
+          }
+        }
+        return null;
+      }
+
+      // ─── Empacota instâncias em chapas (Bottom-Left Fill, SEM rotação) ──
+      //
+      // Algoritmo:
+      //   1. Ordena TODAS as peças por área decrescente (maior primeiro).
+      //   2. Para cada peça, tenta achar uma posição BLF na chapa ATUAL.
+      //   3. Se não achar, tenta nas chapas ANTERIORES.
+      //   4. Se ainda não achou, abre uma chapa nova.
+      //   5. NUNCA rotaciona.
+      //
+      // Margem e gap vêm dos inputs da sidebar (padrão: 15 mm / 10 mm).
+      function laserPackSheets(instances, sheetW, sheetH) {
+        const sheets = [];
+        const espacamento = laserGetSheetSpacing();
+        const MARGEM = espacamento.margin;
+        const GAP = espacamento.gap;
+
+        const usableW = sheetW - MARGEM * 2;
+        const usableH = sheetH - MARGEM * 2;
+
+        // ── 1. Ordena por área decrescente ───────────────────
+        const listaFinal = instances.slice().sort((a, b) => {
+          const areaA = a.bbox.width * a.bbox.height;
+          const areaB = b.bbox.width * b.bbox.height;
+          return areaB - areaA;
+        });
+
+        // Cria uma chapa nova vazia
+        const novaChapa = () => ({ parts: [], ocupados: [] });
+        sheets.push(novaChapa());
+
+        listaFinal.forEach((inst) => {
+          const w = inst.bbox.width;
+          const h = inst.bbox.height;
+
+          // Peça maior que a chapa útil → marca e ignora
+          if (w > usableW || h > usableH) {
+            inst.oversized = true;
+            return;
+          }
+
+          // ── 2. Tenta achar posição na chapa atual ────────
+          let chapaEscolhida = sheets.length - 1;
+          let pos = laserAcharPosicaoBLF(
+            sheets[chapaEscolhida].ocupados,
+            w,
+            h,
+            usableW,
+            usableH,
+            GAP
+          );
+
+          // ── 3. Tenta nas chapas anteriores ───────────────
+          if (!pos) {
+            for (let s = 0; s < sheets.length - 1; s++) {
+              const p = laserAcharPosicaoBLF(
+                sheets[s].ocupados,
+                w,
+                h,
+                usableW,
+                usableH,
+                GAP
+              );
+              if (p) {
+                chapaEscolhida = s;
+                pos = p;
+                break;
+              }
+            }
+          }
+
+          // ── 4. Nenhuma chapa serve → abre nova ───────────
+          if (!pos) {
+            sheets.push(novaChapa());
+            chapaEscolhida = sheets.length - 1;
+            pos = { x: 0, y: 0 };
+          }
+
+          // ── 5. Aplica offset (SEM rotação) ────────────────
+          laserAplicarOffsetInstancia(
+            inst,
+            MARGEM + pos.x,
+            MARGEM + pos.y,
+            false
+          );
+
+          inst.sheetIndex = chapaEscolhida;
+          sheets[chapaEscolhida].parts.push(inst);
+          sheets[chapaEscolhida].ocupados.push({
+            x: pos.x,
+            y: pos.y,
+            w: w,
+            h: h,
+          });
+        });
+
+        return sheets;
+      }
+
+
+  
+      // ─── Ordena cortes dentro de uma chapa (padrão da indústria) ──
+      //
+      // Regras aplicadas, na ordem de prioridade:
+      //
+      //   1. FUROS PRIMEIRO, contorno externo por último.
+      //      Implementado pela ordenação decrescente de nesting:
+      //      nesting=2 (furo dentro de furo) → nesting=1 (furo) →
+      //      nesting=0 (contorno externo). Cortar furos antes do
+      //      contorno externo é padrão porque:
+      //        - a peça permanece presa à chapa enquanto os furos
+      //          são feitos (não desloca, não perde referência)
+      //        - se o contorno externo fosse primeiro, a peça soltaria
+      //          e os furos sairiam fora de posição
+      //
+      //   2. NEAREST-NEIGHBOR dentro do mesmo nível.
+      //      Evita zigue-zague entre furos distantes. Sempre pega
+      //      o furo mais próximo do último ponto atingido.
+      //
+      //   3. DESEMPATE POR POSIÇÃO (Y crescente, depois X crescente).
+      //      Quando há dois candidatos equidistantes, prefere o que
+      //      está "mais acima" (frente de corte natural, de baixo pra
+      //      cima da chapa).
+      function laserOrdenarCortes(polylines) {
+        if (!polylines || polylines.length <= 1) return polylines;
+
+        // Agrupa por nesting
+        const porNivel = {};
+        polylines.forEach((p) => {
+          const n = typeof p.nesting === "number" ? p.nesting : 0;
+          if (!porNivel[n]) porNivel[n] = [];
+          porNivel[n].push(p);
+        });
+
+        // Níveis do mais profundo para o mais raso (furos primeiro)
+        const niveis = Object.keys(porNivel)
+          .map(Number)
+          .sort((a, b) => b - a);
+
+        const resultado = [];
+        niveis.forEach((n) => {
+          const grupo = porNivel[n];
+          if (grupo.length === 1) {
+            resultado.push(grupo[0]);
+            return;
+          }
+
+          const restantes = grupo.slice();
+
+          // ── Ponto de partida do nível ─────────────────────────
+          // Para os furos (nesting > 0), começa pelo que está mais
+          // abaixo na chapa (Y mínimo) — é o mais próximo do ponto
+          // onde o cabeçote costuma estar ao terminar o nível anterior.
+          // Para o contorno externo (nesting = 0), começa pelo ponto
+          // mais próximo do último ponto do nível anterior.
+          let atual;
+          if (resultado.length > 0) {
+            const ultimo = resultado[resultado.length - 1];
+            const ultP = ultimo.points[ultimo.points.length - 1] || ultimo.points[0];
+            let melhorIdx = 0;
+            let melhorDist = Infinity;
+            restantes.forEach((p, i) => {
+              const p0 = p.points[0];
+              const d = Math.hypot(p0.x - ultP.x, p0.y - ultP.y);
+              if (d < melhorDist) {
+                melhorDist = d;
+                melhorIdx = i;
+              }
+            });
+            atual = restantes.splice(melhorIdx, 1)[0];
+          } else {
+            // Primeiro nível do lote — começa pelo Y mínimo, X mínimo
+            let melhorIdx = 0;
+            let melhorY = Infinity;
+            let melhorX = Infinity;
+            restantes.forEach((p, i) => {
+              const p0 = p.points[0];
+              if (p0.y < melhorY || (p0.y === melhorY && p0.x < melhorX)) {
+                melhorY = p0.y;
+                melhorX = p0.x;
+                melhorIdx = i;
+              }
+            });
+            atual = restantes.splice(melhorIdx, 1)[0];
+          }
+          resultado.push(atual);
+
+          // ── Nearest-neighbor com desempate por posição ────────
+          let ultimoPonto =
+            atual.points[atual.points.length - 1] || atual.points[0];
+
+          while (restantes.length > 0) {
+            let melhorIdx = 0;
+            let melhorDist = Infinity;
+            let melhorY = Infinity;
+            let melhorX = Infinity;
+            restantes.forEach((p, i) => {
+              const p0 = p.points[0];
+              const d = Math.hypot(p0.x - ultimoPonto.x, p0.y - ultimoPonto.y);
+              // Tolerância de 0,5mm: se está praticamente igual,
+              // desempata pela posição (Y depois X)
+              const empata = Math.abs(d - melhorDist) < 0.5;
+              if (
+                d < melhorDist - 0.5 ||
+                (empata && (p0.y < melhorY || (p0.y === melhorY && p0.x < melhorX)))
+              ) {
+                melhorDist = d;
+                melhorY = p0.y;
+                melhorX = p0.x;
+                melhorIdx = i;
+              }
+            });
+            atual = restantes.splice(melhorIdx, 1)[0];
+            resultado.push(atual);
+            ultimoPonto =
+              atual.points[atual.points.length - 1] || atual.points[0];
+          }
+        });
+
+        return resultado;
+      }
+
+      // ─── NESTING: agrupa clusters próximos para otimizar a chapa ───
+      // Recebe um geo (com .polylines e .clusters) e devolve uma CÓPIA
+      // com os pontos transladados, de modo que os clusters fiquem
+      // empacotados lado a lado com um pequeno gap entre eles.
+      function laser3DNestGeometry(geo) {
+        if (!geo || !geo.polylines) return geo;
+        if (!geo.clusters || geo.clusters.length <= 1) return geo;
+
+        const GAP = 8; // mm entre clusters
+
+        // Copia as polylines para não mexer no original
+        const newPolylines = geo.polylines.map((p) => ({
+          ...p,
+          points: p.points.map((pt) => ({ x: pt.x, y: pt.y })),
+        }));
+
+        // Largura alvo de cada "linha" de empacotamento:
+        // ~2.2× a largura do maior cluster. Isso dá um layout compacto
+        // em ~2 colunas quando os clusters são parecidos.
+        let maxW = 0;
+        geo.clusters.forEach((c) => {
+          if (c.bbox.width > maxW) maxW = c.bbox.width;
+        });
+        const targetRowWidth = maxW * 2.2;
+
+        // Shelf-packing simples: percorre os clusters na ordem e coloca
+        // um ao lado do outro; quando estoura a largura-alvo, quebra a
+        // linha. Não é o algoritmo mais otimizado do mundo, mas resolve
+        // o caso típico (poucos clusters por arquivo).
+        let cursorX = 0;
+        let cursorY = 0;
+        let rowHeight = 0;
+
+        geo.clusters.forEach((c) => {
+          const w = c.bbox.width;
+          const h = c.bbox.height;
+
+          if (cursorX > 0 && cursorX + w > targetRowWidth) {
+            cursorX = 0;
+            cursorY += rowHeight + GAP;
+            rowHeight = 0;
+          }
+
+          const offsetX = cursorX - c.bbox.minX;
+          const offsetY = cursorY - c.bbox.minY;
+
+          c.indices.forEach((pIdx) => {
+            const p = newPolylines[pIdx];
+            if (!p) return;
+            p.points = p.points.map((pt) => ({
+              x: pt.x + offsetX,
+              y: pt.y + offsetY,
+            }));
+          });
+
+          cursorX += w + GAP;
+          if (h > rowHeight) rowHeight = h;
+        });
+
+        return { ...geo, polylines: newPolylines };
+      }
+
+      function laser3DResize() {
+        if (!laser3D.active) return;
+        const container = document.getElementById("laserCanvas3D");
+        if (!container || !laser3D.renderer) return;
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        if (w === 0 || h === 0) return;
+        laser3D.camera.aspect = w / h;
+        laser3D.camera.updateProjectionMatrix();
+        laser3D.renderer.setSize(w, h);
+      }
+
+      function laser3DBuild(geoOriginal) {
+        if (!laser3D.initialized) laser3DInit();
+        if (!laser3D.scene || !geoOriginal) return;
+
+        // ─── 1. Expande em "instâncias" (cluster × quantidade) ────
+        const instances = [];
+        const qtds = geoOriginal.quantities || {};
+
+        if (geoOriginal.clusters && geoOriginal.clusters.length > 1) {
+          geoOriginal.clusters.forEach((cluster, cIdx) => {
+            const q = Math.max(1, parseInt(qtds[cIdx], 10) || 1);
+            for (let copy = 0; copy < q; copy++) {
+              const polylines = cluster.indices
+                .map((i) => geoOriginal.polylines[i])
+                .filter(Boolean)
+                .map((p) => ({
+                  closed: p.closed,
+                  nesting: typeof p.nesting === "number" ? p.nesting : 0,
+                  points: p.points.map((pt) => ({ x: pt.x, y: pt.y })),
+                }));
+              if (polylines.length > 0) {
+                instances.push({
+                  polylines,
+                  clusterId: cIdx,
+                  copyId: copy,
+                });
+              }
+            }
+          });
+        } else {
+          const q = Math.max(1, parseInt(qtds[0], 10) || 1);
+          for (let copy = 0; copy < q; copy++) {
+            instances.push({
+              polylines: geoOriginal.polylines.map((p) => ({
+                closed: p.closed,
+                nesting: typeof p.nesting === "number" ? p.nesting : 0,
+                points: p.points.map((pt) => ({ x: pt.x, y: pt.y })),
+              })),
+              clusterId: 0,
+              copyId: copy,
+            });
+          }
+        }
+
+        // ─── 2. Bounding box de cada instância ────────────────────
+        instances.forEach((inst) => {
+          let mnX = Infinity, mxX = -Infinity, mnY = Infinity, mxY = -Infinity;
+          inst.polylines.forEach((p) =>
+            p.points.forEach((pt) => {
+              if (pt.x < mnX) mnX = pt.x;
+              if (pt.x > mxX) mxX = pt.x;
+              if (pt.y < mnY) mnY = pt.y;
+              if (pt.y > mxY) mxY = pt.y;
+            })
+          );
+          inst.bbox = {
+            minX: mnX,
+            maxX: mxX,
+            minY: mnY,
+            maxY: mxY,
+            width: mxX - mnX,
+            height: mxY - mnY,
+          };
+        });
+
+        // ─── 3. Packer em chapas reais ────────────────────────────
+        const sheetKey =
+          (document.getElementById("laserSheetSize") || {}).value ||
+          "1500x3000";
+        const sheetDef = LASER_SHEETS[sheetKey] || LASER_SHEETS["1500x3000"];
+        const sheets = laserPackSheets(instances, sheetDef.w, sheetDef.h);
+        laserGeometry.numSheets = sheets.length;
+
+        const SCALE = 0.001;
+        const SHEET_THICK = 0.003;
+        const sheetWm = sheetDef.w * SCALE;
+        const sheetHm = sheetDef.h * SCALE;
+
+        // ─── 4. Origens das chapas + aplica offset nas polylines ──
+        const VISUAL_GAP_MM = 200;
+        const cols = Math.ceil(Math.sqrt(sheets.length));
+        const sheetOrigins = [];
+
+        sheets.forEach((sheet, sIdx) => {
+          const col = sIdx % cols;
+          const row = Math.floor(sIdx / cols);
+          const originXmm = col * (sheetDef.w + VISUAL_GAP_MM);
+          const originZmm = row * (sheetDef.h + VISUAL_GAP_MM);
+          sheetOrigins.push({ x: originXmm, z: originZmm });
+
+          sheet.parts.forEach((inst) => {
+            inst.polylines.forEach((p) => {
+              p.points = p.points.map((pt) => ({
+                x: pt.x + originXmm,
+                y: pt.y + originZmm,
+              }));
+            });
+          });
+        });
+
+        // ─── 5. Monta workPolylines (ordenadas por nível) ─────────
+        const workPolylines = [];
+        sheets.forEach((sheet) => {
+          const todas = [];
+          sheet.parts.forEach((inst) => {
+            inst.polylines.forEach((p) => todas.push(p));
+          });
+          const ordenadas = laserOrdenarCortes(todas);
+          ordenadas.forEach((p) => workPolylines.push(p));
+        });
+
+        // Limpa objetos antigos
+        const toRemove = [];
+        laser3D.scene.children.forEach((c) => {
+          if (c.userData && c.userData.laser3d) toRemove.push(c);
+        });
+        toRemove.forEach((c) => laser3D.scene.remove(c));
+
+        // ─── 6. Bounding box global (para câmera) ─────────────────
+        let gMnX = Infinity, gMxX = -Infinity, gMnZ = Infinity, gMxZ = -Infinity;
+        workPolylines.forEach((p) =>
+          p.points.forEach((pt) => {
+            const x = pt.x * SCALE;
+            const z = pt.y * SCALE;
+            if (x < gMnX) gMnX = x;
+            if (x > gMxX) gMxX = x;
+            if (z < gMnZ) gMnZ = z;
+            if (z > gMxZ) gMxZ = z;
+          })
+        );
+        const globalCx = (gMnX + gMxX) / 2;
+        const globalCz = (gMnZ + gMxZ) / 2;
+
+        // ─── 7. Renderiza cada chapa como bloco ───────────────────
+        const sheetMat = new THREE.MeshStandardMaterial({
+          color: 0x898991,
+          roughness: 0.46,
+          metalness: 0.78,
+        });
+        sheets.forEach((sheet, sIdx) => {
+          const o = sheetOrigins[sIdx];
+          const sheetGeo = new THREE.BoxGeometry(sheetWm, SHEET_THICK, sheetHm);
+          const sheetMesh = new THREE.Mesh(sheetGeo, sheetMat);
+          sheetMesh.position.set(
+            (o.x + sheetDef.w / 2) * SCALE,
+            0,
+            (o.z + sheetDef.h / 2) * SCALE
+          );
+          sheetMesh.userData.laser3d = true;
+          laser3D.scene.add(sheetMesh);
+        });
+
+        // ─── 8. Contorno + trails por polyline ────────────────────
+        const contourMat = new THREE.LineBasicMaterial({
+          color: 0x60a5fa,
+          transparent: true,
+          opacity: 0.85,
+        });
+        const yTop = SHEET_THICK / 2 + 0.0008;
+
+        laser3D.pathPoints = [];
+        laser3D.cumLengths = [];
+        laser3D.ops = [];
+        laser3D.pointTypes = [];
+
+        let cum = 0;
+        const JUMP_WEIGHT = 0.4;
+        const JUMP_HEIGHT = 0.03;
+
+        workPolylines.forEach((p, polyIdx) => {
+          const pts = p.points.map(
+            (pt) => new THREE.Vector3(pt.x * SCALE, yTop, pt.y * SCALE)
+          );
+          const ptsFull =
+            p.closed && pts.length > 1 ? pts.concat([pts[0].clone()]) : pts;
+
+          // Salto entre polylines
+          if (polyIdx > 0 && laser3D.pathPoints.length > 0) {
+            const lastPt = laser3D.pathPoints[laser3D.pathPoints.length - 1];
+            const firstPtOfThis = ptsFull[0];
+            const liftPt = new THREE.Vector3(
+              firstPtOfThis.x,
+              yTop + JUMP_HEIGHT,
+              firstPtOfThis.z
+            );
+            const realLen1 = lastPt.distanceTo(liftPt);
+            cum += realLen1 * JUMP_WEIGHT;
+            laser3D.pathPoints.push(liftPt);
+            laser3D.cumLengths.push(cum);
+            laser3D.pointTypes.push("jump");
+
+            const realLen2 = liftPt.distanceTo(firstPtOfThis);
+            cum += realLen2 * JUMP_WEIGHT;
+            laser3D.pathPoints.push(firstPtOfThis.clone());
+            laser3D.cumLengths.push(cum);
+            laser3D.pointTypes.push("jump");
+          }
+
+          // Contorno azul
+          const contourGeom = new THREE.BufferGeometry().setFromPoints(ptsFull);
+          const contourLine = new THREE.Line(contourGeom, contourMat);
+          contourLine.userData.laser3d = true;
+          laser3D.scene.add(contourLine);
+
+          // Trail laranja
+          const trailGeom = new THREE.BufferGeometry().setFromPoints(ptsFull);
+          trailGeom.setDrawRange(0, 0);
+          const trailLine = new THREE.Line(
+            trailGeom,
+            new THREE.LineBasicMaterial({ color: 0xfbbf24, linewidth: 2 })
+          );
+          trailLine.userData.laser3d = true;
+          trailLine.visible = false;
+          laser3D.scene.add(trailLine);
+
+          const opCumStart = cum;
+          for (let i = 0; i < ptsFull.length; i++) {
+            if (i > 0) cum += ptsFull[i].distanceTo(ptsFull[i - 1]);
+            laser3D.pathPoints.push(ptsFull[i]);
+            laser3D.cumLengths.push(cum);
+            laser3D.pointTypes.push("cut");
+          }
+          const opCumEnd = cum;
+
+          laser3D.ops.push({
+            polyIdx,
+            cumStart: opCumStart,
+            cumEnd: opCumEnd,
+            trailLine,
+            trailPtsLen: ptsFull.length,
+          });
+        });
+
+        laser3D.totalLength =
+          laser3D.cumLengths[laser3D.cumLengths.length - 1] || 0;
+
+        laser3D.segmentLengths = [];
+        for (let i = 1; i < laser3D.cumLengths.length; i++) {
+          laser3D.segmentLengths.push(
+            laser3D.cumLengths[i] - laser3D.cumLengths[i - 1]
+          );
+        }
+
+        // ─── 9. Cabeça de laser ───────────────────────────────────
+        const headGroup = new THREE.Group();
+        headGroup.userData.laser3d = true;
+
+        const headBody = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.014, 0.022, 0.055, 16),
+          new THREE.MeshStandardMaterial({
+            color: 0x18181b,
+            roughness: 0.4,
+            metalness: 0.75,
+          })
+        );
+        headBody.position.y = 0.075;
+        headGroup.add(headBody);
+
+        const nozzle = new THREE.Mesh(
+          new THREE.ConeGeometry(0.008, 0.028, 16),
+          new THREE.MeshStandardMaterial({
+            color: 0xb08050,
+            roughness: 0.25,
+            metalness: 0.9,
+          })
+        );
+        nozzle.position.y = 0.04;
+        nozzle.rotation.x = Math.PI;
+        headGroup.add(nozzle);
+
+        const beam = new THREE.Mesh(
+          new THREE.ConeGeometry(0.0015, 0.038, 12, 1, true),
+          new THREE.MeshBasicMaterial({
+            color: 0xfbbf24,
+            transparent: true,
+            opacity: 0.4,
+            depthWrite: false,
+          })
+        );
+        beam.position.y = 0.022;
+        beam.rotation.x = Math.PI;
+        headGroup.add(beam);
+
+        const glow = new THREE.Mesh(
+          new THREE.SphereGeometry(0.005, 12, 12),
+          new THREE.MeshBasicMaterial({
+            color: 0xfbbf24,
+            transparent: true,
+            opacity: 0.95,
+          })
+        );
+        headGroup.add(glow);
+
+        const glowLight = new THREE.PointLight(0xfbbf24, 1.8, 0.2);
+        glowLight.position.set(0, 0.005, 0);
+        headGroup.add(glowLight);
+
+        headGroup.position.copy(laser3D.pathPoints[0] || new THREE.Vector3());
+        laser3D.scene.add(headGroup);
+        laser3D.laserHead = headGroup;
+
+        // ─── 10. Câmera ───────────────────────────────────────────
+        const maxDim = Math.max(sheetWm, sheetHm, gMxX - gMnX, gMxZ - gMnZ);
+        laser3D.camera.position.set(
+          globalCx + maxDim * 0.9,
+          maxDim * 0.9,
+          globalCz + maxDim * 0.9
+        );
+        laser3D.controls.target.set(globalCx, 0, globalCz);
+        laser3D.controls.minDistance = maxDim * 0.15;
+        laser3D.controls.maxDistance = maxDim * 5;
+        laser3D.controls.update();
+
+        // ─── 11. Reset ────────────────────────────────────────────
+        laser3D.progress = 0;
+        laser3D.playing = false;
+        laser3DUpdateUI();
+
+        if (laser3D.active && !laser3D.rafId) {
+          laser3DLoop();
+        }
+      }
+
+            function laser3DAdvance(dt) {
+        if (laser3D.totalLength <= 0) return;
+        // Duração proporcional ao comprimento total do corte:
+        //   - 5s de base (warmup + saltos iniciais)
+        //   - +6s por metro linear cortado
+        // Uma peça de 3m leva ~23s em 1×. Uma de 0.5m leva ~8s.
+        const DURATION_BASE = 5;
+        const DURATION_PER_METER = 6;
+        const duration =
+          (DURATION_BASE + laser3D.totalLength * DURATION_PER_METER) /
+          laser3D.speed;
+        laser3D.progress += dt / duration;
+
+        if (laser3D.progress >= 1) {
+          laser3D.progress = 1;
+          laser3D.playing = false;
+        }
+
+        const targetLen = laser3D.progress * laser3D.totalLength;
+        const cl = laser3D.cumLengths;
+
+        // Atualiza trails — para cada op, decide o estado (completo/
+        // parcial/não começou). Não usamos mais `currentOpIdx` porque
+        // a cabeça pode estar "em salto" (entre duas ops).
+        laser3D.ops.forEach((op) => {
+          if (targetLen >= op.cumEnd) {
+            // Furo já cortado completamente
+            op.trailLine.visible = true;
+            op.trailLine.geometry.setDrawRange(0, op.trailPtsLen);
+          } else if (targetLen >= op.cumStart) {
+            // Cortando agora — cresce proporcionalmente
+            op.trailLine.visible = true;
+            const localTarget = targetLen - op.cumStart;
+            const tp = op.trailLine.geometry.attributes.position.array;
+            let localIdx = 0;
+            let acc = 0;
+            const nPts = op.trailPtsLen;
+            for (let k = 1; k < nPts; k++) {
+              const ax = tp[(k - 1) * 3],
+                ay = tp[(k - 1) * 3 + 1],
+                az = tp[(k - 1) * 3 + 2];
+              const bx = tp[k * 3],
+                by = tp[k * 3 + 1],
+                bz = tp[k * 3 + 2];
+              const dx = bx - ax,
+                dy = by - ay,
+                dz = bz - az;
+              const segLen = Math.sqrt(dx * dx + dy * dy + dz * dz);
+              if (acc + segLen >= localTarget) break;
+              acc += segLen;
+              localIdx++;
+            }
+            op.trailLine.geometry.setDrawRange(0, localIdx + 1);
+          } else {
+            // Ainda não começou
+            op.trailLine.visible = false;
+            op.trailLine.geometry.setDrawRange(0, 0);
+          }
+        });
+
+        // Posição da cabeça — interpola no path GLOBAL (que já inclui
+        // os pontos de salto). Se o trecho atual for "jump", a cabeça
+        // está subindo/movendo/descendo, sem cortar nada.
+        let idx = 0;
+        while (idx < cl.length - 1 && cl[idx + 1] < targetLen) idx++;
+
+        if (idx < laser3D.pathPoints.length - 1) {
+          const segStart = cl[idx];
+          const segLen = laser3D.segmentLengths[idx] || 1e-6;
+          const t = (targetLen - segStart) / segLen;
+          const pos = new THREE.Vector3().lerpVectors(
+            laser3D.pathPoints[idx],
+            laser3D.pathPoints[idx + 1],
+            Math.max(0, Math.min(1, t))
+          );
+          if (laser3D.laserHead) {
+            laser3D.laserHead.position.copy(pos);
+            // Esconde o feixe durante o salto (visual mais fiel)
+            const isJumping =
+              laser3D.pointTypes &&
+              (laser3D.pointTypes[idx] === "jump" ||
+                laser3D.pointTypes[idx + 1] === "jump");
+            laser3D.laserHead.children.forEach((c) => {
+              if (c.material && c.material.transparent) {
+                // Feixe + glow
+                c.visible = !isJumping;
+              }
+            });
+          }
+        } else if (laser3D.laserHead && laser3D.pathPoints.length > 0) {
+          laser3D.laserHead.position.copy(
+            laser3D.pathPoints[laser3D.pathPoints.length - 1]
+          );
+        }
+
+        laser3DUpdateUI();
+      }
+
+      let laser3DLastTime = 0;
+      function laser3DLoop(now) {
+        laser3D.rafId = requestAnimationFrame(laser3DLoop);
+        if (!laser3D.active || !laser3D.renderer) return;
+
+        const t = now || performance.now();
+        const dt = laser3DLastTime
+          ? Math.min((t - laser3DLastTime) / 1000, 0.05)
+          : 0;
+        laser3DLastTime = t;
+
+        laser3D.controls.update();
+
+        if (laser3D.playing) {
+          laser3DAdvance(dt);
+        }
+
+        laser3D.renderer.render(laser3D.scene, laser3D.camera);
+      }
+
+      function laser3DUpdateUI() {
+        const fill = document.getElementById("laser3DProgressFill");
+        const text = document.getElementById("laser3DProgressText");
+        const btn = document.getElementById("laser3DPlay");
+        if (fill) fill.style.width = (laser3D.progress * 100).toFixed(1) + "%";
+        if (text)
+          text.textContent = Math.round(laser3D.progress * 100) + "%";
+        if (btn) {
+          if (laser3D.progress >= 1) {
+            btn.innerHTML = "▶ Reproduzir";
+          } else if (laser3D.playing) {
+            btn.innerHTML = "⏸ Pausar";
+          } else {
+            btn.innerHTML = laser3D.progress > 0 ? "▶ Continuar" : "▶ Simular";
+          }
+        }
+      }
+
+      function laser3DTogglePlay() {
+        if (laser3D.progress >= 1) {
+          laser3D.progress = 0;
+        }
+        laser3D.playing = !laser3D.playing;
+        laser3DUpdateUI();
+      }
+
+      function laser3DReset() {
+        laser3D.progress = 0;
+        laser3D.playing = false;
+        if (laser3D.ops) {
+          laser3D.ops.forEach((op) => {
+            if (op.trailLine) {
+              op.trailLine.visible = false;
+              op.trailLine.geometry.setDrawRange(0, 0);
+            }
+          });
+        }
+        if (laser3D.laserHead && laser3D.pathPoints.length > 0) {
+          laser3D.laserHead.position.copy(laser3D.pathPoints[0]);
+          // Volta a mostrar o feixe e o glow
+          laser3D.laserHead.children.forEach((c) => {
+            if (c.material && c.material.transparent) {
+              c.visible = true;
+            }
+          });
+        }
+        laser3DUpdateUI();
+      }
+
+      function laser3DSetSpeed(v) {
+        laser3D.speed = parseFloat(v) || 1;
+      }
+
+      function laserToggleView(mode) {
+        const wrap = document.getElementById("laserCanvasWrap");
+        const container3D = document.getElementById("laserCanvas3D");
+        const controls3D = document.getElementById("laser3DControls");
+        const canvas2D = document.getElementById("laserCanvas");
+        if (!wrap || !container3D || !controls3D) return;
+
+        document.querySelectorAll(".laser-view-btn").forEach((b) => {
+          b.classList.toggle("active", b.dataset.view === mode);
+        });
+
+        if (mode === "3d") {
+          laser3DInit();
+          laser3D.active = true;
+          wrap.classList.add("mode-3d");
+          container3D.style.display = "block";
+          controls3D.style.display = "flex";
+          if (canvas2D) canvas2D.style.display = "none";
+
+          // Aguarda o container ter dimensões antes de construir
+          requestAnimationFrame(() => {
+            laser3DResize();
+            if (laserGeometry) {
+              laser3DBuild(laserGeometry);
+              laser3D.scene && laser3D.scene.children.forEach(() => {});
+            }
+            if (!laser3D.rafId) {
+              laser3DLastTime = 0;
+              laser3DLoop();
+            }
+          });
+        } else {
+          laser3D.active = false;
+          wrap.classList.remove("mode-3d");
+          container3D.style.display = "none";
+          controls3D.style.display = "none";
+          if (canvas2D) canvas2D.style.display = "block";
+          if (laser3D.rafId) {
+            cancelAnimationFrame(laser3D.rafId);
+            laser3D.rafId = null;
+          }
+          // Redesenha o 2D
+          if (laserGeometry) laserDrawCanvas(laserGeometry);
+        }
       }
 
       /* ============================================================
