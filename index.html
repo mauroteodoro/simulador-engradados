@@ -4090,61 +4090,78 @@
       }
       /* ============================================================
          MOBILE UX — pílulas compactas (Engradados + Laser)
+         Usa #id para vencer estilos inline do HTML.
          ============================================================ */
       @media (max-width: 600px) {
-        .piece-info-box {
-          pointer-events: auto !important;
-          cursor: pointer;
-          max-height: 56px;
-          overflow: hidden;
-          transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-          padding-right: 36px !important;
-        }
-        .piece-info-box.expanded { max-height: 460px; }
-        .piece-info-box::after {
-          content: "▾";
-          position: absolute;
-          top: 12px;
-          right: 14px;
-          font-size: 0.85rem;
-          opacity: 0.55;
-          transition: transform 0.28s ease;
-          pointer-events: none;
-          color: #60a5fa;
-        }
-        .piece-info-box.expanded::after { transform: rotate(180deg); }
-        .piece-info-box:not(.expanded) #piTitle {
-          margin-bottom: 0 !important;
-          padding-bottom: 0 !important;
-          border-bottom: none !important;
-        }
 
-        .laser-measure-panel {
+        /* ---------- ENGRADADOS ---------- */
+        #pieceInfoBox.piece-info-box {
           pointer-events: auto !important;
           cursor: pointer;
-          max-height: 62px;
-          overflow: hidden;
-          transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-          padding-right: 36px;
+          max-height: 54px !important;
+          overflow: hidden !important;
+          transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          padding: 12px 40px 12px 14px !important;
         }
-        .laser-measure-panel.expanded {
-          max-height: 72vh;
-          overflow-y: auto;
+        #pieceInfoBox.piece-info-box.expanded {
+          max-height: 70vh !important;
+          overflow-y: auto !important;
           -webkit-overflow-scrolling: touch;
         }
-        .laser-measure-panel::after {
+        #pieceInfoBox.piece-info-box::after {
           content: "▾";
           position: absolute;
-          top: 12px;
+          top: 50%;
+          right: 14px;
+          transform: translateY(-50%);
+          font-size: 0.85rem;
+          color: #60a5fa;
+          opacity: 0.7;
+          pointer-events: none;
+          transition: transform 0.28s ease;
+        }
+        #pieceInfoBox.piece-info-box.expanded::after {
+          transform: translateY(-50%) rotate(180deg);
+        }
+        #pieceInfoBox.piece-info-box:not(.expanded) #piTitle {
+          margin: 0 !important;
+          padding: 0 !important;
+          border-bottom: none !important;
+          font-size: 0.82rem !important;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        /* ---------- CORTE A LASER ---------- */
+        #laserMeasurePanel {
+          pointer-events: auto !important;
+          cursor: pointer;
+          max-height: 60px !important;
+          overflow: hidden !important;
+          transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          padding-right: 38px !important;
+        }
+        #laserMeasurePanel.expanded {
+          max-height: 70vh !important;
+          overflow-y: auto !important;
+          -webkit-overflow-scrolling: touch;
+        }
+        #laserMeasurePanel::after {
+          content: "▾";
+          position: absolute;
+          top: 14px;
           right: 14px;
           font-size: 0.8rem;
-          opacity: 0.55;
-          transition: transform 0.28s ease;
-          pointer-events: none;
           color: #fbbf24;
+          opacity: 0.7;
+          pointer-events: none;
+          transition: transform 0.28s ease;
         }
-        .laser-measure-panel.expanded::after { transform: rotate(180deg); }
-        .laser-measure-badge {
+        #laserMeasurePanel.expanded::after {
+          transform: rotate(180deg);
+        }
+        #laserMeasurePanel .laser-measure-badge {
           font-size: 0.6rem;
           font-weight: 700;
           text-transform: uppercase;
@@ -4154,8 +4171,8 @@
           padding-bottom: 6px;
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .laser-measure-panel:not(.expanded) .laser-measure-title {
-          margin-bottom: 4px;
+        #laserMeasurePanel:not(.expanded) .laser-measure-title {
+          margin-bottom: 2px;
           font-size: 0.58rem;
         }
       }
@@ -5944,7 +5961,7 @@
             <select id="laserSheetSize" class="laser-select">
               <option value="1000x2000">1000 × 2000 mm</option>
               <option value="1250x2500">1250 × 2500 mm</option>
-              <option value="1500x3000" selected>1500 × 3000 mm (padrão do mercado)</option>
+              <option value="1500x3000" selected>1500 × 3000 mm (padrão)</option>
               <option value="2000x4000">2000 × 4000 mm</option>
             </select>
           </div>
@@ -7140,12 +7157,10 @@
       // Alterna entre os módulos (Engradados / Corte a Laser).
       // Mostra a barra de abas correspondente e ativa sua primeira aba.
       function switchModule(modulo) {
-        // 1. Atualiza o estado visual do switcher
         document.querySelectorAll(".module-btn").forEach((b) => {
           b.classList.toggle("active", b.dataset.module === modulo);
         });
 
-        // 2. Mostra/esconde as barras de abas
         const tabsEngradados = document.getElementById("tabs-engradados");
         const tabsLaser = document.getElementById("tabs-laser");
         if (tabsEngradados)
@@ -7154,12 +7169,13 @@
         if (tabsLaser)
           tabsLaser.style.display = modulo === "laser" ? "flex" : "none";
 
-        // 3. Ativa a primeira aba do módulo
-        const primeiraAba =
-          modulo === "engradados" ? "simulador" : "laser";
-        const botao = document.querySelector(
-          `#tabs-${modulo} .tab-btn`
-        );
+        // Persiste o módulo atual para restaurar no próximo reload
+        try {
+          localStorage.setItem("artefacto_modulo_atual", modulo);
+        } catch (e) {}
+
+        const primeiraAba = modulo === "engradados" ? "simulador" : "laser";
+        const botao = document.querySelector(`#tabs-${modulo} .tab-btn`);
         if (botao) botao.click();
         else switchTab(primeiraAba);
       }
@@ -7171,27 +7187,33 @@
         document
           .querySelectorAll(".tab-btn")
           .forEach((t) => t.classList.remove("active"));
-        document.getElementById(tabId + "-tab").classList.add("active");
-        event.target.classList.add("active");
 
-        // Evita o "pulo" ao alternar entre abas de alturas diferentes:
-        // rola suavemente para o topo sem animação.
+        const tabEl = document.getElementById(tabId + "-tab");
+        if (tabEl) tabEl.classList.add("active");
+
+        // `event` pode não existir quando switchTab é chamado
+        // programaticamente (restauração no load).
+        if (event && event.target && event.target.classList) {
+          event.target.classList.add("active");
+        }
+
+        // Persiste a aba atual para restaurar no próximo reload
+        try {
+          localStorage.setItem("artefacto_tab_atual", tabId);
+        } catch (e) {}
+
         window.scrollTo({ top: 0, behavior: "auto" });
 
         if (tabId === "simulador") {
-          // Recalcula em 2 tempos: imediato e após um frame, para
-          // garantir que o canvas pegue a dimensão final.
           setTimeout(onWindowResize, 30);
           requestAnimationFrame(() => requestAnimationFrame(onWindowResize));
         }
 
         if (tabId === "historico") {
-          // Carrega (ou recarrega) as simulações do Firestore
           carregarHistorico();
         }
 
         if (tabId === "precos") {
-          // Carrega preços e popula a tabela editável
           carregarPrecos().then(popularTabelaPrecos);
         }
       }
@@ -17072,18 +17094,41 @@
 
       // ============================================================
       // MOBILE UX — pílulas compactas no Engradados e no Laser
+      // Captura pointerdown/up na pílula para impedir que o inspetor
+      // de engradados trate o toque como clique no canvas e esconda
+      // a caixa antes de expandir.
       // ============================================================
       (function laserMobilePanelsInit() {
         const mobile = () => window.innerWidth <= 600;
 
+        // ---------- ENGRADADOS ----------
         const pieceInfo = document.getElementById("pieceInfoBox");
         if (pieceInfo && !pieceInfo.dataset.mobileBound) {
           pieceInfo.dataset.mobileBound = "1";
+
+          pieceInfo.addEventListener(
+            "pointerdown",
+            function (e) {
+              if (!mobile()) return;
+              e.stopPropagation();
+            },
+            true
+          );
+          pieceInfo.addEventListener(
+            "pointerup",
+            function (e) {
+              if (!mobile()) return;
+              e.stopPropagation();
+            },
+            true
+          );
+
           pieceInfo.addEventListener("click", function (e) {
             if (!mobile()) return;
             e.stopPropagation();
             this.classList.toggle("expanded");
           });
+
           const piTitle = document.getElementById("piTitle");
           if (piTitle && window.MutationObserver) {
             const obs = new MutationObserver(function () {
@@ -17097,20 +17142,25 @@
           }
         }
 
+        // ---------- CORTE A LASER ----------
         const measurePanel = document.getElementById("laserMeasurePanel");
         if (measurePanel && !measurePanel.dataset.mobileBound) {
           measurePanel.dataset.mobileBound = "1";
+
           measurePanel.addEventListener("click", function (e) {
             if (!mobile()) return;
             e.stopPropagation();
             this.classList.toggle("expanded");
           });
+
           if (window.MutationObserver) {
             const obs = new MutationObserver(function () {
               if (measurePanel.style.display === "none") return;
               if (measurePanel.querySelector(".laser-measure-badge")) return;
-              if (typeof laserGeometry === "undefined" || !laserGeometry) return;
-              if (typeof laserMeasure === "undefined" || !laserMeasure) return;
+              if (typeof laserGeometry === "undefined" || !laserGeometry)
+                return;
+              if (typeof laserMeasure === "undefined" || !laserMeasure)
+                return;
 
               const total = laserGeometry.polylines.length;
               let badge = "";
@@ -17125,7 +17175,10 @@
                   else if (sel.cornerSpan) tipo = "trecho entre quinas";
                   badge = "Elemento " + idx + " de " + total + " · " + tipo;
                 }
-              } else if (laserMeasure.multi && laserMeasure.multi.length > 0) {
+              } else if (
+                laserMeasure.multi &&
+                laserMeasure.multi.length > 0
+              ) {
                 badge =
                   laserMeasure.multi.length +
                   (laserMeasure.multi.length > 1
@@ -17174,6 +17227,39 @@
           // Sem sessão salva → estado inicial: logado para fora
           document.body.classList.add("logged-out");
         }
+
+        // Restaura a última aba/módulo salvos ANTES de inicializar o 3D
+        try {
+          const modSalvo = localStorage.getItem("artefacto_modulo_atual");
+          const tabSalvo = localStorage.getItem("artefacto_tab_atual");
+
+          if (modSalvo === "laser") {
+            switchModule("laser");
+            if (tabSalvo && tabSalvo !== "laser") {
+              const btn = Array.from(
+                document.querySelectorAll("#tabs-laser .tab-btn")
+              ).find((b) =>
+                (b.getAttribute("onclick") || "").includes("'" + tabSalvo + "'")
+              );
+              if (btn) btn.click();
+            }
+          } else if (modSalvo === "engradados") {
+            switchModule("engradados");
+            if (tabSalvo && tabSalvo !== "simulador") {
+              const btn = Array.from(
+                document.querySelectorAll("#tabs-engradados .tab-btn")
+              ).find((b) =>
+                (b.getAttribute("onclick") || "").includes("'" + tabSalvo + "'")
+              );
+              if (btn) btn.click();
+            }
+          }
+        } catch (e) {
+          console.warn("[RESTORE] falha ao restaurar estado:", e);
+        }
+
+        // Sempre sobe para o topo após restaurar
+        window.scrollTo({ top: 0, behavior: "auto" });
 
         // Force reflow — garante que o layout está calculado antes do 3D
         void document.getElementById("canvas-container").offsetHeight;
