@@ -2681,6 +2681,233 @@
           font-size: 0.9rem;
         }
       }
+            /* ============================================================
+         CORTE A LASER — RESPONSIVO MOBILE
+         Ajustes específicos para celular (retrato e paisagem).
+         Respeita safe-area (notch e home indicator do iPhone).
+         ============================================================ */
+
+      /* ---------- Tablet / celular grande (≤ 900px) ---------- */
+      @media (max-width: 900px) {
+        /* Painéis de resultado e sugestões: padding seguro */
+        .laser-results-panel,
+        .laser-suggestions-panel {
+          padding-left: max(16px, env(safe-area-inset-left));
+          padding-right: max(16px, env(safe-area-inset-right));
+        }
+
+        /* Controles 3D: joga a barra de progresso pra linha própria */
+        .laser-3d-controls {
+          padding: 10px 12px;
+          gap: 8px;
+        }
+        .laser-3d-progress-wrap {
+          flex-basis: 100%;
+          max-width: 100%;
+          min-width: 0;
+          margin-left: 0;
+        }
+
+        /* Legenda do canvas: menor e com teto de largura */
+        .laser-canvas-legend {
+          font-size: 0.68rem;
+          padding: 6px 10px;
+          max-width: 65%;
+        }
+
+        /* Painel de medição: nunca ultrapassa a tela */
+        .laser-measure-panel {
+          min-width: 0;
+          max-width: calc(100vw - 24px);
+        }
+      }
+
+      /* ---------- Celular retrato (≤ 500px) ---------- */
+      @media (max-width: 500px) {
+        /* Dashboard da aba Laser: respeita notch nas laterais */
+        .laser-dashboard {
+          padding-left: max(0px, env(safe-area-inset-left));
+          padding-right: max(0px, env(safe-area-inset-right));
+        }
+
+        /* Painéis de resultado e sugestões: mais enxutos */
+        .laser-results-panel,
+        .laser-suggestions-panel {
+          padding: 16px 14px;
+          border-radius: 14px;
+        }
+        .laser-results-panel h2,
+        .laser-suggestions-panel h2 {
+          font-size: 0.95rem;
+          margin-bottom: 12px;
+          padding-bottom: 10px;
+        }
+
+        /* Campos em 2 colunas viram 1 coluna (label não quebra feio) */
+        .laser-row-2col {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        .laser-row-2col + .input-group {
+          margin-top: 10px;
+        }
+
+        /* Controles 3D: tudo empilhado verticalmente */
+        .laser-3d-controls {
+          padding: 10px;
+          gap: 8px;
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .laser-3d-btn {
+          justify-content: center;
+          min-height: 42px;
+        }
+        .laser-3d-speed {
+          justify-content: space-between;
+          width: 100%;
+        }
+        .laser-3d-speed select {
+          flex: 1;
+          min-width: 0;
+        }
+        .laser-3d-progress-wrap {
+          min-width: 0;
+          flex-basis: auto;
+          max-width: 100%;
+          margin-left: 0;
+        }
+
+        /* Legenda do canvas: compacta, sem estourar a tela */
+        .laser-canvas-legend {
+          font-size: 0.6rem;
+          padding: 5px 8px;
+          max-width: 55%;
+          top: 8px;
+          left: 8px;
+          gap: 3px;
+        }
+        .laser-canvas-legend .dot {
+          width: 6px;
+          height: 6px;
+          margin-right: 4px;
+        }
+
+        /* Toggle 2D/3D: sobe um pouco em telas pequenas */
+        .laser-view-toggle {
+          top: 8px;
+          right: 8px;
+        }
+        .laser-view-btn {
+          padding: 5px 10px;
+          font-size: 0.72rem;
+        }
+
+        /* Botão Medir: respeita home indicator do iPhone */
+        .laser-measure-btn {
+          bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+          right: calc(12px + env(safe-area-inset-right, 0px)) !important;
+          font-size: 0.72rem;
+          padding: 5px 10px;
+        }
+
+        /* Painel de medição: vira "cartão" na base da tela */
+        .laser-measure-panel {
+          top: auto;
+          bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+          left: 8px;
+          right: 8px;
+          min-width: 0;
+          max-width: none;
+          padding: 12px 14px;
+          font-size: 0.76rem;
+        }
+        .laser-measure-panel .laser-measure-title {
+          font-size: 0.62rem;
+        }
+
+        /* Dropdown de cluster: não vaza da tela */
+        .laser-cluster-dd-panel {
+          max-width: calc(100vw - 48px);
+        }
+        .laser-cluster-dd-item {
+          font-size: 0.72rem;
+          padding: 7px 9px;
+        }
+        .laser-cluster-dd-btn {
+          font-size: 0.78rem;
+          padding: 7px 10px;
+        }
+        .laser-cluster-dd-btn #laserClusterLabel {
+          font-size: 0.76rem;
+        }
+
+        /* Resumo comparativo: gap menor pra não estourar */
+        .laser-summary {
+          gap: 8px 16px;
+          margin-top: 14px;
+          padding-top: 14px;
+          font-size: 0.78rem;
+        }
+        .laser-summary-item {
+          gap: 4px;
+        }
+
+        /* Tabela de velocidades (colapsável) mais compacta */
+        .laser-speed-details summary {
+          font-size: 0.76rem;
+          padding: 9px 12px;
+        }
+        .laser-speed-details table {
+          font-size: 0.7rem;
+        }
+        .laser-speed-details table th,
+        .laser-speed-details table td {
+          padding: 5px 8px;
+        }
+
+        /* Dropzone: alvo de toque mais confortável */
+        .laser-dropzone {
+          padding: 14px 10px;
+        }
+        .laser-dropzone-icon {
+          font-size: 1.2rem;
+        }
+        .laser-dropzone-title {
+          font-size: 0.82rem;
+        }
+        .laser-dropzone-hint {
+          font-size: 0.7rem;
+        }
+      }
+
+      /* ---------- Celular deitado (paisagem) ---------- */
+      @media (max-height: 500px) and (orientation: landscape) {
+        /* Canvas ganha mais altura útil */
+        .laser-canvas-wrap {
+          min-height: 260px;
+        }
+        .laser-dashboard > .panel:nth-child(2) {
+          min-height: 0;
+        }
+        /* Controles 3D voltam a fluir na horizontal */
+        .laser-3d-controls {
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+        .laser-3d-progress-wrap {
+          flex-basis: 100%;
+          max-width: 100%;
+        }
+        /* Painel de medição volta ao canto */
+        .laser-measure-panel {
+          top: 8px;
+          bottom: auto;
+          left: auto;
+          right: 8px;
+          max-width: 280px;
+        }
+      }
       /* ============================================================
          REFINAMENTO VISUAL GLOBAL — sobriedade premium
          Camada de override que reduz raio, remove gradientes,
