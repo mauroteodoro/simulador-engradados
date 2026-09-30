@@ -2120,15 +2120,26 @@
         gap: 20px;
         max-width: 1400px;
         margin: 0 auto;
-        align-items: stretch;
+        align-items: start;
       }
 
-      /* Painel do canvas vira uma coluna flex, para o .laser-canvas-wrap
-         esticar e preencher toda a altura disponível. */
+      /* Coluna direita: canvas + resultados + sugestões empilhados
+         num flex-column próprio. Cada bloco fica colado no anterior,
+         sem sofrer com a altura da sidebar. */
+      .laser-main-col {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        min-width: 0;
+      }
+
+      /* Painel do canvas: altura natural, sem esticar para igualar a
+         sidebar. O viewport tem proporção fixa (aspect-ratio) como um
+         CAD profissional — nada de "esticar até preencher". */
       .laser-dashboard > .panel:nth-child(2) {
         display: flex;
         flex-direction: column;
-        min-height: 560px;
+        min-height: 0;
       }
 
       /* Compactação da sidebar — reduz alturas sem esconder nada */
@@ -2301,6 +2312,8 @@
       /* Proporção fixa retangular 3:2 — mesma linguagem visual do
          canvas 3D dos engradados. A grade não estica os painéis:
          cada coluna tem sua altura natural. */
+      /* Viewport com proporção fixa 16:10 e altura limitada — como
+         um CAD de verdade. Não estica mais para preencher o painel. */
       .laser-canvas-wrap {
         width: 100%;
         background: var(--canvas-bg);
@@ -2308,11 +2321,11 @@
         border: 1px solid var(--border-light);
         overflow: hidden;
         position: relative;
-        /* flex:1 = preenche toda a altura disponível do painel,
-           eliminando o vazio abaixo do desenho. min-height garante
-           um tamanho mínimo confortável em telas pequenas. */
-        flex: 1;
-        min-height: 420px;
+        aspect-ratio: 16 / 10;
+        max-height: 520px;
+        min-height: 380px;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+          0 1px 2px rgba(0, 0, 0, 0.04);
       }
       .laser-canvas-wrap canvas {
         display: block;
@@ -2391,57 +2404,93 @@
         background: #ef4444;
       }
 
-      /* ---------- Resultado do orçamento (painel + cards) ---------- */
+      /* ============================================================
+         RESULTADO DO ORÇAMENTO — painel técnico unificado
+         Estilo "Linear/Vercel": sem cores brincalhonas, tipografia
+         densa, separadores discretos, um único accent (azul).
+         ============================================================ */
       .laser-results-panel {
-        background: var(--bg-panel);
-        border-radius: 22px;
-        padding: 28px;
-        box-shadow: var(--card-shadow);
+        background: var(--bg-panel-2);
         border: 1px solid var(--border-light);
-        margin-top: 20px;
+        border-radius: 14px;
+        padding: 0;
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
       }
-      .laser-results-panel h2 {
-        margin-top: 0;
+
+      /* Header com título + badge de contexto */
+      .laser-results-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border-light);
+        background: var(--bg-panel);
       }
+      .laser-results-header h2 {
+        margin: 0;
+        padding: 0;
+        border: none;
+        font-size: 0.92rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: var(--text-main);
+      }
+      .laser-results-header .badge {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        background: var(--bg-subtle);
+        padding: 4px 10px;
+        border-radius: 6px;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+      }
+
+      /* Grid dos 3 cards */
       .laser-results-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-        gap: 18px;
-        margin-top: 16px;
+        grid-template-columns: 1fr 1fr 1fr;
+        border-bottom: 1px solid var(--border-light);
       }
+      @media (max-width: 700px) {
+        .laser-results-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
       .laser-result-card {
-        background: var(--bg-panel-2);
-        border-radius: 16px;
-        padding: 22px 22px 18px 22px;
-        border: 1px solid var(--border-light);
-        position: relative;
-        overflow: hidden;
+        padding: 18px 20px;
+        border-right: 1px solid var(--border-light);
+        background: transparent;
+        position: static;
+        border-radius: 0;
+        box-shadow: none;
       }
-      /* Faixa colorida no topo do card, dá personalidade */
+      .laser-result-card:last-child {
+        border-right: none;
+      }
+      @media (max-width: 700px) {
+        .laser-result-card {
+          border-right: none;
+          border-bottom: 1px solid var(--border-light);
+        }
+        .laser-result-card:last-child {
+          border-bottom: none;
+        }
+      }
+      /* Remove as faixas coloridas antigas */
       .laser-result-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: var(--primary);
-        opacity: 0.85;
+        display: none !important;
       }
-      .laser-result-card.card-geo::before {
-        background: #3b82f6;
-      }
-      .laser-result-card.card-tempo::before {
-        background: #f59e0b;
-      }
-      .laser-result-card.card-custo::before {
-        background: #10b981;
-      }
+
       .laser-result-card h3 {
-        margin: 0 0 4px 0;
-        font-size: 0.78rem;
+        margin: 0 0 14px 0;
+        font-size: 0.66rem;
         font-weight: 700;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.09em;
         text-transform: uppercase;
         color: var(--text-muted);
         display: flex;
@@ -2449,36 +2498,41 @@
         gap: 8px;
       }
       .laser-result-card h3 .icon {
-        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        background: var(--bg-subtle);
+        font-size: 0.7rem;
         line-height: 1;
-        letter-spacing: 0;
-        text-transform: none;
+        color: var(--text-main);
       }
-      .laser-result-card .card-subtitle {
-        font-size: 0.72rem;
-        color: var(--text-muted);
-        opacity: 0.7;
-        margin-bottom: 14px;
-        line-height: 1.4;
-      }
+      .laser-result-card.card-geo h3 .icon { color: #3b82f6; }
+      .laser-result-card.card-tempo h3 .icon { color: #d97706; }
+      .laser-result-card.card-custo h3 .icon { color: #10b981; }
+
       .laser-result-row {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        gap: 12px;
-        padding: 9px 0;
-        border-bottom: 1px solid var(--border-light);
-        font-size: 0.88rem;
+        gap: 10px;
+        padding: 6px 0;
+        font-size: 0.8rem;
+        border-bottom: 1px solid transparent;
       }
-      .laser-result-row:last-child {
-        border-bottom: none;
+      .laser-result-row + .laser-result-row {
+        border-top: 1px dashed var(--border-light);
       }
       .laser-result-row strong {
         color: var(--text-muted);
         font-weight: 500;
+        font-size: 0.74rem;
+        letter-spacing: -0.005em;
         flex: 1 1 auto;
         min-width: 0;
-        font-size: 0.82rem;
+        line-height: 1.3;
       }
       .laser-result-row span {
         flex: 0 0 auto;
@@ -2486,61 +2540,112 @@
         text-align: right;
         color: var(--text-main);
         font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum";
         white-space: nowrap;
-      }
-      .laser-result-row.destaque {
-        background: rgba(0, 113, 227, 0.06);
-        border-radius: 10px;
-        padding: 12px 14px;
-        margin: 8px -14px 0 -14px;
-        border-bottom: none;
-      }
-      .laser-result-row.destaque strong {
-        font-weight: 700;
-        color: var(--primary);
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-      .laser-result-row.destaque span {
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: var(--primary);
-      }
-      .laser-result-row.destaque.final {
-        background: rgba(16, 185, 129, 0.1);
-        margin-top: 6px;
-      }
-      .laser-result-row.destaque.final strong {
-        color: #10b981;
-      }
-      .laser-result-row.destaque.final span {
-        color: #10b981;
-        font-size: 1.35rem;
+        font-size: 0.8rem;
         letter-spacing: -0.01em;
       }
-      /* Rodapé com resumo comparativo (custo / metro, tempo / peça) */
-      .laser-summary {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 14px 28px;
-        margin-top: 18px;
-        padding-top: 18px;
-        border-top: 1px solid var(--border-light);
-        font-size: 0.82rem;
+
+      /* Linha de "soma" (custo direto, tempo total) */
+      .laser-result-row--sum {
+        margin-top: 4px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border-light) !important;
       }
-      .laser-summary-item {
-        display: flex;
-        align-items: baseline;
-        gap: 6px;
+      .laser-result-row--sum strong {
+        color: var(--text-main);
+        font-weight: 600;
+        font-size: 0.72rem;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
       }
-      .laser-summary-item .label {
+      .laser-result-row--sum span {
+        color: var(--text-main);
+        font-weight: 700;
+        font-size: 0.88rem;
+      }
+
+      /* Faixa de KPI (métricas comparativas) */
+      .laser-kpi-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border-bottom: 1px solid var(--border-light);
+        background: var(--bg-panel-2);
+      }
+      @media (max-width: 700px) {
+        .laser-kpi-strip {
+          grid-template-columns: 1fr;
+        }
+      }
+      .laser-kpi {
+        padding: 12px 20px;
+        border-right: 1px solid var(--border-light);
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .laser-kpi:last-child {
+        border-right: none;
+      }
+      @media (max-width: 700px) {
+        .laser-kpi {
+          border-right: none;
+          border-bottom: 1px solid var(--border-light);
+        }
+        .laser-kpi:last-child {
+          border-bottom: none;
+        }
+      }
+      .laser-kpi-label {
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
         color: var(--text-muted);
       }
-      .laser-summary-item .value {
+      .laser-kpi-value {
+        font-size: 1rem;
         font-weight: 700;
         color: var(--text-main);
         font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum";
+        letter-spacing: -0.02em;
+      }
+
+      /* Hero: preço final */
+      .laser-price-hero {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 20px;
+        background: linear-gradient(
+          180deg,
+          var(--bg-panel) 0%,
+          var(--bg-subtle) 100%
+        );
+        border-top: 1px solid var(--border-light);
+      }
+      .laser-price-hero-label {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-weight: 700;
+        color: var(--text-muted);
+      }
+      .laser-price-hero-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        color: #10b981;
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum";
+        line-height: 1;
+      }
+
+      /* Compatibilidade com seletores antigos */
+      .laser-summary {
+        display: none;
       }
 
       /* ---------- Botões de ação específicos ---------- */
@@ -2655,10 +2760,15 @@
       @media (max-width: 900px) {
         .laser-dashboard {
           grid-template-columns: 1fr;
+          align-items: stretch;
+        }
+        .laser-main-col {
+          gap: 16px;
         }
         .laser-canvas-wrap {
           aspect-ratio: 4 / 3;
           min-height: 280px;
+          max-height: none;
         }
         .laser-results-grid {
           gap: 12px;
@@ -3498,112 +3608,170 @@
       }
 
       /* ---------- Painel de medição (sobre o canvas) ---------- */
+      /* Densidade alta: tipografia pequena, espaçamento apertado e
+         largura enxuta — cabe na lateral sem cobrir o desenho. */
       .laser-measure-panel {
         position: absolute;
-        top: 12px;
-        right: 12px;
-        background: rgba(15, 23, 42, 0.94);
+        top: 10px;
+        right: 10px;
+        background: rgba(15, 23, 42, 0.95);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: var(--radius-md);
-        padding: 14px 16px;
-        min-width: 240px;
-        max-width: 320px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        padding: 9px 11px;
+        min-width: 190px;
+        max-width: 230px;
         color: #e2e8f0;
-        font-size: 0.78rem;
+        font-size: 0.68rem;
+        line-height: 1.32;
         z-index: 50;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.32);
         pointer-events: none;
         display: none;
       }
       .laser-measure-title {
-        font-size: 0.66rem;
+        font-size: 0.56rem;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.09em;
         color: #94a3b8;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
       }
       .laser-measure-row {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        gap: 12px;
-        padding: 4px 0;
+        gap: 8px;
+        padding: 1.5px 0;
       }
       .laser-measure-row span {
         color: #94a3b8;
+        font-size: 0.64rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;      .laser-measure-panel {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 7px;
+        padding: 6px 9px;
+        min-width: 150px;
+        max-width: 185px;
+        color: #e2e8f0;
+        font-size: 0.6rem;
+        line-height: 1.25;
+        z-index: 50;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.28);
+        pointer-events: none;
+        display: none;
+      }
+      .laser-measure-title {
+        font-size: 0.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #94a3b8;
+        margin-bottom: 3px;
+      }
+      .laser-measure-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 6px;
+        padding: 0;
+      }
+      .laser-measure-row span {
+        color: #94a3b8;
+        font-size: 0.58rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
       }
       .laser-measure-row strong {
         color: #f1f5f9;
         font-weight: 600;
+        font-size: 0.62rem;
         font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
       .laser-measure-divider {
         height: 1px;
-        background: rgba(255, 255, 255, 0.1);
-        margin: 10px 0 8px 0;
+        background: rgba(255, 255, 255, 0.08);
+        margin: 4px 0 3px 0;
       }
-      /* ============================================================
-         PAINEL DE SUGESTÕES INTELIGENTES
+      }
+      .laser-measure-row strong {
+        color: #f1f5f9;
+        font-weight: 600;
+        font-size: 0.68rem;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .laser-measure-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.08);
+        margin: 6px 0 4px 0;
+      }
+            /* ============================================================
+         SUGESTÕES — lista técnica, ícone colorido, texto neutro
+         A cor carrega SÓ o ícone. Fundo e tipografia neutros.
          ============================================================ */
       .laser-suggestions-panel {
-        background: var(--bg-panel);
-        border-radius: var(--radius-xl);
-        padding: 22px 24px;
-        box-shadow: var(--card-shadow);
+        background: var(--bg-panel-2);
         border: 1px solid var(--border-light);
-        margin-top: 20px;
-        max-width: 1400px;
-        margin-left: auto;
-        margin-right: auto;
+        border-radius: 14px;
+        padding: 0;
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
       }
-      .laser-suggestions-panel h2 {
-        margin: 0 0 16px 0;
-        padding-bottom: 12px;
-        font-size: 1rem;
-        font-weight: 600;
+      .laser-suggestions-header {
+        padding: 14px 20px;
         border-bottom: 1px solid var(--border-light);
+        font-size: 0.88rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
       .laser-suggestions-list {
         display: flex;
         flex-direction: column;
-        gap: 10px;
       }
       .laser-suggestion {
-        display: flex;
-        gap: 12px;
-        padding: 12px 14px;
-        border-radius: var(--radius-md);
-        background: var(--bg-panel-2);
-        border-left: 3px solid var(--primary);
-        font-size: 0.85rem;
-        line-height: 1.5;
+        display: grid;
+        grid-template-columns: 30px 1fr;
+        gap: 14px;
+        padding: 13px 20px;
+        border-bottom: 1px solid var(--border-light);
+        border-left: none;
+        background: transparent;
+        border-radius: 0;
+        align-items: start;
       }
-      .laser-suggestion.tipo-ok {
-        border-left-color: var(--accent-success);
-        background: rgba(22, 163, 74, 0.05);
-      }
-      .laser-suggestion.tipo-info {
-        border-left-color: var(--primary);
-        background: var(--primary-subtle);
-      }
-      .laser-suggestion.tipo-tip {
-        border-left-color: var(--accent-warning);
-        background: rgba(217, 119, 6, 0.05);
-      }
-      .laser-suggestion.tipo-warning {
-        border-left-color: #d97706;
-        background: rgba(217, 119, 6, 0.08);
-      }
-      .laser-suggestion.tipo-danger {
-        border-left-color: var(--accent-danger);
-        background: var(--danger-bg);
+      .laser-suggestion:last-child {
+        border-bottom: none;
       }
       .laser-suggestion-icon {
-        font-size: 1.1rem;
-        line-height: 1.3;
+        width: 26px;
+        height: 26px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 7px;
+        background: var(--bg-subtle);
+        font-size: 0.85rem;
+        line-height: 1;
         flex-shrink: 0;
       }
       .laser-suggestion-body {
@@ -3613,27 +3781,49 @@
       .laser-suggestion-title {
         font-weight: 600;
         color: var(--text-main);
-        margin-bottom: 3px;
-        font-size: 0.85rem;
+        margin-bottom: 2px;
+        font-size: 0.82rem;
+        letter-spacing: -0.005em;
       }
       .laser-suggestion-text {
         color: var(--text-muted);
-        font-size: 0.8rem;
+        font-size: 0.76rem;
+        line-height: 1.5;
       }
       .laser-suggestion-text strong {
         color: var(--text-main);
         font-weight: 600;
       }
+
+      /* Cores dos ícones por tipo (só o quadradinho do ícone) */
+      .laser-suggestion.tipo-ok .laser-suggestion-icon {
+        background: rgba(34, 197, 94, 0.12);
+        color: #22c55e;
+      }
+      .laser-suggestion.tipo-info .laser-suggestion-icon {
+        background: rgba(59, 130, 246, 0.12);
+        color: #3b82f6;
+      }
+      .laser-suggestion.tipo-tip .laser-suggestion-icon {
+        background: rgba(217, 119, 6, 0.12);
+        color: #d97706;
+      }
+      .laser-suggestion.tipo-warning .laser-suggestion-icon {
+        background: rgba(245, 158, 11, 0.16);
+        color: #f59e0b;
+      }
+      .laser-suggestion.tipo-danger .laser-suggestion-icon {
+        background: rgba(239, 68, 68, 0.12);
+        color: #ef4444;
+      }
+
       .laser-suggestions-empty {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 14px 16px;
-        border-radius: var(--radius-md);
-        background: rgba(22, 163, 74, 0.06);
-        border-left: 3px solid var(--accent-success);
-        color: var(--text-main);
-        font-size: 0.85rem;
+        padding: 14px 20px;
+        color: var(--text-muted);
+        font-size: 0.82rem;
       }
       /* ============================================================
          SIMULAÇÃO 3D DO CORTE
@@ -3911,16 +4101,57 @@
         box-shadow: 0 0 0 3px var(--primary-subtle);
       }
 
-      /* Botão "Remover arquivo" — centralização correta */
+      /* Botão "Remover arquivo" — pílula vermelha, alvo de toque ≥ 44px */
       #laserBtnRemoverArquivo {
-        display: inline-flex;
+        display: none;
         align-items: center;
         justify-content: center;
+        gap: 6px;
         text-align: center;
-        padding: 6px 14px !important;
-        font-size: 0.75rem !important;
+        border-radius: 980px !important;
+        padding: 7px 14px 7px 11px !important;
+        font-size: 0.74rem !important;
         line-height: 1.2;
-        border-radius: var(--radius-md) !important;
+        font-weight: 600;
+        font-family: inherit;
+        letter-spacing: -0.005em;
+        min-height: 36px;
+        cursor: pointer;
+        transition: background 0.18s ease, border-color 0.18s ease,
+          transform 0.18s ease, box-shadow 0.18s ease;
+        touch-action: manipulation;
+        background: rgba(220, 38, 38, 0.05);
+        border: 1px solid rgba(220, 38, 38, 0.25);
+        color: #b91c1c;
+        box-shadow: 0 1px 2px rgba(220, 38, 38, 0.06);
+      }
+      #laserBtnRemoverArquivo svg {
+        flex-shrink: 0;
+        transition: transform 0.18s ease;
+      }
+      #laserBtnRemoverArquivo:hover {
+        background: rgba(220, 38, 38, 0.12) !important;
+        border-color: rgba(220, 38, 38, 0.45) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(220, 38, 38, 0.14);
+      }
+      #laserBtnRemoverArquivo:active svg {
+        transform: rotate(-12deg);
+      }
+
+      @media (max-width: 600px) {
+        #laserBtnRemoverArquivo {
+          min-height: 44px !important;
+          padding: 10px 18px 10px 14px !important;
+          font-size: 0.82rem !important;
+          gap: 8px;
+          width: 100%;
+          margin-top: 12px;
+        }
+        #laserBtnRemoverArquivo svg {
+          width: 15px;
+          height: 15px;
+        }
       }
       /* ---------- Dropdown custom de cluster (aba Laser) ---------- */
       /* Reaproveita a base do .filtro-dropdown do Histórico, mas com
@@ -4177,6 +4408,97 @@
         #laserMeasurePanel:not(.expanded) .laser-measure-title {
           margin-bottom: 2px;
           font-size: 0.58rem;
+        }
+      }
+      /* ============================================================
+         PAINEL DE MEDIÇÃO — mesmo DNA visual da caixa Inspecionar
+         dos engradados (fundo escuro translúcido, título azul,
+         linhas com respiro, canto arredondado generoso).
+         ============================================================ */
+      #laserMeasurePanel {
+        top: 12px !important;
+        right: 12px !important;
+        left: auto !important;
+        bottom: auto !important;
+        width: auto !important;
+        min-width: 230px !important;
+        max-width: 280px !important;
+        max-height: none !important;
+        height: auto !important;
+        padding: 14px 16px !important;
+        font-size: 0.85rem !important;
+        line-height: 1.5 !important;
+        border-radius: 10px !important;
+        background: rgba(15, 23, 42, 0.92) !important;
+        border: 1px solid rgba(96, 165, 250, 0.35) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45) !important;
+        overflow: visible !important;
+        pointer-events: none !important;
+        cursor: default !important;
+        color: #e2e8f0 !important;
+      }
+
+      #laserMeasurePanel .laser-measure-title {
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        text-transform: none !important;
+        letter-spacing: 0 !important;
+        color: #60a5fa !important;
+        margin: 0 0 10px 0 !important;
+        padding: 0 0 8px 0 !important;
+        border-bottom: 1px solid #334155 !important;
+      }
+
+      #laserMeasurePanel .laser-measure-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: baseline !important;
+        gap: 14px !important;
+        padding: 3px 0 !important;
+      }
+      #laserMeasurePanel .laser-measure-row span {
+        font-size: 0.82rem !important;
+        color: #94a3b8 !important;
+        font-weight: 500 !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        min-width: 0 !important;
+      }
+      #laserMeasurePanel .laser-measure-row strong {
+        font-size: 0.85rem !important;
+        color: #f1f5f9 !important;
+        font-weight: 600 !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        font-variant-numeric: tabular-nums !important;
+      }
+
+      #laserMeasurePanel .laser-measure-divider {
+        height: 1px !important;
+        background: #334155 !important;
+        margin: 8px 0 6px 0 !important;
+      }
+
+      #laserMeasurePanel .laser-measure-badge {
+        font-size: 0.62rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.08em !important;
+        color: #94a3b8 !important;
+        margin: 0 0 6px 0 !important;
+        padding: 0 !important;
+        border-bottom: none !important;
+      }
+
+      @media (min-width: 601px) {
+        #laserMeasurePanel,
+        #laserMeasurePanel.expanded {
+          max-height: none !important;
+          height: auto !important;
+          overflow: visible !important;
+          pointer-events: none !important;
+          cursor: default !important;
         }
       }
     </style>
@@ -5863,26 +6185,29 @@
               </div>
               <div class="laser-dropzone-filename" id="laserDropzoneFilename"></div>
               <button
-                type="button"
-                id="laserBtnRemoverArquivo"
-                onclick="event.stopPropagation(); laserRemoverArquivo();"
-                style="
-                  display: none;
-                  margin-top: 10px;
-                  padding: 5px 12px;
-                  border-radius: 6px;
-                  border: 1px solid var(--border-light);
-                  background: transparent;
-                  color: var(--text-muted);
-                  font-size: 0.72rem;
-                  font-weight: 500;
-                  cursor: pointer;
-                  transition: all 0.15s;
-                  font-family: inherit;
-                "
+              type="button"
+              id="laserBtnRemoverArquivo"
+              onclick="event.stopPropagation(); laserRemoverArquivo();"
+            >
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
               >
-                Remover arquivo
-              </button>
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                ></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+              Remover arquivo
+            </button>
             </div>
             <!-- SEM `accept`: o iOS Safari desabilita (cinza) arquivos de
                  tipos que ele não reconhece no Files picker — e DXF cai
@@ -6077,8 +6402,12 @@
         </div>
 
         <!-- ============================================================
-             ÁREA PRINCIPAL — Canvas 2D
+             COLUNA DIREITA — Canvas + Resultados + Sugestões
+             Empilhados num flex-column próprio, para não sofrerem
+             com a altura da sidebar (que costuma ser mais alta).
              ============================================================ -->
+        <div class="laser-main-col">
+
         <div class="panel">
           <h2>Visualização da Geometria</h2>
 
@@ -6213,795 +6542,860 @@
           </span>
         </div>
         </div>
-    </div>
 
       <!-- ============================================================
-           ÁREA DE RESULTADOS — preenchida pelo Passo 4
+           ÁREA DE RESULTADOS — dentro da grid, coluna do canvas
            ============================================================ -->
-           <div id="laserResultsArea" style="max-width: 1400px; margin: 20px auto 0 auto"></div>
+           <div id="laserResultsArea"></div>
            <div id="laserSuggestionsArea"></div>
-          </div>
+        </div>
+    </div>
+    </div>
       
-          <!-- ABA MANUAL DO CORTE A LASER -->
-          <div id="laser-manual-tab" class="tab-content">
-            <div
-              class="panel"
-              style="max-width: 1400px; margin: 0 auto 24px auto; text-align: left"
-            >
-              <h2
-                style="
-                  color: var(--primary);
-                  font-size: 1.2rem;
-                  margin-bottom: 8px;
-                  border: none;
-                  padding: 0;
-                "
-              >
-                Manual do Corte a Laser
-              </h2>
-              <p
-                style="
-                  color: var(--text-muted);
-                  line-height: 1.6;
-                  font-size: 0.9rem;
-                  margin: 0;
-                "
-              >
-                Explicação técnica de <strong>cada campo do orçamento</strong> — o que
-                significa, como é calculado e como escolher o valor certo para o seu
-                fornecedor. Clique em qualquer item para expandir.
+    <!-- ABA MANUAL DO CORTE A LASER -->
+    <div id="laser-manual-tab" class="tab-content">
+      <div
+        class="panel"
+        style="max-width: 1400px; margin: 0 auto 24px auto; text-align: left"
+      >
+        <h2
+          style="
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            border: none;
+            padding: 0;
+          "
+        >
+          Manual do Corte a Laser
+        </h2>
+        <p
+          style="
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 0.9rem;
+            margin: 0;
+          "
+        >
+          Explicação técnica de <strong>cada campo do orçamento</strong> — o que
+          significa, como é calculado e como escolher o valor certo para o seu
+          fornecedor. Clique em qualquer item para expandir.
+        </p>
+      </div>
+
+      <div class="manual-list">
+        <!-- 1. VISÃO GERAL -->
+        <div class="manual-item" id="laser-manual-1">
+          <div
+            class="manual-item-header"
+            onclick="toggleManual('laser-manual-1')"
+          >
+            <div class="manual-item-icon">📖</div>
+            <div class="manual-item-title-block">
+              <h3 class="manual-item-title">1. Como a ferramenta calcula</h3>
+              <p class="manual-item-subtitle">
+                Fluxo completo: do arquivo DXF ao preço final
               </p>
             </div>
-      
-            <div class="manual-list">
-              <!-- 1. VISÃO GERAL -->
-              <div class="manual-item" id="laser-manual-1">
-                <div
-                  class="manual-item-header"
-                  onclick="toggleManual('laser-manual-1')"
-                >
-                  <div class="manual-item-icon">📖</div>
-                  <div class="manual-item-title-block">
-                    <h3 class="manual-item-title">1. Como a ferramenta calcula</h3>
-                    <p class="manual-item-subtitle">
-                      Fluxo completo: do arquivo DXF ao preço final
-                    </p>
-                  </div>
-                  <span class="manual-item-chevron">▶</span>
-                </div>
-                <div class="manual-item-body">
-                  <div class="manual-item-body-inner">
-                    <div class="manual-item-body-content">
-                      <p>
-                        O cálculo tem <strong>4 etapas</strong>, sempre na mesma ordem:
-                      </p>
-                      <h4>1. Leitura do arquivo</h4>
-                      <p>
-                        O parser percorre o DXF/SVG e extrai o
-                        <strong>comprimento total do contorno</strong> (em mm) e o
-                        <strong>número de furos/contornos internos</strong>. Um DXF
-                        pode conter vários desenhos separados — o seletor de "Peça A /
-                        Peça B" permite escolher qual orçar.
-                      </p>
-                      <h4>2. Velocidade de corte</h4>
-                      <p>
-                        Cruzando <strong>material + espessura + potência + gás</strong>,
-                        o sistema determina uma velocidade em mm/s. Essa velocidade
-                        vem de tabelas de referência de mercado (Bodor, Trumpf, Rise
-                        Tek).
-                      </p>
-                      <h4>3. Tempo total</h4>
-                      <p>
-                        <span class="formula"
-                          >t = (comprimento ÷ velocidade) + (furos × piercing) +
-                          setup</span
-                        >
-                      </p>
-                      <p>
-                        O <strong>setup</strong> é o tempo de preparar a máquina (60s
-                        no simulador). O <strong>piercing</strong> é o tempo que o
-                        laser leva para furar a chapa em cada novo contorno.
-                      </p>
-                      <h4>4. Custo</h4>
-                      <p>
-                        Soma 4 parcelas: <strong>máquina</strong>,
-                        <strong>gás</strong>, <strong>energia</strong> e
-                        <strong>consumíveis</strong>. Depois aplica a margem do
-                        fornecedor.
-                      </p>
-                      <div class="highlight-box">
-                        <strong>Por que importa:</strong> quando o fornecedor te dá
-                        "R$ 15 por peça", você decompõe o cálculo por trás disso e
-                        descobre quanto é custo real e quanto é margem.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-      
-              <!-- 2. ARQUIVO -->
-              <div class="manual-item" id="laser-manual-2">
-                <div
-                  class="manual-item-header"
-                  onclick="toggleManual('laser-manual-2')"
-                >
-                  <div class="manual-item-icon">📐</div>
-                  <div class="manual-item-title-block">
-                    <h3 class="manual-item-title">2. Arquivo da Peça (DXF / SVG)</h3>
-                    <p class="manual-item-subtitle">
-                      O que é lido e o que é ignorado
-                    </p>
-                  </div>
-                  <span class="manual-item-chevron">▶</span>
-                </div>
-                <div class="manual-item-body">
-                  <div class="manual-item-body-inner">
-                    <div class="manual-item-body-content">
-                      <h4>Formatos suportados</h4>
-                      <ul>
-                        <li>
-                          <strong>DXF</strong> — formato vetorial do AutoCAD. Padrão da
-                          indústria de corte a laser.
-                        </li>
-                        <li>
-                          <strong>SVG</strong> — formato vetorial web. Útil para
-                          desenhos vindos do Illustrator, Figma ou Inkscape.
-                        </li>
-                      </ul>
-                      <h4>Entidades DXF que a ferramenta lê</h4>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Entidade</th>
-                            <th>Descrição</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td><strong>LINE</strong></td>
-                            <td>Linha reta entre dois pontos</td>
-                          </tr>
-                          <tr>
-                            <td><strong>CIRCLE</strong></td>
-                            <td>Círculo completo</td>
-                          </tr>
-                          <tr>
-                            <td><strong>ARC</strong></td>
-                            <td>Arco de círculo</td>
-                          </tr>
-                          <tr>
-                            <td><strong>LWPOLYLINE</strong></td>
-                            <td>
-                              Polilinha com bulges (arcos embutidos) — a mais comum
-                            </td>
-                          </tr>
-                          <tr>
-                            <td><strong>POLYLINE</strong></td>
-                            <td>Polilinha legada (formato antigo)</td>
-                          </tr>
-                          <tr>
-                            <td><strong>ELLIPSE</strong></td>
-                            <td>Elipse completa ou parcial</td>
-                          </tr>
-                          <tr>
-                            <td><strong>SPLINE</strong></td>
-                            <td>Curva suave (interpolada por amostragem)</td>
-                          </tr>
-                          <tr>
-                            <td><strong>INSERT</strong></td>
-                            <td>
-                              Blocos referenciados — expandidos com posição, rotação e
-                              escala
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                      <h4>O que é ignorado (não afeta o corte)</h4>
-                      <ul>
-                        <li>
-                          <strong>TEXT / MTEXT</strong> — textos e cotas (não são
-                          cortados)
-                        </li>
-                        <li>
-                          <strong>HATCH</strong> — hachuras e preenchimentos
-                        </li>
-                        <li>
-                          <strong>DIMENSION</strong> — cotas dimensionais
-                        </li>
-                        <li>
-                          <strong>VIEWPORT</strong> — janelas de layout (por isso a
-                          bbox gigante de 10m em alguns arquivos)
-                        </li>
-                      </ul>
-                      <div class="highlight-box">
-                        <strong>Dica:</strong> se o desenho aparecer estranho, abra o
-                        DXF no editor de texto e verifique se há `INSERT` ou `SPLINE`.
-                        Estes são os casos que mais dão problema.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-      
-              <!-- 3. MATERIAL E ESPESSURA -->
-              <div class="manual-item" id="laser-manual-3">
-                <div
-                  class="manual-item-header"
-                  onclick="toggleManual('laser-manual-3')"
-                >
-                  <div class="manual-item-icon">🔩</div>
-                  <div class="manual-item-title-block">
-                    <h3 class="manual-item-title">3. Material e Espessura</h3>
-                    <p class="manual-item-subtitle">
-                      Como cada metal reage ao feixe
-                    </p>
-                  </div>
-                  <span class="manual-item-chevron">▶</span>
-                </div>
-                <div class="manual-item-body">
-                  <div class="manual-item-body-inner">
-                    <div class="manual-item-body-content">
-                      <h4>Ordem de "facilidade de corte" (mais fácil → mais difícil)</h4>
-                      <ol>
-                        <li>
-                          <strong>Aço Carbono (1020, 1045)</strong> — o mais fácil de
-                          todos. Reage com o oxigênio e gera calor exotérmico, que
-                          ajuda o próprio corte. Rápido e barato.
-                        </li>
-                        <li>
-                          <strong>Alumínio (5052, 6061)</strong> — reflete muito o
-                          feixe. Exige potência maior e nitrogênio para borda limpa.
-                        </li>
-                        <li>
-                          <strong>Aço Inox (304, 316L)</strong> — o mais comum na sua
-                          indústria. Condutividade térmica baixa concentra o calor.
-                          Nitrogênio obrigatório.
-                        </li>
-                        <li>
-                          <strong>Latão</strong> — refletivo e com zinco na liga, que
-                          evapora e suja a lente. Precisa de cuidado.
-                        </li>
-                        <li>
-                          <strong>Cobre</strong> — o pior caso. Reflete ~95% do feixe
-                          infravermelho. Exige potência altíssima.
-                        </li>
-                      </ol>
-                      <h4>Como a espessura afeta tudo</h4>
-                      <p>
-                        Dobrar a espessura <strong>não dobra o tempo</strong> — ele
-                        cresce mais rápido. Uma chapa de 4mm corta a ~140 mm/s com 4
-                        kW; uma de 8mm cai para ~40 mm/s com a mesma potência. É uma
-                        relação não-linear.
-                      </p>
-                      <div class="highlight-box">
-                        <strong>Regra prática:</strong> peças com muitas curvas
-                        fechadas (estrelas, engrenagens) sofrem mais com espessura
-                        alta porque o bico precisa desacelerar nas quinas.
-                      </div>
-      
-                      <h4>Referências de Velocidade de Corte</h4>
-                      <p>
-                        Os valores da tabela de velocidade do simulador são baseados em
-                        dados públicos de fabricantes e integradores. Consulte:
-                      </p>
-                      <ul>
-                        <li>
-                          <a
-                            href="https://risetekmachinery.com/fiber-laser-cutting-performance-guide/"
-                            target="_blank"
-                            rel="noopener"
-                            style="color: var(--primary)"
-                            >Rise Tek — Fiber Laser Cutting Performance Guide</a
-                          >
-                        </li>
-                        <li>
-                          <a
-                            href="https://www.bodor.com/en/blogs/laser-cutting-parameters-6kw-12kw-sheet-metal.html"
-                            target="_blank"
-                            rel="noopener"
-                            style="color: var(--primary)"
-                            >Bodor Academy — Guia de Parâmetros 6kW e 12kW</a
-                          >
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-      
-              <!-- 4. TECNOLOGIA -->
-              <div class="manual-item" id="laser-manual-4">
-                <div
-                  class="manual-item-header"
-                  onclick="toggleManual('laser-manual-4')"
-                >
-                  <div class="manual-item-icon">⚡</div>
-                  <div class="manual-item-title-block">
-                    <h3 class="manual-item-title">4. Tecnologia e Potência</h3>
-                    <p class="manual-item-subtitle">
-                      Fibra × CO₂, e por que a potência muda tudo
-                    </p>
-                  </div>
-                  <span class="manual-item-chevron">▶</span>
-                </div>
-                <div class="manual-item-body">
-                  <div class="manual-item-body-inner">
-                    <div class="manual-item-body-content">
-                      <h4>Fibra Laser — o padrão atual</h4>
-                      <p>
-                        Feixe gerado em fibra óptica dopada com itérbio. Comprimento
-                        de onda 1070 nm. <strong>Eficiência elétrica ~35%</strong>.
-                        Praticamente 100% das máquinas compradas após 2015 são fibra.
-                      </p>
-                      <p><strong>Vantagens:</strong></p>
-                      <ul>
-                        <li>Velocidade 3–5× maior em metais finos</li>
-                        <li>Manutenção mais barata (sem gás de ressonador)</li>
-                        <li>Feixe de qualidade excelente (BPP baixo)</li>
-                      </ul>
-                      <h4>CO₂ Laser — tecnologia legada</h4>
-                      <p>
-                        Feixe gerado em mistura de gases (CO₂, N₂, He). Comprimento de
-                        onda 10.600 nm. <strong>Eficiência ~10%</strong>. Só faz
-                        sentido para <strong>não-metais</strong> (acrílico, MDF,
-                        couro, vidro) ou metais finos (aço carbono &lt; 3mm).
-                      </p>
-                      <h4>Escolha da potência</h4>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Potência</th>
-                            <th>Aplicação típica</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td><strong>1,5 – 2 kW</strong></td>
-                            <td>Chapa fina (até 3mm aço inox, 4mm alumínio)</td>
-                          </tr>
-                          <tr>
-                            <td><strong>3 kW</strong></td>
-                            <td>Uso geral (até 6mm inox, 8mm alumínio)</td>
-                          </tr>
-                          <tr>
-                            <td><strong>4 – 6 kW</strong></td>
-                            <td>Padrão industrial (até 12mm inox, 16mm aço)</td>
-                          </tr>
-                          <tr>
-                            <td><strong>8 – 12 kW</strong></td>
-                            <td>Chapas grossas e alta produção (até 25mm)</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                      <div class="highlight-box">
-                        <strong>Regra de cotação:</strong> peça ao fornecedor qual
-                        potência ele tem. Se for 6kW e você estiver cotando peça de
-                        3mm, o cálculo vai ficar abaixo do valor cobrado — o que é
-                        normal, porque ele dilui o custo da máquina grande em todas as
-                        peças.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-      
-              <!-- 5. GÁS -->
-              <div class="manual-item" id="laser-manual-5">
-                <div
-                  class="manual-item-header"
-                  onclick="toggleManual('laser-manual-5')"
-                >
-                  <div class="manual-item-icon">💨</div>
-                  <div class="manual-item-title-block">
-                    <h3 class="manual-item-title">5. Gás Auxiliar</h3>
-                    <p class="manual-item-subtitle">
-                      Nitrogênio, oxigênio, ar — quando usar cada um
-                    </p>
-                  </div>
-                  <span class="manual-item-chevron">▶</span>
-                </div>
-                <div class="manual-item-body">
-                  <div class="manual-item-body-inner">
-                    <div class="manual-item-body-content">
-                      <p>
-                        O gás tem <strong>3 funções</strong>: empurrar o metal
-                        fundido para fora do corte, esfriar a zona de fusão e proteger
-                        a lente contra respingos.
-                      </p>
-                      <h4>Nitrogênio (N₂)</h4>
-                      <ul>
-                        <li>
-                          <strong>Borda limpa</strong>, sem oxidação — o padrão para
-                          inox e alumínio
-                        </li>
-                        <li>
-                          Custo mais alto (R$ 8–15/m³ em cilindro, R$ 3–6/m³ em tanque
-                          criogênico)
-                        </li>
-                        <li>
-                          Consumo típico: <span class="formula"
-                            >12 + (espessura × 1,5) m³/h</span
-                          >
-                          — calibrado para 4 mm → 18 m³/h e 12 mm → 30 m³/h
-                        </li>
-                      </ul>
-                      <h4>Oxigênio (O₂)</h4>
-                      <ul>
-                        <li>
-                          <strong>3× mais rápido</strong> em aço carbono, porque a
-                          reação química gera calor extra
-                        </li>
-                        <li>
-                          <strong>Borda oxidada</strong> (escura), inaceitável para inox
-                          ou alumínio exposto
-                        </li>
-                        <li>Ótimo para aço carbono estrutural</li>
-                      </ul>
-                      <h4>Ar Comprimido</h4>
-                      <ul>
-                        <li>
-                          <strong>Mais barato</strong> — basta um compressor
-                          industrial
-                        </li>
-                        <li>
-                          Borda levemente oxidada, qualidade intermediária
-                        </li>
-                        <li>
-                          Bom para alumínio fino (&lt; 4mm) e aço carbono de baixa
-                          exigência
-                        </li>
-                      </ul>
-                      <h4>Nenhum</h4>
-                      <ul>
-                        <li>
-                          Só para fusão (corte de sacrifício, sem qualidade)
-                        </li>
-                        <li>Praticamente não usado em produção séria</li>
-                      </ul>
-                      <div class="highlight-box">
-                        <strong>Impacto no orçamento:</strong> inox + N₂ + 6mm
-                        espessura consome em média <strong>19 m³/h</strong>. Se o gás
-                        custa R$ 12/m³, isso é R$ 228/h só de gás — frequentemente
-                        <strong>mais que a máquina</strong>. Não ignore esse campo.
-                      </div>
-      
-                      <h4>Referência Técnica de Consumo de Gás</h4>
-                      <p>
-                        Os valores de vazão por espessura são baseados em faixas
-                        públicas de fabricantes de máquinas e calculadoras
-                        especializadas. Consulte:
-                      </p>
-                      <ul>
-                        <li>
-                          <a
-                            href="https://yihailasers.com/laser-cutting-gas-consumption-calculator/"
-                            target="_blank"
-                            rel="noopener"
-                            style="color: var(--primary)"
-                            >Yihai Laser — Calculadora de Consumo de Gás</a
-                          >
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-      
-              <!-- 6. CONSUMÍVEIS -->
-              <div class="manual-item" id="laser-manual-6">
-                <div
-                  class="manual-item-header"
-                  onclick="toggleManual('laser-manual-6')"
-                >
-                  <div class="manual-item-icon">🔧</div>
-                  <div class="manual-item-title-block">
-                    <h3 class="manual-item-title">6. Consumíveis</h3>
-                    <p class="manual-item-subtitle">
-                      As peças de desgaste do cabeçote — o campo mais subestimado
-                    </p>
-                  </div>
-                  <span class="manual-item-chevron">▶</span>
-                </div>
-                <div class="manual-item-body">
-                  <div class="manual-item-body-inner">
-                    <div class="manual-item-body-content">
-                      <p>
-                        <strong>Consumíveis</strong> são as peças do
-                        <strong>cabeçote de corte</strong> que morrem com o uso — não
-                        são a máquina nem a fonte laser. Precisam ser trocadas com
-                        frequência, e o custo disso entra no preço da hora.
-                      </p>
-                      <h4>Lista de consumíveis típicos</h4>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Peça</th>
-                            <th>Função</th>
-                            <th>Vida útil</th>
-                            <th>Custo</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td><strong>Bico de corte</strong></td>
-                            <td>Direciona o gás no ponto de fusão</td>
-                            <td>200–800h</td>
-                            <td>R$ 30–150</td>
-                          </tr>
-                          <tr>
-                            <td><strong>Lente de proteção</strong></td>
-                            <td>
-                              Vidro fino que impede respingo de sujar a lente principal
-                            </td>
-                            <td>20–80h</td>
-                            <td>R$ 100–300</td>
-                          </tr>
-                          <tr>
-                            <td><strong>Lente de foco</strong></td>
-                            <td>Focaliza o feixe no ponto de corte</td>
-                            <td>1000–4000h</td>
-                            <td>R$ 800–3000</td>
-                          </tr>
-                          <tr>
-                            <td><strong>Cerâmica</strong></td>
-                            <td>Isola e prende o bico</td>
-                            <td>~1000h</td>
-                            <td>R$ 200–500</td>
-                          </tr>
-                          <tr>
-                            <td><strong>Fole</strong></td>
-                            <td>Protege o cabeçote contra poeira</td>
-                            <td>~2000h</td>
-                            <td>R$ 500–1500</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                      <h4>Como estimar o valor de R$/hora</h4>
-                      <p>
-                        Divida o custo de cada peça pela sua vida útil em horas e some
-                        tudo:
-                      </p>
-                      <p>
-                        <span class="formula"
-                          >(100 ÷ 400) + (150 ÷ 40) + (1500 ÷ 2000) + (300 ÷ 1000) +
-                          (1000 ÷ 2000) ≈ R$ 5,55/h</span
-                        >
-                      </p>
-                      <p>
-                        Na prática, aloque <strong>R$ 15 a R$ 50/hora</strong> — há
-                        outros itens menores (vedações, sensores, filtros) e a vida
-                        útil real é menor em produção pesada.
-                      </p>
-                      <div class="highlight-box">
-                        <strong>Regra para o seu caso:</strong> se o fornecedor te dá
-                        "R$ 380/hora, tudo incluído", <strong>deixe consumíveis em
-                        R$ 0</strong>. Se ele discrimina as linhas no orçamento, aí
-                        sim você preenche com o valor que ele cobrou.
-                      </div>
-      
-                      <h4>Referências Técnicas de Consumíveis</h4>
-                      <p>
-                        Os valores de vida útil e custo por hora são baseados em dados
-                        públicos de fabricantes e literatura técnica. Consulte:
-                      </p>
-                      <ul>
-                        <li>
-                          <a
-                            href="https://www.lasercalcpro.com/guides/hourly-cost-structure"
-                            target="_blank"
-                            rel="noopener"
-                            style="color: var(--primary)"
-                            >LaserCalc Pro — Estrutura de Custos Horários</a
-                          >
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-      
-              <!-- 7. PARÂMETROS DE CUSTO -->
-              <div class="manual-item" id="laser-manual-7">
-                <div
-                  class="manual-item-header"
-                  onclick="toggleManual('laser-manual-7')"
-                >
-                  <div class="manual-item-icon">💰</div>
-                  <div class="manual-item-title-block">
-                    <h3 class="manual-item-title">7. Parâmetros de Custo</h3>
-                    <p class="manual-item-subtitle">
-                      Taxa máquina, energia, margem
-                    </p>
-                  </div>
-                  <span class="manual-item-chevron">▶</span>
-                </div>
-                <div class="manual-item-body">
-                  <div class="manual-item-body-inner">
-                    <div class="manual-item-body-content">
-                      <h4>Taxa Máquina (R$/h)</h4>
-                      <p>
-                        É o custo de ter a máquina ligada durante uma hora. Inclui:
-                      </p>
-                      <ul>
-                        <li>Depreciação do investimento (5–10 anos)</li>
-                        <li>Manutenção preventiva e corretiva</li>
-                        <li>Espaço físico, seguro, impostos</li>
-                        <li>Operador (em muitos casos)</li>
-                      </ul>
-                      <p>Faixas de mercado no Brasil:</p>
-                      <ul>
-                        <li><strong>1,5–3 kW</strong>: R$ 180–280/h</li>
-                        <li><strong>4–6 kW</strong>: R$ 280–420/h</li>
-                        <li><strong>8–12 kW</strong>: R$ 420–650/h</li>
-                      </ul>
-                      <p>
-                        <strong>Como descobrir a do seu fornecedor:</strong> peça uma
-                        peça-teste simples (retângulo de 100×100mm em 4mm). Divida o
-                        valor cobrado pelo tempo de corte que o simulador calcula. O
-                        quociente é a taxa efetiva dele.
-                      </p>
-                      <h4>Preço da Energia (R$/kWh)</h4>
-                      <p>
-                        Pegue da sua conta de luz industrial (fora a demanda). Faixa
-                        típica: R$ 0,65–0,95/kWh. O simulador aplica um fator de carga
-                        de 70% sobre a potência nominal — a máquina não fica no talo o
-                        tempo todo.
-                      </p>
-                      <h4>Margem do Fornecedor (%)</h4>
-                      <p>
-                        É o <strong>lucro líquido</strong> após cobrir todos os
-                        custos. Faixas típicas:
-                      </p>
-                      <ul>
-                        <li>
-                          <strong>20–30%</strong> — serviço de alta recorrência,
-                          concorrência acirrada
-                        </li>
-                        <li>
-                          <strong>30–50%</strong> — serviço sob demanda, urgência,
-                          peças pequenas em série
-                        </li>
-                        <li>
-                          <strong>50–80%</strong> — protótipo único, material exótico,
-                          prazo curto
-                        </li>
-                      </ul>
-                      <div class="highlight-box">
-                        <strong>Como usar na negociação:</strong> preencha com a margem
-                        que você <em>acha justa</em> (ex: 25%) e compare o resultado
-                        com o orçamento do fornecedor. A diferença mostra quanto ele
-                        está cobrando de margem real.
-                      </div>
-      
-                      <h4>Referências Técnicas de Custos</h4>
-                      <p>
-                        As faixas de taxa horária e estrutura de custos são baseadas em
-                        benchmarks públicos de mercado. Consulte:
-                      </p>
-                      <ul>
-                        <li>
-                          <a
-                            href="https://www.lasercalcpro.com/guides/hourly-cost-structure"
-                            target="_blank"
-                            rel="noopener"
-                            style="color: var(--primary)"
-                            >LaserCalc Pro — Estrutura de Custos Horários</a
-                          >
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-      
-              <!-- 8. FÓRMULAS -->
-              <div class="manual-item" id="laser-manual-8">
-                <div
-                  class="manual-item-header"
-                  onclick="toggleManual('laser-manual-8')"
-                >
-                <div class="manual-item-icon">📊</div>
-                  <div class="manual-item-title-block">
-                    <h3 class="manual-item-title">8. Fórmulas do Orçamento</h3>
-                    <p class="manual-item-subtitle">
-                      As contas por trás dos números
-                    </p>
-                  </div>
-                  <span class="manual-item-chevron">▶</span>
-                </div>
-                <div class="manual-item-body">
-                  <div class="manual-item-body-inner">
-                    <div class="manual-item-body-content">
-                      <h4>Tempo de corte</h4>
-                      <p>
-                        <span class="formula"
-                          >t_corte (s) = comprimento (mm) ÷ velocidade (mm/s)</span
-                        >
-                      </p>
-                      <h4>Piercing</h4>
-                      <p>
-                        <span class="formula"
-                          >t_piercing (s) = nº de furos × (0,3 + 0,05 × espessura²) ×
-                          fator_gás</span
-                        >
-                      </p>
-                      <p>
-                        A cada novo contorno (furo ou novo perfil separado), o laser
-                        precisa furar a chapa antes de começar a cortar. O tempo cresce
-                        <strong>ao quadrado</strong> com a espessura (não é linear):
-                        4 mm fura em ~1 s; 20 mm leva ~20 s por furo. O fator de gás é
-                        1,0 para N₂, 0,7 para O₂ (fura mais rápido) e 0,85 para ar
-                        comprimido.
-                      </p>
-                      <h4>Tempo total</h4>
-                      <p>
-                        <span class="formula"
-                          >t_total = t_corte + t_piercing + 60s (setup)</span
-                        >
-                      </p>
-                      <h4>Custos</h4>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Componente</th>
-                            <th>Fórmula</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td><strong>Máquina</strong></td>
-                            <td>
-                              <span class="formula"
-                                >taxa (R$/h) × t_total (h)</span
-                              >
-                            </td>
-                          </tr>
-                          <tr>
-                            <td><strong>Gás</strong></td>
-                            <td>
-                              <span class="formula"
-                                >preço (R$/m³) × vazão (m³/h) × t_efetivo (h)</span
-                              >
-                            </td>
-                          </tr>
-                          <tr>
-                            <td><strong>Energia</strong></td>
-                            <td>
-                              <span class="formula"
-                                >preço (R$/kWh) × (potência_kW × 0,7) × t_total
-                                (h)</span
-                              >
-                            </td>
-                          </tr>
-                          <tr>
-                            <td><strong>Consumíveis</strong></td>
-                            <td>
-                              <span class="formula"
-                                >taxa (R$/h) × t_total (h)</span
-                              >
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                      <h4>Preço final</h4>
-                      <p>
-                        <span class="formula"
-                          >preço = (máquina + gás + energia + consumíveis) × (1 +
-                          margem ÷ 100)</span
-                        >
-                      </p>
-                      <div class="highlight-box">
-                        <strong>Observação:</strong> o gás só é consumido durante o
-                        corte efetivo (não no setup). Por isso a fórmula dele usa
-                        <span class="formula">t_efetivo</span> em vez de
-                        <span class="formula">t_total</span>.
-                      </div>
-                    </div>
-                  </div>
+            <span class="manual-item-chevron">▶</span>
+          </div>
+          <div class="manual-item-body">
+            <div class="manual-item-body-inner">
+              <div class="manual-item-body-content">
+                <p>
+                  O cálculo tem <strong>4 etapas</strong>, sempre na mesma ordem:
+                </p>
+                <h4>1. Leitura do arquivo</h4>
+                <p>
+                  O parser percorre o DXF/SVG e extrai o
+                  <strong>comprimento total do contorno</strong> (em mm) e o
+                  <strong>número de furos/contornos internos</strong>. Um DXF
+                  pode conter vários desenhos separados — o seletor de "Peça A /
+                  Peça B" permite escolher qual orçar.
+                </p>
+                <h4>2. Velocidade de corte</h4>
+                <p>
+                  Cruzando <strong>material + espessura + potência + gás</strong>,
+                  o sistema determina uma velocidade em mm/s. Essa velocidade
+                  vem de tabelas de referência de mercado (Bodor, Trumpf, Rise
+                  Tek).
+                </p>
+                <h4>3. Tempo total</h4>
+                <p>
+                  <span class="formula"
+                    >t = (comprimento ÷ velocidade) + (furos × piercing) +
+                    setup</span
+                  >
+                </p>
+                <p>
+                  O <strong>setup</strong> é o tempo de preparar a máquina (60s
+                  no simulador). O <strong>piercing</strong> é o tempo que o
+                  laser leva para furar a chapa em cada novo contorno.
+                </p>
+                <h4>4. Custo</h4>
+                <p>
+                  Soma 4 parcelas: <strong>máquina</strong>,
+                  <strong>gás</strong>, <strong>energia</strong> e
+                  <strong>consumíveis</strong>. Depois aplica a margem do
+                  fornecedor.
+                </p>
+                <div class="highlight-box">
+                  <strong>Por que importa:</strong> quando o fornecedor te dá
+                  "R$ 15 por peça", você decompõe o cálculo por trás disso e
+                  descobre quanto é custo real e quanto é margem.
                 </div>
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- 2. ARQUIVO -->
+        <div class="manual-item" id="laser-manual-2">
+          <div
+            class="manual-item-header"
+            onclick="toggleManual('laser-manual-2')"
+          >
+            <div class="manual-item-icon">📐</div>
+            <div class="manual-item-title-block">
+              <h3 class="manual-item-title">2. Arquivo da Peça (DXF / SVG)</h3>
+              <p class="manual-item-subtitle">
+                O que é lido e o que é ignorado
+              </p>
+            </div>
+            <span class="manual-item-chevron">▶</span>
+          </div>
+          <div class="manual-item-body">
+            <div class="manual-item-body-inner">
+              <div class="manual-item-body-content">
+                <h4>Formatos suportados</h4>
+                <ul>
+                  <li>
+                    <strong>DXF</strong> — formato vetorial do AutoCAD. Padrão da
+                    indústria de corte a laser.
+                  </li>
+                  <li>
+                    <strong>SVG</strong> — formato vetorial web. Útil para
+                    desenhos vindos do Illustrator, Figma ou Inkscape.
+                  </li>
+                </ul>
+                <h4>Entidades DXF que a ferramenta lê</h4>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Entidade</th>
+                      <th>Descrição</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>LINE</strong></td>
+                      <td>Linha reta entre dois pontos</td>
+                    </tr>
+                    <tr>
+                      <td><strong>CIRCLE</strong></td>
+                      <td>Círculo completo</td>
+                    </tr>
+                    <tr>
+                      <td><strong>ARC</strong></td>
+                      <td>Arco de círculo</td>
+                    </tr>
+                    <tr>
+                      <td><strong>LWPOLYLINE</strong></td>
+                      <td>
+                        Polilinha com bulges (arcos embutidos) — a mais comum
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>POLYLINE</strong></td>
+                      <td>Polilinha legada (formato antigo)</td>
+                    </tr>
+                    <tr>
+                      <td><strong>ELLIPSE</strong></td>
+                      <td>Elipse completa ou parcial</td>
+                    </tr>
+                    <tr>
+                      <td><strong>SPLINE</strong></td>
+                      <td>Curva suave (interpolada por amostragem)</td>
+                    </tr>
+                    <tr>
+                      <td><strong>INSERT</strong></td>
+                      <td>
+                        Blocos referenciados — expandidos com posição, rotação e
+                        escala
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <h4>O que é ignorado (não afeta o corte)</h4>
+                <ul>
+                  <li>
+                    <strong>TEXT / MTEXT</strong> — textos e cotas (não são
+                    cortados)
+                  </li>
+                  <li>
+                    <strong>HATCH</strong> — hachuras e preenchimentos
+                  </li>
+                  <li>
+                    <strong>DIMENSION</strong> — cotas dimensionais
+                  </li>
+                  <li>
+                    <strong>VIEWPORT</strong> — janelas de layout (por isso a
+                    bbox gigante de 10m em alguns arquivos)
+                  </li>
+                </ul>
+                <div class="highlight-box">
+                  <strong>Dica:</strong> se o desenho aparecer estranho, abra o
+                  DXF no editor de texto e verifique se há `INSERT` ou `SPLINE`.
+                  Estes são os casos que mais dão problema.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. MATERIAL E ESPESSURA -->
+        <div class="manual-item" id="laser-manual-3">
+          <div
+            class="manual-item-header"
+            onclick="toggleManual('laser-manual-3')"
+          >
+            <div class="manual-item-icon">🔩</div>
+            <div class="manual-item-title-block">
+              <h3 class="manual-item-title">3. Material e Espessura</h3>
+              <p class="manual-item-subtitle">
+                Como cada metal reage ao feixe e o que esperar de cada um
+              </p>
+            </div>
+            <span class="manual-item-chevron">▶</span>
+          </div>
+          <div class="manual-item-body">
+            <div class="manual-item-body-inner">
+              <div class="manual-item-body-content">
+                <h4>Ordem de "facilidade de corte" (mais fácil → mais difícil)</h4>
+                <ol>
+                  <li>
+                    <strong>Aço Carbono (1020, 1045)</strong> — o mais fácil de
+                    todos. Reage com o oxigênio e gera calor exotérmico, que
+                    ajuda o próprio corte. Rápido e barato.
+                  </li>
+                  <li>
+                    <strong>Alumínio (5052, 6061)</strong> — reflete muito o
+                    feixe. Exige potência maior e nitrogênio para borda limpa.
+                  </li>
+                  <li>
+                    <strong>Aço Inox (304, 316L)</strong> — o mais comum na sua
+                    indústria. Condutividade térmica baixa concentra o calor.
+                    Nitrogênio obrigatório.
+                  </li>
+                  <li>
+                    <strong>Latão</strong> — refletivo e com zinco na liga, que
+                    evapora e suja a lente. Precisa de cuidado.
+                  </li>
+                  <li>
+                    <strong>Cobre</strong> — o pior caso. Reflete ~95% do feixe
+                    infravermelho. Exige potência altíssima.
+                  </li>
+                </ol>
+                <h4>Como a espessura afeta tudo</h4>
+                <p>
+                  Dobrar a espessura <strong>não dobra o tempo</strong> — ele
+                  cresce mais rápido. Uma chapa de 4mm corta a ~140 mm/s com 4
+                  kW; uma de 8mm cai para ~40 mm/s com a mesma potência. É uma
+                  relação não-linear.
+                </p>
+                <div class="highlight-box">
+                  <strong>Regra prática:</strong> peças com muitas curvas
+                  fechadas (estrelas, engrenagens) sofrem mais com espessura
+                  alta porque o bico precisa desacelerar nas quinas.
+                </div>
+
+                <h4>Referências de Velocidade de Corte</h4>
+                <p>
+                  Os valores da tabela de velocidade do simulador são baseados em
+                  dados públicos de fabricantes e integradores. Consulte:
+                </p>
+                <ul>
+                  <li>
+                    <a
+                      href="https://risetekmachinery.com/fiber-laser-cutting-performance-guide/"
+                      target="_blank"
+                      rel="noopener"
+                      style="color: var(--primary)"
+                      >Rise Tek — Fiber Laser Cutting Performance Guide</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="https://www.bodor.com/en/blogs/laser-cutting-parameters-6kw-12kw-sheet-metal.html"
+                      target="_blank"
+                      rel="noopener"
+                      style="color: var(--primary)"
+                      >Bodor Academy — Guia de Parâmetros 6kW e 12kW</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="https://compraco.com.br/zh-hant/blogs/industria/tabelas-de-parametros-de-maquinas-de-corte-a-laser-de-fibra-3000w"
+                      target="_blank"
+                      rel="noopener"
+                      style="color: var(--primary)"
+                      >Compraco — Parâmetros para Máquinas de Corte a Laser Fibra 3000W</a
+                    >
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. TECNOLOGIA -->
+        <div class="manual-item" id="laser-manual-4">
+          <div
+            class="manual-item-header"
+            onclick="toggleManual('laser-manual-4')"
+          >
+            <div class="manual-item-icon">⚡</div>
+            <div class="manual-item-title-block">
+              <h3 class="manual-item-title">4. Tecnologia e Potência</h3>
+              <p class="manual-item-subtitle">
+                Fibra × CO₂, e por que a potência muda tudo
+              </p>
+            </div>
+            <span class="manual-item-chevron">▶</span>
+          </div>
+          <div class="manual-item-body">
+            <div class="manual-item-body-inner">
+              <div class="manual-item-body-content">
+                <h4>Fibra Laser — o padrão atual</h4>
+                <p>
+                  Feixe gerado em fibra óptica dopada com itérbio. Comprimento
+                  de onda 1070 nm. <strong>Eficiência elétrica ~35%</strong>.
+                  Praticamente 100% das máquinas compradas após 2015 são fibra.
+                </p>
+                <p><strong>Vantagens:</strong></p>
+                <ul>
+                  <li>Velocidade 3–5× maior em metais finos</li>
+                  <li>Manutenção mais barata (sem gás de ressonador)</li>
+                  <li>Feixe de qualidade excelente (BPP baixo)</li>
+                </ul>
+                <h4>CO₂ Laser — tecnologia legada</h4>
+                <p>
+                  Feixe gerado em mistura de gases (CO₂, N₂, He). Comprimento de
+                  onda 10.600 nm. <strong>Eficiência ~10%</strong>. Só faz
+                  sentido para <strong>não-metais</strong> (acrílico, MDF,
+                  couro, vidro) ou metais finos (aço carbono &lt; 3mm).
+                </p>
+                <h4>Escolha da potência</h4>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Potência</th>
+                      <th>Aplicação típica</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>1,5 – 2 kW</strong></td>
+                      <td>Chapa fina (até 3mm aço inox, 4mm alumínio)</td>
+                    </tr>
+                    <tr>
+                      <td><strong>3 kW</strong></td>
+                      <td>Uso geral (até 6mm inox, 8mm alumínio)</td>
+                    </tr>
+                    <tr>
+                      <td><strong>4 – 6 kW</strong></td>
+                      <td>Padrão industrial (até 12mm inox, 16mm aço)</td>
+                    </tr>
+                    <tr>
+                      <td><strong>8 – 12 kW</strong></td>
+                      <td>Chapas grossas e alta produção (até 25mm)</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="highlight-box">
+                  <strong>Regra de cotação:</strong> peça ao fornecedor qual
+                  potência ele tem. Se for 6kW e você estiver cotando peça de
+                  3mm, o cálculo vai ficar abaixo do valor cobrado — o que é
+                  normal, porque ele dilui o custo da máquina grande em todas as
+                  peças.
+                </div>
+
+                <h4>Referências de Potência e Capacidade de Corte</h4>
+                <ul>
+                  <li>
+                    <a
+                      href="https://www.rapiddirect.com/blog/laser-cutting-thickness-chart/"
+                      target="_blank"
+                      rel="noopener"
+                      style="color: var(--primary)"
+                      >RapidDirect — Laser Cutting Thickness Chart</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="https://fin.roclas-laser.com/news/industry-news/breaking-the-plate-maximum-cutting-thickness-in-fiber-laser-systems.html"
+                      target="_blank"
+                      rel="noopener"
+                      style="color: var(--primary)"
+                      >Roclas Laser — Maximum Cutting Thickness in Fiber Laser Systems</a
+                    >
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. GÁS -->
+        <div class="manual-item" id="laser-manual-5">
+          <div
+            class="manual-item-header"
+            onclick="toggleManual('laser-manual-5')"
+          >
+            <div class="manual-item-icon">💨</div>
+            <div class="manual-item-title-block">
+              <h3 class="manual-item-title">5. Gás Auxiliar</h3>
+              <p class="manual-item-subtitle">
+                Nitrogênio, oxigênio, ar — quando usar cada um
+              </p>
+            </div>
+            <span class="manual-item-chevron">▶</span>
+          </div>
+          <div class="manual-item-body">
+            <div class="manual-item-body-inner">
+              <div class="manual-item-body-content">
+                <p>
+                  O gás tem <strong>3 funções</strong>: empurrar o metal
+                  fundido para fora do corte, esfriar a zona de fusão e proteger
+                  a lente contra respingos.
+                </p>
+                <h4>Nitrogênio (N₂)</h4>
+                <ul>
+                  <li>
+                    <strong>Borda limpa</strong>, sem oxidação — o padrão para
+                    inox e alumínio
+                  </li>
+                  <li>
+                    Custo mais alto. No Brasil, o nitrogênio líquido para uso
+                    industrial é vendido na faixa de <strong>US$ 25–35/litro</strong> em cilindros, com preços ainda maiores em regiões remotas.
+                  </li>
+                  <li>
+                    Consumo típico: <span class="formula"
+                      >12 + (espessura × 1,5) m³/h</span
+                    >
+                    — calibrado para 4 mm → 18 m³/h e 12 mm → 30 m³/h.
+                  </li>
+                </ul>
+                <h4>Oxigênio (O₂)</h4>
+                <ul>
+                  <li>
+                    <strong>3× mais rápido</strong> em aço carbono, porque a
+                    reação química gera calor extra
+                  </li>
+                  <li>
+                    <strong>Borda oxidada</strong> (escura), inaceitável para inox
+                    ou alumínio exposto
+                  </li>
+                  <li>Ótimo para aço carbono estrutural</li>
+                </ul>
+                <h4>Ar Comprimido</h4>
+                <ul>
+                  <li>
+                    <strong>Mais barato</strong> — basta um compressor
+                    industrial
+                  </li>
+                  <li>
+                    Borda levemente oxidada, qualidade intermediária
+                  </li>
+                  <li>
+                    Bom para alumínio fino (&lt; 4mm) e aço carbono de baixa
+                    exigência
+                  </li>
+                </ul>
+                <h4>Nenhum</h4>
+                <ul>
+                  <li>
+                    Só para fusão (corte de sacrifício, sem qualidade)
+                  </li>
+                  <li>Praticamente não usado em produção séria</li>
+                </ul>
+                <div class="highlight-box">
+                  <strong>Impacto no orçamento:</strong> inox + N₂ + 6mm
+                  espessura consome em média <strong>19 m³/h</strong>. Se o gás
+                  custa R$ 12/m³, isso é R$ 228/h só de gás — frequentemente
+                  <strong>mais que a máquina</strong>. Não ignore esse campo.
+                </div>
+
+                <h4>Referências Técnicas de Consumo de Gás</h4>
+                <ul>
+                  <li>
+                    <a
+                      href="https://yihailasers.com/laser-cutting-gas-consumption-calculator/"
+                      target="_blank"
+                      rel="noopener"
+                      style="color: var(--primary)"
+                      >Yihai Laser — Calculadora de Consumo de Gás</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="https://www.airproducts.ca/company/news-center/pneumatech.html"
+                      target="_blank"
+                      rel="noopener"
+                      style="color: var(--primary)"
+                      >Pneumatech — Requisitos de nitrogênio para corte a laser</a
+                    >
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. CONSUMÍVEIS -->
+        <div class="manual-item" id="laser-manual-6">
+          <div
+            class="manual-item-header"
+            onclick="toggleManual('laser-manual-6')"
+          >
+            <div class="manual-item-icon">🔧</div>
+            <div class="manual-item-title-block">
+              <h3 class="manual-item-title">6. Consumíveis</h3>
+              <p class="manual-item-subtitle">
+                As peças de desgaste do cabeçote — o campo mais subestimado
+              </p>
+            </div>
+            <span class="manual-item-chevron">▶</span>
+          </div>
+          <div class="manual-item-body">
+            <div class="manual-item-body-inner">
+              <div class="manual-item-body-content">
+                <p>
+                  <strong>Consumíveis</strong> são as peças do
+                  <strong>cabeçote de corte</strong> que morrem com o uso — não
+                  são a máquina nem a fonte laser. Precisam ser trocadas com
+                  frequência, e o custo disso entra no preço da hora.
+                </p>
+                <h4>Lista de consumíveis típicos</h4>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Peça</th>
+                      <th>Função</th>
+                      <th>Vida útil</th>
+                      <th>Custo (BRL)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Bico de corte</strong></td>
+                      <td>Direciona o gás no ponto de fusão</td>
+                      <td>200–800h (ou 40–200h em produção pesada)</td>
+                      <td>R$ 26–65 (Weld Vision, Bochu)</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Lente de proteção</strong></td>
+                      <td>
+                        Vidro fino que impede respingo de sujar a lente principal
+                      </td>
+                      <td>40–150h</td>
+                      <td>R$ 100–300</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Lente de foco</strong></td>
+                      <td>Focaliza o feixe no ponto de corte</td>
+                      <td>1000–4000h</td>
+                      <td>R$ 800–3000</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Cerâmica</strong></td>
+                      <td>Isola e prende o bico</td>
+                      <td>4000–5000h</td>
+                      <td>R$ 200–500</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Fole</strong></td>
+                      <td>Protege o cabeçote contra poeira</td>
+                      <td>~2000h</td>
+                      <td>R$ 500–1500</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <h4>Como estimar o valor de R$/hora</h4>
+                <p>
+                  Divida o custo de cada peça pela sua vida útil em horas e some
+                  tudo:
+                </p>
+                <p>
+                  <span class="formula"
+                    >(26 ÷ 400) + (150 ÷ 80) + (1500 ÷ 2000) + (300 ÷ 4000) +
+                    (1000 ÷ 2000) ≈ R$ 2,40/h</span
+                  >
+                </p>
+                <p>
+                  Na prática, aloque <strong>R$ 15 a R$ 50/hora</strong> — há
+                  outros itens menores (vedações, sensores, filtros) e a vida
+                  útil real é menor em produção pesada.
+                </p>
+                <div class="highlight-box">
+                  <strong>Regra para o seu caso:</strong> se o fornecedor te dá
+                  "R$ 380/hora, tudo incluído", <strong>deixe consumíveis em
+                  R$ 0</strong>. Se ele discrimina as linhas no orçamento, aí
+                  sim você preenche com o valor que ele cobrou.
+                </div>
+
+                <h4>Referências Técnicas de Consumíveis</h4>
+                <ul>
+                  <li>
+                    <a
+                      href="https://www.hncnclaser.com/3015l-fiber-laser-cutting-machine-running-cost-breakdown/"
+                      target="_blank"
+                      rel="noopener"
+                      style="color: var(--primary)"
+                      >Hongniu Laser — Running Cost Breakdown</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="https://arcuscnc.com/the-true-laser-consumables-cost-nozzles-lenses-and-ceramics/"
+                      target="_blank"
+                      rel="noopener"
+                      style="color: var(--primary)"
+                      >Arcus CNC — The True Laser Consumables Cost</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="https://www.weldvision.com.br"
+                      target="_blank"
+                      rel="noopener"
+                      style="color: var(--primary)"
+                      >Weld Vision — Bicos e consumíveis para laser</a
+                    >
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. PARÂMETROS DE CUSTO -->
+        <div class="manual-item" id="laser-manual-7">
+          <div
+            class="manual-item-header"
+            onclick="toggleManual('laser-manual-7')"
+          >
+            <div class="manual-item-icon">💰</div>
+            <div class="manual-item-title-block">
+              <h3 class="manual-item-title">7. Parâmetros de Custo</h3>
+              <p class="manual-item-subtitle">
+                Taxa máquina, energia, margem
+              </p>
+            </div>
+            <span class="manual-item-chevron">▶</span>
+          </div>
+          <div class="manual-item-body">
+            <div class="manual-item-body-inner">
+              <div class="manual-item-body-content">
+                <h4>Taxa Máquina (R$/h)</h4>
+                <p>
+                  É o custo de ter a máquina ligada durante uma hora. Inclui:
+                </p>
+                <ul>
+                  <li>Depreciação do investimento (5–10 anos)</li>
+                  <li>Manutenção preventiva e corretiva</li>
+                  <li>Espaço físico, seguro, impostos</li>
+                  <li>Operador (em muitos casos)</li>
+                </ul>
+                <p>Faixas de mercado no Brasil (2025–2026):</p>
+                <ul>
+                  <li><strong>1,5–3 kW</strong>: R$ 180–280/h</li>
+                  <li><strong>4–6 kW</strong>: R$ 280–420/h</li>
+                  <li><strong>8–12 kW</strong>: R$ 420–650/h</li>
+                </ul>
+                <p>
+                  <strong>Como descobrir a do seu fornecedor:</strong> peça uma
+                  peça-teste simples (retângulo de 100×100mm em 4mm). Divida o
+                  valor cobrado pelo tempo de corte que o simulador calcula. O
+                  quociente é a taxa efetiva dele.
+                </p>
+                <h4>Preço da Energia (R$/kWh)</h4>
+                <p>
+                  Pegue da sua conta de luz industrial (fora a demanda). Faixa
+                  típica no Brasil: <strong>R$ 0,49–0,65/kWh</strong> para
+                  indústrias de pequeno e médio porte (tarifas de baixa tensão).
+                  O simulador aplica um fator de carga de 70% sobre a potência
+                  nominal — a máquina não fica no talo o tempo todo.
+                </p>
+                <h4>Margem do Fornecedor (%)</h4>
+                <p>
+                  É o <strong>lucro líquido</strong> após cobrir todos os
+                  custos. Faixas típicas:
+                </p>
+                <ul>
+                  <li>
+                    <strong>20–30%</strong> — serviço de alta recorrência,
+                    concorrência acirrada
+                  </li>
+                  <li>
+                    <strong>30–50%</strong> — serviço sob demanda, urgência,
+                    peças pequenas em série
+                  </li>
+                  <li>
+                    <strong>50–80%</strong> — protótipo único, material exótico,
+                    prazo curto
+                  </li>
+                </ul>
+                <div class="highlight-box">
+                  <strong>Como usar na negociação:</strong> preencha com a margem
+                  que você <em>acha justa</em> (ex: 25%) e compare o resultado
+                  com o orçamento do fornecedor. A diferença mostra quanto ele
+                  está cobrando de margem real.
+                </div>
+
+                <h4>Referências Técnicas de Custos</h4>
+                <ul>
+                  <li>
+                    <a
+                      href="https://www.lasercalcpro.com/guides/hourly-cost-structure"
+                      target="_blank"
+                      rel="noopener"
+                      style="color: var(--primary)"
+                      >LaserCalc Pro — Estrutura de Custos Horários</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="https://www.superstarlaser.com/it/how-much-does-a-fiber-laser-cost-per-h/"
+                      target="_blank"
+                      rel="noopener"
+                      style="color: var(--primary)"
+                      >Superstar Laser — How Much Does a Fiber Laser Cost Per Hour (2026)</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="https://www.erieri.com/salary/job/cnc-laser-operator/brazil"
+                      target="_blank"
+                      rel="noopener"
+                      style="color: var(--primary)"
+                      >ERI — CNC Laser Operator Salary in Brazil (2026)</a
+                    >
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. FÓRMULAS -->
+        <div class="manual-item" id="laser-manual-8">
+          <div
+            class="manual-item-header"
+            onclick="toggleManual('laser-manual-8')"
+          >
+            <div class="manual-item-icon">📊</div>
+            <div class="manual-item-title-block">
+              <h3 class="manual-item-title">8. Fórmulas do Orçamento</h3>
+              <p class="manual-item-subtitle">
+                As contas por trás dos números
+              </p>
+            </div>
+            <span class="manual-item-chevron">▶</span>
+          </div>
+          <div class="manual-item-body">
+            <div class="manual-item-body-inner">
+              <div class="manual-item-body-content">
+                <h4>Tempo de corte</h4>
+                <p>
+                  <span class="formula"
+                    >t_corte (s) = comprimento (mm) ÷ velocidade (mm/s)</span
+                  >
+                </p>
+                <h4>Piercing</h4>
+                <p>
+                  <span class="formula"
+                    >t_piercing (s) = nº de furos × (0,3 + 0,05 × espessura²) ×
+                    fator_gás</span
+                  >
+                </p>
+                <p>
+                  A cada novo contorno (furo ou novo perfil separado), o laser
+                  precisa furar a chapa antes de começar a cortar. O tempo cresce
+                  <strong>ao quadrado</strong> com a espessura (não é linear):
+                  4 mm fura em ~1 s; 20 mm leva ~20 s por furo. O fator de gás é
+                  1,0 para N₂, 0,7 para O₂ (fura mais rápido) e 0,85 para ar
+                  comprimido.
+                </p>
+                <h4>Tempo total</h4>
+                <p>
+                  <span class="formula"
+                    >t_total = t_corte + t_piercing + 60s (setup)</span
+                  >
+                </p>
+                <h4>Custos</h4>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Componente</th>
+                      <th>Fórmula</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Máquina</strong></td>
+                      <td>
+                        <span class="formula"
+                          >taxa (R$/h) × t_total (h)</span
+                        >
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Gás</strong></td>
+                      <td>
+                        <span class="formula"
+                          >preço (R$/m³) × vazão (m³/h) × t_efetivo (h)</span
+                        >
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Energia</strong></td>
+                      <td>
+                        <span class="formula"
+                          >preço (R$/kWh) × (potência_kW × 0,7) × t_total
+                          (h)</span
+                        >
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Consumíveis</strong></td>
+                      <td>
+                        <span class="formula"
+                          >taxa (R$/h) × t_total (h)</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <h4>Preço final</h4>
+                <p>
+                  <span class="formula"
+                    >preço = (máquina + gás + energia + consumíveis) × (1 +
+                    margem ÷ 100)</span
+                  >
+                </p>
+                <div class="highlight-box">
+                  <strong>Observação:</strong> o gás só é consumido durante o
+                  corte efetivo (não no setup). Por isso a fórmula dele usa
+                  <span class="formula">t_efetivo</span> em vez de
+                  <span class="formula">t_total</span>.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
       
           <!-- TOAST NOTIFICATION -->
     <div id="toast"></div>
@@ -12938,6 +13332,8 @@
           if (pt.y < mnY) mnY = pt.y;
           if (pt.y > mxY) mxY = pt.y;
         });
+        const bboxW = mxX - mnX;
+        const bboxH = mxY - mnY;
 
         const nSegs = p.closed ? p.points.length : p.points.length - 1;
         const fmt = (v, d) =>
@@ -12946,184 +13342,51 @@
             maximumFractionDigits: d,
           });
 
-        // Detecção de círculo: polyline fechada, com bbox quase quadrada
-        // e muitos segmentos (> 30). Funciona para os círculos do parser
-        // (72 segmentos) e para elipses quase circulares.
-        const bboxW = mxX - mnX;
-        const bboxH = mxY - mnY;
         const isCircle =
           p.closed &&
           nSegs >= 30 &&
           Math.abs(bboxW - bboxH) / Math.max(bboxW, bboxH, 1e-6) < 0.02;
-
         const isContour = !!hit.fullContour;
         const isCornerSpan = !!hit.cornerSpan;
-
-        // ── Modo "trecho entre quinas" ─────────────────────────────
         const spanInfo = isCornerSpan
           ? laserComputarTrecho(p, hit.segIdx)
           : null;
 
-        let html = "";
+        // Só as métricas essenciais. Coordenadas e "dicas" longas
+        // foram removidas — a dica geral já existe embaixo do canvas.
+        let titulo = "Medida";
+        const linhas = [];
 
         if (isCornerSpan && spanInfo) {
-          // ── Modo trecho entre quinas ────────────────────────────────
-          html += '<div class="laser-measure-title">Trecho selecionado</div>';
-          html +=
-            '<div class="laser-measure-row" style="padding:6px 0;"><span>Comprimento</span><strong style="font-size:1.1em; color:#fbbf24;">' +
-            fmt(spanInfo.comprimento, 2) +
-            " mm</strong></div>";
-          html +=
-            '<div class="laser-measure-row"><span>Tipo</span><strong>' +
-            (spanInfo.isReta ? "Reto" : "Curvo") +
-            "</strong></div>";
-          html +=
-            '<div class="laser-measure-row"><span>Quina início</span><strong>vértice ' +
-            (spanInfo.startIdx + 1) +
-            "</strong></div>";
-          html +=
-            '<div class="laser-measure-row"><span>Quina fim</span><strong>vértice ' +
-            (spanInfo.endIdx + 1) +
-            "</strong></div>";
-          html += '<div class="laser-measure-divider"></div>';
-          html += '<div class="laser-measure-title">Contorno completo</div>';
-          html +=
-            '<div class="laser-measure-row"><span>Comprimento</span><strong>' +
-            fmt(compTot, 2) +
-            " mm</strong></div>";
-          html +=
-            '<div class="laser-measure-row"><span>Nº quinas</span><strong>' +
-            (p.corners ? p.corners.length : 0) +
-            "</strong></div>";
-          html += '<div class="laser-measure-divider"></div>';
-          html +=
-            '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">' +
-            (laserEhMobile()
-              ? "Toque em um segmento para ver só ele · toque no botão Medir para sair."
-              : "Alt+clique mediu o trecho entre duas quinas. Clique simples mede um segmento. Shift+clique mede o contorno inteiro.") +
-            "</div>";
+          titulo = "Trecho entre quinas";
+          linhas.push(["Comprimento", fmt(spanInfo.comprimento, 2) + " mm"]);
+          linhas.push(["Tipo", spanInfo.isReta ? "Reto" : "Curvo"]);
         } else if (isContour) {
-          // ── Modo contorno inteiro ──────────────────────────────────
-          html +=
-            '<div class="laser-measure-title">' +
-            (isCircle ? "Circunferência" : "Contorno inteiro") +
-            "</div>";
-
-          html +=
-            '<div class="laser-measure-row" style="padding:6px 0;"><span>Comprimento total</span><strong style="font-size:1.1em; color:#fbbf24;">' +
-            fmt(compTot, 2) +
-            " mm</strong></div>";
-
+          titulo = isCircle ? "Circunferência" : "Contorno";
+          linhas.push(["Comprimento", fmt(compTot, 2) + " mm"]);
           if (isCircle) {
-            const diametro = (bboxW + bboxH) / 2;
-            const raio = diametro / 2;
-            html += '<div class="laser-measure-divider"></div>';
-            html += '<div class="laser-measure-title">Círculo</div>';
-            html +=
-              '<div class="laser-measure-row"><span>Diâmetro</span><strong>' +
-              fmt(diametro, 2) +
-              " mm</strong></div>";
-            html +=
-              '<div class="laser-measure-row"><span>Raio</span><strong>' +
-              fmt(raio, 2) +
-              " mm</strong></div>";
-            html +=
-              '<div class="laser-measure-row"><span>Área</span><strong>' +
-              fmt(Math.abs(p.area) / 100, 2) +
-              " cm²</strong></div>";
+            linhas.push(["Ø", fmt((bboxW + bboxH) / 2, 2) + " mm"]);
           } else {
-            html += '<div class="laser-measure-divider"></div>';
-            html += '<div class="laser-measure-title">Detalhes</div>';
-            html +=
-              '<div class="laser-measure-row"><span>Nº segmentos</span><strong>' +
-              nSegs +
-              "</strong></div>";
-            html +=
-              '<div class="laser-measure-row"><span>Tipo</span><strong>' +
-              (p.closed ? "Fechado" : "Aberto") +
-              "</strong></div>";
-            html +=
-              '<div class="laser-measure-row"><span>L × A</span><strong>' +
-              fmt(bboxW, 1) +
-              " × " +
-              fmt(bboxH, 1) +
-              " mm</strong></div>";
-            if (
-              p.closed &&
-              typeof p.area === "number" &&
-              Math.abs(p.area) > 0
-            ) {
-              html +=
-                '<div class="laser-measure-row"><span>Área</span><strong>' +
-                fmt(Math.abs(p.area) / 100, 2) +
-                " cm²</strong></div>";
-            }
+            linhas.push(["L × A", fmt(bboxW, 1) + " × " + fmt(bboxH, 1)]);
+            linhas.push(["Segmentos", String(nSegs)]);
           }
-
-          html += '<div class="laser-measure-divider"></div>';
-          html +=
-            '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">' +
-            (laserEhMobile()
-              ? "Toque em um segmento para medir só ele · toque no botão Medir para sair."
-              : "Shift+clique mediu o contorno inteiro. Clique simples mede apenas um segmento. Alt+clique mede o trecho entre quinas.") +
-            "</div>";
         } else {
-          // ── Modo segmento único ────────────────────────────────────
-          html += '<div class="laser-measure-title">Segmento selecionado</div>';
-          html +=
-            '<div class="laser-measure-row"><span>Comprimento</span><strong>' +
-            fmt(compSeg, 2) +
-            " mm</strong></div>";
-          html +=
-            '<div class="laser-measure-row"><span>Ângulo</span><strong>' +
-            fmt(ang, 1) +
-            "°</strong></div>";
-          html +=
-            '<div class="laser-measure-row"><span>Início</span><strong>(' +
-            fmt(a.x, 2) +
-            ", " +
-            fmt(a.y, 2) +
-            ")</strong></div>";
-          html +=
-            '<div class="laser-measure-row"><span>Fim</span><strong>(' +
-            fmt(b.x, 2) +
-            ", " +
-            fmt(b.y, 2) +
-            ")</strong></div>";
-          html += '<div class="laser-measure-divider"></div>';
-          html += '<div class="laser-measure-title">Contorno completo</div>';
-          html +=
-            '<div class="laser-measure-row"><span>Comprimento</span><strong>' +
-            fmt(compTot, 2) +
-            " mm</strong></div>";
-          html +=
-            '<div class="laser-measure-row"><span>Nº segmentos</span><strong>' +
-            nSegs +
-            "</strong></div>";
-          html +=
-            '<div class="laser-measure-row"><span>Tipo</span><strong>' +
-            (p.closed ? "Fechado" : "Aberto") +
-            "</strong></div>";
-          html +=
-            '<div class="laser-measure-row"><span>L × A</span><strong>' +
-            fmt(bboxW, 1) +
-            " × " +
-            fmt(bboxH, 1) +
-            " mm</strong></div>";
-          if (p.closed && typeof p.area === "number" && Math.abs(p.area) > 0) {
-            html +=
-              '<div class="laser-measure-row"><span>Área</span><strong>' +
-              fmt(Math.abs(p.area) / 100, 2) +
-              " cm²</strong></div>";
-          }
-          html += '<div class="laser-measure-divider"></div>';
-          html +=
-            '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">' +
-            (laserEhMobile()
-              ? "Toque em outro segmento para medir · toque no vazio para limpar · toque no botão Medir para sair."
-              : "Dica: Shift+clique para medir o contorno inteiro (círculo, arco, polyline fechada).") +
-            "</div>";
+          titulo = "Segmento";
+          linhas.push(["Comprimento", fmt(compSeg, 2) + " mm"]);
+          linhas.push(["Ângulo", fmt(ang, 1) + "°"]);
+          linhas.push(["Contorno", fmt(compTot, 2) + " mm"]);
         }
+
+        let html =
+          '<div class="laser-measure-title">' + titulo + "</div>";
+        linhas.forEach((l) => {
+          html +=
+            '<div class="laser-measure-row"><span>' +
+            l[0] +
+            "</span><strong>" +
+            l[1] +
+            "</strong></div>";
+        });
 
         panel.innerHTML = html;
         panel.style.display = "block";
@@ -15805,7 +16068,8 @@
         }
 
         let html = '<div class="laser-suggestions-panel">';
-        html += "<h2>Sugestões para este orçamento</h2>";
+        html +=
+          '<div class="laser-suggestions-header">Sugestões para este orçamento</div>';
         html += '<div class="laser-suggestions-list">';
 
         sugestoes.forEach((s) => {
@@ -15845,7 +16109,7 @@
         const fmtTempo = (s) => {
           const m = Math.floor(s / 60);
           const sec = Math.round(s % 60);
-          return m + ":" + String(sec).padStart(2, "0") + " min";
+          return m + ":" + String(sec).padStart(2, "0");
         };
         const fmtNum = (v, d) =>
           v.toLocaleString("pt-BR", {
@@ -15853,20 +16117,34 @@
             maximumFractionDigits: d,
           });
 
-        // Métricas derivadas para o resumo comparativo
         const metros = r.comprimento / 1000;
         const custoPorMetro = metros > 0 ? r.custoTotal / metros : 0;
         const segundosTotais = r.tempoTotalS;
+        const totalPecas = r.totalPecas || 1;
+        const segPorPeca = segundosTotais / Math.max(1, totalPecas);
+        const numSheets = r.numSheets || 1;
 
         area.innerHTML =
           '<div class="laser-results-panel">' +
-          "  <h2>Resultado do Orçamento</h2>" +
+
+          // Header
+          '  <div class="laser-results-header">' +
+          "    <h2>Resultado do Orçamento</h2>" +
+          '    <span class="badge">' +
+          totalPecas +
+          (totalPecas > 1 ? " peças" : " peça") +
+          " · " +
+          numSheets +
+          (numSheets > 1 ? " chapas" : " chapa") +
+          "</span>" +
+          "  </div>" +
+
+          // Grid dos 3 cards
           '  <div class="laser-results-grid">' +
 
-          // ------- Card: Geometria -------
+          // Geometria
           '    <div class="laser-result-card card-geo">' +
-          '      <h3><span class="icon">📐</span> Geometria</h3>' +
-          '      <div class="card-subtitle">Comprimento e perfil da peça</div>' +
+          '      <h3><span class="icon">◇</span> Geometria</h3>' +
           '      <div class="laser-result-row"><strong>Comprimento de corte</strong><span>' +
           fmtNum(r.comprimento, 1) +
           " mm</span></div>" +
@@ -15879,42 +16157,37 @@
           '      <div class="laser-result-row"><strong>Velocidade de corte</strong><span>' +
           fmtNum(r.params.speed, 1) +
           " mm/s</span></div>" +
-          (r.numSheets
-            ? '      <div class="laser-result-row"><strong>Chapas necessárias</strong><span>' +
-              r.numSheets +
-              (r.sheetDef
-                ? " · " +
-                  r.sheetDef.w +
-                  "×" +
-                  r.sheetDef.h +
-                  " mm"
-                : "") +
-              "</span></div>"
+          '      <div class="laser-result-row"><strong>Chapas necessárias</strong><span>' +
+          numSheets +
+          (r.sheetDef
+            ? " · " + r.sheetDef.w + "×" + r.sheetDef.h + " mm"
             : "") +
+          "</span></div>" +
           "    </div>" +
 
-          // ------- Card: Tempo -------
+          // Tempo
           '    <div class="laser-result-card card-tempo">' +
-          '      <h3><span class="icon">⏱️</span> Tempo</h3>' +
-          '      <div class="card-subtitle">Cronoanálise do processo</div>' +
+          '      <h3><span class="icon">◐</span> Tempo</h3>' +
           '      <div class="laser-result-row"><strong>Corte efetivo</strong><span>' +
           fmtTempo(r.tempoCorteS) +
-          "</span></div>" +
+          " min</span></div>" +
           '      <div class="laser-result-row"><strong>Piercing</strong><span>' +
           fmtTempo(r.tempoPiercingS) +
-          "</span></div>" +
+          " min</span></div>" +
           '      <div class="laser-result-row"><strong>Setup</strong><span>' +
           fmtTempo(r.tempoSetupS) +
-          "</span></div>" +
-          '      <div class="laser-result-row destaque"><strong>Tempo total</strong><span>' +
-          fmtTempo(r.tempoTotalS) +
-          "</span></div>" +
+          " min</span></div>" +
+          '      <div class="laser-result-row"><strong>Tempo por peça</strong><span>' +
+          Math.round(segPorPeca) +
+          " s</span></div>" +
+          '      <div class="laser-result-row laser-result-row--sum"><strong>Tempo total</strong><span>' +
+          fmtTempo(segundosTotais) +
+          " min</span></div>" +
           "    </div>" +
 
-          // ------- Card: Custo -------
+          // Custo
           '    <div class="laser-result-card card-custo">' +
-          '      <h3><span class="icon">💰</span> Custo</h3>' +
-          '      <div class="card-subtitle">Composição por insumo</div>' +
+          '      <h3><span class="icon">◆</span> Custo</h3>' +
           '      <div class="laser-result-row"><strong>Máquina</strong><span>' +
           fmtBRL(r.custoMaquina) +
           "</span></div>" +
@@ -15927,27 +16200,41 @@
           '      <div class="laser-result-row"><strong>Consumíveis</strong><span>' +
           fmtBRL(r.custoConsumiveis) +
           "</span></div>" +
-          '      <div class="laser-result-row destaque"><strong>Custo direto</strong><span>' +
+          '      <div class="laser-result-row laser-result-row--sum"><strong>Custo direto</strong><span>' +
           fmtBRL(r.custoDireto) +
-          "</span></div>" +
-          '      <div class="laser-result-row destaque final"><strong>Preço final</strong><span>' +
-          fmtBRL(r.custoTotal) +
           "</span></div>" +
           "    </div>" +
 
           "  </div>" +
 
-          // ------- Rodapé comparativo -------
-          '  <div class="laser-summary">' +
-          '    <div class="laser-summary-item"><span class="label">Custo por metro linear:</span><span class="value">' +
+          // Faixa de KPI
+          '  <div class="laser-kpi-strip">' +
+          '    <div class="laser-kpi">' +
+          '      <span class="laser-kpi-label">Custo por metro</span>' +
+          '      <span class="laser-kpi-value">' +
           fmtBRL(custoPorMetro) +
-          "/m</span></div>" +
-          '    <div class="laser-summary-item"><span class="label">Tempo total:</span><span class="value">' +
-          Math.round(segundosTotais) +
-          " s</span></div>" +
-          '    <div class="laser-summary-item"><span class="label">Furos / piercing:</span><span class="value">' +
+          "/m</span>" +
+          "    </div>" +
+          '    <div class="laser-kpi">' +
+          '      <span class="laser-kpi-label">Tempo por peça</span>' +
+          '      <span class="laser-kpi-value">' +
+          Math.round(segPorPeca) +
+          " s</span>" +
+          "    </div>" +
+          '    <div class="laser-kpi">' +
+          '      <span class="laser-kpi-label">Furos / piercing</span>' +
+          '      <span class="laser-kpi-value">' +
           r.numFuros +
-          "</span></div>" +
+          "</span>" +
+          "    </div>" +
+          "  </div>" +
+
+          // Hero: preço final
+          '  <div class="laser-price-hero">' +
+          '    <span class="laser-price-hero-label">Preço final</span>' +
+          '    <span class="laser-price-hero-value">' +
+          fmtBRL(r.custoTotal) +
+          "</span>" +
           "  </div>" +
 
           "</div>";
@@ -16234,32 +16521,37 @@
       }
 
       // ─── Bottom-Left Fill: acha a posição mais baixa/esquerda ─────
-      // Percorre combinações de (Y, X) — sempre de baixo para cima e da
-      // esquerda para a direita — e devolve a primeira onde a caixa
-      // (w, h) caiba sem sobrepor nenhuma peça já colocada. Se nada
-      // couber, devolve null (nova chapa).
+      // Combina 3 fontes de candidatos:
+      //   1. Canto (0,0) e grade coarse de 15mm — garante que NUNCA
+      //      deixamos de achar um vão livre por causa das bordas.
+      //   2. Bordas (direita/baixo) das peças já colocadas — precisão
+      //      sub-milimétrica nos encaixes que fazem fronteira.
       function laserAcharPosicaoBLF(ocupados, w, h, usableW, usableH, gap) {
-        // Candidatos: canto útil (0,0) + bordas direitas/superiores
-        // das peças já colocadas. Esse conjunto sempre contém a posição
-        // ótima para BLF.
+        const GRID = 15;
         const xs = new Set([0]);
         const ys = new Set([0]);
+
+        // Grade coarse — cobre toda a área útil
+        for (let gx = 0; gx + w <= usableW; gx += GRID) xs.add(gx);
+        for (let gy = 0; gy + h <= usableH; gy += GRID) ys.add(gy);
+
+        // Bordas das peças já colocadas
         ocupados.forEach((o) => {
           xs.add(o.x + o.w + gap);
           ys.add(o.y + o.h + gap);
         });
 
-        const xsArr = Array.from(xs).sort((a, b) => a - b);
-        const ysArr = Array.from(ys).sort((a, b) => a - b);
+        const xsArr = Array.from(xs)
+          .filter((x) => x + w <= usableW + 0.001)
+          .sort((a, b) => a - b);
+        const ysArr = Array.from(ys)
+          .filter((y) => y + h <= usableH + 0.001)
+          .sort((a, b) => a - b);
 
         for (let yi = 0; yi < ysArr.length; yi++) {
           const y = ysArr[yi];
-          if (y + h > usableH) continue;
           for (let xi = 0; xi < xsArr.length; xi++) {
             const x = xsArr[xi];
-            if (x + w > usableW) continue;
-
-            // Colisão com bbox expandida por `gap`
             let colide = false;
             for (let k = 0; k < ocupados.length; k++) {
               const o = ocupados[k];
@@ -16281,96 +16573,136 @@
         return null;
       }
 
-      // ─── Empacota instâncias em chapas (Bottom-Left Fill, SEM rotação) ──
+      // ─── Empacota instâncias em chapas (BLF + rotação conservadora) ──
       //
-      // Algoritmo:
-      //   1. Ordena TODAS as peças por área decrescente (maior primeiro).
-      //   2. Para cada peça, tenta achar uma posição BLF na chapa ATUAL.
-      //   3. Se não achar, tenta nas chapas ANTERIORES.
-      //   4. Se ainda não achou, abre uma chapa nova.
-      //   5. NUNCA rotaciona.
-      //
-      // Margem e gap vêm dos inputs da sidebar (padrão: 15 mm / 10 mm).
+      // Regras:
+      //   1. Ordena por MAIOR DIMENSÃO decrescente (favorece compridas)
+      //   2. Para cada peça, testa natural E rotacionada (90°) em
+      //      todas as chapas já abertas.
+      //   3. Prefere a orientação NATURAL sempre que ela couber.
+      //      Só gira se a natural não couber em nenhuma chapa.
+      //   4. Empacota na posição mais baixa/esquerda livre (BLF).
       function laserPackSheets(instances, sheetW, sheetH) {
         const sheets = [];
         const espacamento = laserGetSheetSpacing();
         const MARGEM = espacamento.margin;
         const GAP = espacamento.gap;
-
         const usableW = sheetW - MARGEM * 2;
         const usableH = sheetH - MARGEM * 2;
 
-        // ── 1. Ordena por área decrescente ───────────────────
+        // Ordena por maior dimensão (maior primeiro). Empate → área.
         const listaFinal = instances.slice().sort((a, b) => {
+          const maxA = Math.max(a.bbox.width, a.bbox.height);
+          const maxB = Math.max(b.bbox.width, b.bbox.height);
+          if (Math.abs(maxA - maxB) > 0.5) return maxB - maxA;
           const areaA = a.bbox.width * a.bbox.height;
           const areaB = b.bbox.width * b.bbox.height;
           return areaB - areaA;
         });
 
-        // Cria uma chapa nova vazia
         const novaChapa = () => ({ parts: [], ocupados: [] });
         sheets.push(novaChapa());
 
-        listaFinal.forEach((inst) => {
-          const w = inst.bbox.width;
-          const h = inst.bbox.height;
+        const melhorQue = (cand, atual) => {
+          if (!atual) return true;
+          if (cand.y < atual.y - 0.5) return true;
+          if (cand.y > atual.y + 0.5) return false;
+          if (cand.x < atual.x - 0.5) return true;
+          if (cand.x > atual.x + 0.5) return false;
+          return cand.sheet < atual.sheet;
+        };
 
-          // Peça maior que a chapa útil → marca e ignora
-          if (w > usableW || h > usableH) {
+        listaFinal.forEach((inst) => {
+          const wNat = inst.bbox.width;
+          const hNat = inst.bbox.height;
+          const wRot = hNat;
+          const hRot = wNat;
+
+          const cabeNat = wNat <= usableW && hNat <= usableH;
+          const cabeRot = wRot <= usableW && hRot <= usableH;
+
+          if (!cabeNat && !cabeRot) {
             inst.oversized = true;
             return;
           }
 
-          // ── 2. Tenta achar posição na chapa atual ────────
-          let chapaEscolhida = sheets.length - 1;
-          let pos = laserAcharPosicaoBLF(
-            sheets[chapaEscolhida].ocupados,
-            w,
-            h,
-            usableW,
-            usableH,
-            GAP
-          );
+          // Testa as duas orientações em todas as chapas já abertas.
+          // Guarda a melhor posição NATURAL e a melhor ROTACIONADA
+          // separadamente — assim conseguimos dar preferência à natural.
+          let melhorNat = null;
+          let melhorRot = null;
 
-          // ── 3. Tenta nas chapas anteriores ───────────────
-          if (!pos) {
-            for (let s = 0; s < sheets.length - 1; s++) {
+          for (let s = sheets.length - 1; s >= 0; s--) {
+            const ocupados = sheets[s].ocupados;
+
+            if (cabeNat) {
               const p = laserAcharPosicaoBLF(
-                sheets[s].ocupados,
-                w,
-                h,
+                ocupados,
+                wNat,
+                hNat,
                 usableW,
                 usableH,
                 GAP
               );
               if (p) {
-                chapaEscolhida = s;
-                pos = p;
-                break;
+                const cand = { x: p.x, y: p.y, rot: false, sheet: s };
+                if (melhorQue(cand, melhorNat)) melhorNat = cand;
               }
             }
+
+            if (cabeRot) {
+              const p = laserAcharPosicaoBLF(
+                ocupados,
+                wRot,
+                hRot,
+                usableW,
+                usableH,
+                GAP
+              );
+              if (p) {
+                const cand = { x: p.x, y: p.y, rot: true, sheet: s };
+                if (melhorQue(cand, melhorRot)) melhorRot = cand;
+              }
+            }
+
+            // Posição ideal (0,0) — para de procurar
+            if (melhorNat && melhorNat.x === 0 && melhorNat.y === 0) break;
           }
 
-          // ── 4. Nenhuma chapa serve → abre nova ───────────
-          if (!pos) {
+          // Regra de ouro: NATURAL sempre que couber.
+          // Só usa rotação se a natural não couber em lugar nenhum.
+          let melhor = melhorNat;
+          let rot = false;
+
+          if (!melhor && melhorRot) {
+            melhor = melhorRot;
+            rot = true;
+          }
+
+          // Nem natural nem rotacionada coube → nova chapa.
+          if (!melhor) {
             sheets.push(novaChapa());
-            chapaEscolhida = sheets.length - 1;
-            pos = { x: 0, y: 0 };
+            melhor = { x: 0, y: 0, sheet: sheets.length - 1 };
+            // Se natural não cabe nem numa chapa vazia, força rotação.
+            rot = !cabeNat;
           }
 
-          // ── 5. Aplica offset (SEM rotação) ────────────────
+          const targetSheet = sheets[melhor.sheet];
+          const w = rot ? wRot : wNat;
+          const h = rot ? hRot : hNat;
+
           laserAplicarOffsetInstancia(
             inst,
-            MARGEM + pos.x,
-            MARGEM + pos.y,
-            false
+            MARGEM + melhor.x,
+            MARGEM + melhor.y,
+            rot
           );
 
-          inst.sheetIndex = chapaEscolhida;
-          sheets[chapaEscolhida].parts.push(inst);
-          sheets[chapaEscolhida].ocupados.push({
-            x: pos.x,
-            y: pos.y,
+          inst.sheetIndex = melhor.sheet;
+          targetSheet.parts.push(inst);
+          targetSheet.ocupados.push({
+            x: melhor.x,
+            y: melhor.y,
             w: w,
             h: h,
           });
@@ -16378,6 +16710,7 @@
 
         return sheets;
       }
+
 
 
   
