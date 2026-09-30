@@ -4554,6 +4554,65 @@
           cursor: default !important;
         }
       }
+      /* ============================================================
+         PAINEL DE MEDIÇÃO — MOBILE (bottom sheet)
+         Colocado por último para vencer as regras desktop com
+         !important. No celular ele vira uma "gaveta" fixa na base
+         do canvas, sem cobrir a peça.
+         ============================================================ */
+         @media (max-width: 600px) {
+        #laserMeasurePanel,
+        #laserMeasurePanel.expanded {
+          top: auto !important;
+          bottom: 12px !important;
+          left: 8px !important;
+          right: 8px !important;
+          min-width: 0 !important;
+          max-width: none !important;
+          width: auto !important;
+          padding: 10px 14px !important;
+          border-radius: 12px !important;
+          font-size: 0.8rem !important;
+          background: rgba(15, 23, 42, 0.96) !important;
+          border: 1px solid rgba(96, 165, 250, 0.35) !important;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55) !important;
+          pointer-events: none !important;
+          cursor: default !important;
+          max-height: 55vh !important;
+          overflow-y: auto !important;
+        }
+
+        #laserMeasurePanel .laser-measure-badge {
+          font-size: 0.6rem !important;
+          margin: 0 0 4px 0 !important;
+          padding: 0 !important;
+          letter-spacing: 0.06em !important;
+        }
+
+        #laserMeasurePanel .laser-measure-title {
+          font-size: 0.95rem !important;
+          margin: 0 0 6px 0 !important;
+          padding: 0 0 6px 0 !important;
+          border-bottom: 1px solid #334155 !important;
+        }
+
+        #laserMeasurePanel .laser-measure-row {
+          padding: 2px 0 !important;
+          gap: 10px !important;
+        }
+
+        #laserMeasurePanel .laser-measure-row span {
+          font-size: 0.78rem !important;
+        }
+
+        #laserMeasurePanel .laser-measure-row strong {
+          font-size: 0.82rem !important;
+        }
+
+        #laserMeasurePanel .laser-measure-divider {
+          margin: 6px 0 5px 0 !important;
+        }
+      }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
