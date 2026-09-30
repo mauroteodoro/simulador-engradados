@@ -4090,8 +4090,9 @@
       }
       /* ============================================================
          MOBILE UX — pílulas compactas (Engradados + Laser)
-         Sem `!important` em max-height: o JS precisa poder setar
-         a altura exata do conteúdo em pixels durante a animação.
+         Animação feita 100% via Web Animations API (JS). Sem
+         transition de max-height (que trava o compositor). Sem
+         backdrop-filter durante a animação (repintaria tudo).
          ============================================================ */
       @media (max-width: 600px) {
 
@@ -4099,12 +4100,13 @@
         #pieceInfoBox.piece-info-box {
           pointer-events: auto !important;
           cursor: pointer;
-          max-height: 54px;
+          height: 54px;
           overflow: hidden;
-          transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           padding: 12px 40px 12px 14px !important;
+          will-change: height;
         }
         #pieceInfoBox.piece-info-box.expanded {
+          height: auto;
           max-height: 70vh;
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
@@ -4112,9 +4114,8 @@
         #pieceInfoBox.piece-info-box::after {
           content: "▾";
           position: absolute;
-          top: 50%;
+          top: 15px;
           right: 14px;
-          transform: translateY(-50%);
           font-size: 0.85rem;
           color: #60a5fa;
           opacity: 0.7;
@@ -4122,7 +4123,7 @@
           transition: transform 0.28s ease;
         }
         #pieceInfoBox.piece-info-box.expanded::after {
-          transform: translateY(-50%) rotate(180deg);
+          transform: rotate(180deg);
         }
         #pieceInfoBox.piece-info-box:not(.expanded) #piTitle {
           margin: 0 !important;
@@ -4138,12 +4139,13 @@
         #laserMeasurePanel {
           pointer-events: auto !important;
           cursor: pointer;
-          max-height: 60px;
+          height: 60px;
           overflow: hidden;
-          transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           padding-right: 38px !important;
+          will-change: height;
         }
         #laserMeasurePanel.expanded {
+          height: auto;
           max-height: 70vh;
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
@@ -4151,7 +4153,7 @@
         #laserMeasurePanel::after {
           content: "▾";
           position: absolute;
-          top: 14px;
+          top: 15px;
           right: 14px;
           font-size: 0.8rem;
           color: #fbbf24;
@@ -17094,54 +17096,93 @@
       }
 
       // ============================================================
-      // MOBILE UX — pílulas compactas no Engradados e no Laser
-      // Abre/fecha animando para a altura EXATA do conteúdo (medida
-      // em runtime). Sem isso, a transição CSS vai de 70vh até 54px,
-      // passando por ~80% do tempo sem produzir mudança visível — o
-      // famoso "engasgo" no fechamento.
+      // MOBILE UX — pílulas compactas (Engradados + Laser)
+      // Animação via Web Animations API — roda no compositor e não
+      // trava. O backdrop-filter é desligado durante a animação para
+      // evitar repaint pesado a cada frame.
       // ============================================================
       (function laserMobilePanelsInit() {
         const mobile = () => window.innerWidth <= 600;
-        const TRANS_MS = 320;
+        const DUR = 260;
+        const EASE = "cubic-bezier(0.4, 0, 0.2, 1)";
 
         function alturaColapsada(el) {
-          return el.id === "laserMeasurePanel" ? "60px" : "54px";
+          return el.id === "laserMeasurePanel" ? 60 : 54;
+        }
+
+        function desligarBlur(el) {
+          el.dataset._bfPrev = el.style.backdropFilter || "";
+          el.style.backdropFilter = "none";
+          el.style.webkitBackdropFilter = "none";
+        }
+        function religarBlur(el) {
+          el.style.backdropFilter = el.dataset._bfPrev || "";
+          el.style.webkitBackdropFilter = el.dataset._bfPrev || "";
         }
 
         function abrir(el) {
-          // Mede a altura natural com max-height desbloqueado
-          el.style.maxHeight = "none";
-          const maxH = Math.round(window.innerHeight * 0.7);
-          const natural = el.scrollHeight;
-          const alvo = Math.min(natural, maxH);
+          if (el.dataset.animating === "1") return;
+          el.dataset.animating = "1";
+          desligarBlur(el);
 
-          // Trava em 54/60px (mesmo valor do CSS recolhido) para
-          // garantir um ponto de partida conhecido
-          el.style.maxHeight = alturaColapsada(el);
+          const fromH = alturaColapsada(el);
+          const maxH = Math.round(window.innerHeight * 0.7);
+
+          // Mede altura natural sem clamp
+          el.classList.add("expanded");
+          el.style.height = "auto";
+          el.style.maxHeight = "none";
+          el.style.overflow = "hidden";
+          void el.offsetHeight;
+          const naturalH = el.scrollHeight;
+          const toH = Math.min(naturalH, maxH);
+
+          // Volta a 54/60px e anima
+          el.style.maxHeight = "";
+          el.style.height = fromH + "px";
           void el.offsetHeight;
 
-          // Aplica o estado expandido + altura exata do conteúdo
-          el.classList.add("expanded");
-          el.style.maxHeight = alvo + "px";
+          const anim = el.animate(
+            [{ height: fromH + "px" }, { height: toH + "px" }],
+            { duration: DUR, easing: EASE, fill: "forwards" }
+          );
 
-          // Depois da transição, solta a altura para o CSS cuidar
-          // (max-height: 70vh, com scroll se o conteúdo for maior)
-          setTimeout(function () {
-            if (el.classList.contains("expanded")) {
-              el.style.maxHeight = "";
-            }
-          }, TRANS_MS);
+          const finalizar = () => {
+            el.style.height = "";
+            el.style.overflow = "";
+            el.style.maxHeight = "";
+            religarBlur(el);
+            el.dataset.animating = "0";
+          };
+          anim.onfinish = finalizar;
+          anim.oncancel = finalizar;
         }
 
         function fechar(el) {
-          // Fixa a altura atual em pixel ANTES de desmontar o estado
-          const atual = el.offsetHeight;
-          el.style.maxHeight = atual + "px";
-          void el.offsetHeight; // reflow: browser sabe que estamos em "atual"
+          if (el.dataset.animating === "1") return;
+          el.dataset.animating = "1";
+          desligarBlur(el);
 
-          // Remove a classe e solta o inline → CSS assume 54/60px
-          el.classList.remove("expanded");
-          el.style.maxHeight = "";
+          const fromH = el.offsetHeight;
+          const toH = alturaColapsada(el);
+
+          el.style.overflow = "hidden";
+
+          const anim = el.animate(
+            [{ height: fromH + "px" }, { height: toH + "px" }],
+            { duration: DUR, easing: EASE, fill: "forwards" }
+          );
+
+          const finalizar = () => {
+            el.classList.remove("expanded");
+            el.style.height = "";
+            el.style.overflow = "";
+            el.style.maxHeight = "";
+            religarBlur(el);
+            el.dataset.animating = "0";
+          };
+          anim.onfinish = finalizar;
+          anim.oncancel = finalizar;
         }
 
         function toggle(el) {
