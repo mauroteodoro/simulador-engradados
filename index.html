@@ -3581,7 +3581,59 @@
         padding: 10px 18px;
         box-shadow: 0 6px 20px -6px rgba(0, 0, 0, 0.15);
       }
-          /* ---------- Botão de medição ---------- */
+          /* ---------- Botão Exportar Orçamento ---------- */
+          .laser-btn-export-quote {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 13px;
+        border-radius: 8px;
+        border: 1px solid var(--primary);
+        background: var(--primary);
+        color: #ffffff;
+        font-family: inherit;
+        font-size: 0.74rem;
+        font-weight: 600;
+        letter-spacing: -0.005em;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        white-space: nowrap;
+        touch-action: manipulation;
+      }
+      .laser-btn-export-quote:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
+      }
+      .laser-btn-export-quote svg {
+        flex-shrink: 0;
+      }
+      .laser-results-header-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      @media (max-width: 600px) {
+        .laser-results-header {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 10px;
+        }
+        .laser-results-header-right {
+          flex-direction: column;
+          align-items: stretch;
+          width: 100%;
+          gap: 8px;
+        }
+        .laser-btn-export-quote {
+          padding: 11px 14px;
+          font-size: 0.82rem;
+          justify-content: center;
+          min-height: 44px;
+        }
+      }
+
+      /* ---------- Botão de medição ---------- */
           .laser-measure-btn {
         padding: 6px 12px;
         border-radius: var(--radius-md);
@@ -4116,6 +4168,7 @@
         font-family: inherit;
         letter-spacing: -0.005em;
         min-height: 36px;
+        margin-top: 14px;
         cursor: pointer;
         transition: background 0.18s ease, border-color 0.18s ease,
           transform 0.18s ease, box-shadow 0.18s ease;
@@ -15780,7 +15833,9 @@
           quotedPrice: quotedPrice,
         };
 
-        laserRenderSugestoes(laserGerarSugestoes(resultados, inputs));
+        const sugestoesGeradas = laserGerarSugestoes(resultados, inputs);
+        laserUltimasSugestoes = sugestoesGeradas;
+        laserRenderSugestoes(sugestoesGeradas);
 
         showToast("✅ Corte processado!", true);
       }
@@ -16058,6 +16113,532 @@
       }
 
       // ─── Renderização das sugestões ─────────────────────────────
+      // ============================================================
+      // EXPORTAR ORÇAMENTO — gera documento A4 pronto para PDF
+      // ============================================================
+      let laserUltimoResultado = null;
+      let laserUltimasSugestoes = [];
+
+      // Formata "MAURO S." → "Mauro S."
+      // "MATHEUS ALVES" → "Matheus Alves", etc.
+      function laserTituloNome(nome) {
+        return String(nome || "")
+          .toLowerCase()
+          .split(" ")
+          .map((p) => (p ? p.charAt(0).toUpperCase() + p.slice(1) : ""))
+          .join(" ");
+      }
+
+      function laserExportarOrcamento() {
+        const r = laserUltimoResultado;
+        if (!r) {
+          showToast("⚠️ Processe o corte primeiro", false);
+          return;
+        }
+
+        // ---------- 1. Lê inputs atuais ----------
+        const el = (id) => document.getElementById(id);
+        const material = (el("laserMaterial") || {}).value || "inox304";
+        const espessura = parseFloat((el("laserThickness") || {}).value) || 0;
+        const potencia = parseInt((el("laserPower") || {}).value, 10) || 0;
+        const tech = (el("laserTech") || {}).value || "fibra";
+        const gas = (el("laserGas") || {}).value || "n2";
+        const sheetKey = (el("laserSheetSize") || {}).value || "1500x3000";
+        const machineRate = parseFloat((el("laserMachineRate") || {}).value) || 0;
+        const gasPrice = parseFloat((el("laserGasPrice") || {}).value) || 0;
+        const energyPrice = parseFloat((el("laserEnergyPrice") || {}).value) || 0;
+        const consumablesRate = parseFloat((el("laserConsumablesRate") || {}).value) || 0;
+        const marginPct = parseFloat((el("laserMargin") || {}).value) || 0;
+
+        const MAT_NOMES = {
+          inox304: "Aço Inox 304", inox316: "Aço Inox 316L",
+          aluminio5052: "Alumínio 5052", aluminio6061: "Alumínio 6061",
+          aco1020: "Aço Carbono 1020", aco1045: "Aço Carbono 1045",
+          latao: "Latão", cobre: "Cobre",
+        };
+        const GAS_NOMES = {
+          n2: "Nitrogênio (N₂)", o2: "Oxigênio (O₂)",
+          ar: "Ar Comprimido", nenhum: "Nenhum (fusão)",
+        };
+
+        // ---------- 2. Metadados da geometria ----------
+        const geom = typeof laserGeometry !== "undefined" ? laserGeometry : null;
+        const arquivo = (typeof laserFileInfo !== "undefined" && laserFileInfo)
+          ? laserFileInfo.name : "—";
+        const qtds = (geom && geom.quantities) ? geom.quantities : {};
+        let totalPecas = 0;
+        if (geom && geom.clusters && geom.clusters.length > 1) {
+          geom.clusters.forEach((_, i) => {
+            totalPecas += Math.max(0, parseInt(qtds[i], 10) || 0);
+          });
+        } else {
+          totalPecas = Math.max(0, parseInt(qtds[0], 10) || 0);
+        }
+        if (totalPecas === 0) totalPecas = 1;
+
+        // ---------- 3. Captura imagem do canvas 2D ----------
+        let imgDataURL = "";
+        try {
+          const c2d = document.getElementById("laserCanvas");
+          if (c2d && geom) {
+            const clusterAntes = geom.clusterAtivo;
+            const viewAntes = {
+              zoom: laserView.zoom,
+              panX: laserView.panX,
+              panY: laserView.panY,
+            };
+
+            if (geom.clusters && geom.clusters.length > 1) {
+              // Compacta todos os clusters lado a lado, criando um
+              // "layout" temporário onde as peças ficam coladas.
+              // Guarda também o centro de cada peça para desenhar as
+              // etiquetas A/B/C e as quantidades na captura.
+              const GAP = 30; // mm entre as peças no documento
+              const polylinesCompact = [];
+              const etiquetasCluster = [];
+              let cursorX = 0;
+
+              geom.clusters.forEach((c, idx) => {
+                const dx = cursorX - c.bbox.minX;
+                const dy = -c.bbox.minY;
+                c.indices.forEach((i) => {
+                  const p = geom.polylines[i];
+                  if (!p) return;
+                  polylinesCompact.push({
+                    closed: p.closed,
+                    nesting: typeof p.nesting === "number" ? p.nesting : 0,
+                    area: p.area,
+                    corners: p.corners,
+                    points: p.points.map((pt) => ({
+                      x: pt.x + dx,
+                      y: pt.y + dy,
+                    })),
+                  });
+                });
+                const qtdEtiqueta = Math.max(0, parseInt(qtds[idx], 10) || 0);
+                etiquetasCluster.push({
+                  x: cursorX + c.bbox.width / 2,
+                  y: c.bbox.height / 2,
+                  letra: String.fromCharCode(65 + idx),
+                  qtd: qtdEtiqueta,
+                });
+                cursorX += c.bbox.width + GAP;
+              });
+
+              // Recalcula bbox do layout compacto
+              let mnX = Infinity, mnY = Infinity, mxX = -Infinity, mxY = -Infinity;
+              polylinesCompact.forEach((p) =>
+                p.points.forEach((pt) => {
+                  if (pt.x < mnX) mnX = pt.x;
+                  if (pt.y < mnY) mnY = pt.y;
+                  if (pt.x > mxX) mxX = pt.x;
+                  if (pt.y > mxY) mxY = pt.y;
+                })
+              );
+              const compactedGeo = {
+                polylines: polylinesCompact,
+                bbox: {
+                  minX: mnX, maxX: mxX, minY: mnY, maxY: mxY,
+                  width: mxX - mnX, height: mxY - mnY,
+                },
+                comprimento: geom.comprimento,
+                numFuros: geom.numFuros,
+              };
+
+              // Desenha o layout compacto em escala 1.0
+              laserView = { zoom: 1.0, panX: 0, panY: 0 };
+              laserDrawCanvas(compactedGeo);
+
+              // ---- Etiquetas A/B/C sobre cada peça ----
+              const ctxL = c2d.getContext("2d");
+              const dprL = window.devicePixelRatio || 1;
+              ctxL.setTransform(dprL, 0, 0, dprL, 0, 0);
+              const tL = laserTransform;
+              if (tL && etiquetasCluster.length > 0) {
+                ctxL.textAlign = "center";
+                ctxL.textBaseline = "middle";
+                ctxL.font =
+                  '700 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+
+                etiquetasCluster.forEach((etq) => {
+                  const sx = tL.w / 2 + (etq.x - tL.cx) * tL.scale;
+                  const sy = tL.h / 2 + (etq.y - tL.cy) * tL.scale;
+                  const texto =
+                    etq.qtd > 1 ? etq.letra + "  ×" + etq.qtd : etq.letra;
+
+                  const met = ctxL.measureText(texto);
+                  const padX = 10;
+                  const h = 26;
+                  const w = met.width + padX * 2;
+                  const x0 = sx - w / 2;
+                  const y0 = sy - h / 2;
+                  const r = 13;
+
+                  ctxL.beginPath();
+                  ctxL.moveTo(x0 + r, y0);
+                  ctxL.lineTo(x0 + w - r, y0);
+                  ctxL.quadraticCurveTo(x0 + w, y0, x0 + w, y0 + r);
+                  ctxL.lineTo(x0 + w, y0 + h - r);
+                  ctxL.quadraticCurveTo(x0 + w, y0 + h, x0 + w - r, y0 + h);
+                  ctxL.lineTo(x0 + r, y0 + h);
+                  ctxL.quadraticCurveTo(x0, y0 + h, x0, y0 + h - r);
+                  ctxL.lineTo(x0, y0 + r);
+                  ctxL.quadraticCurveTo(x0, y0, x0 + r, y0);
+                  ctxL.closePath();
+
+                  ctxL.fillStyle = "rgba(15, 23, 42, 0.92)";
+                  ctxL.fill();
+                  ctxL.lineWidth = 1.6;
+                  ctxL.strokeStyle = "#fbbf24";
+                  ctxL.stroke();
+
+                  ctxL.fillStyle = "#fbbf24";
+                  ctxL.fillText(texto, sx, sy + 1);
+                });
+              }
+
+              imgDataURL = c2d.toDataURL("image/png");
+
+              // Restaura o canvas ao estado original
+              laserView = viewAntes;
+              laserAplicarCluster(geom, clusterAntes);
+              laserDrawCanvas(geom);
+            } else {
+              // Só 1 cluster: captura normal
+              laserView = { zoom: 1.0, panX: 0, panY: 0 };
+              laserDrawCanvas(geom);
+              imgDataURL = c2d.toDataURL("image/png");
+              laserView = viewAntes;
+              laserDrawCanvas(geom);
+            }
+          }
+        } catch (e) {
+          console.warn("[ORÇAMENTO] Não foi possível capturar o canvas:", e);
+        }
+
+        // ---------- 4. Helpers ----------
+        const esc = (s) =>
+          String(s == null ? "" : s)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        const strip = (s) => String(s || "").replace(/<[^>]*>/g, "");
+        const fmtBRL = (v) =>
+          (v || 0).toLocaleString("pt-BR", {
+            style: "currency", currency: "BRL",
+            minimumFractionDigits: 2, maximumFractionDigits: 2,
+          });
+        const fmtNum = (v, d) =>
+          (v || 0).toLocaleString("pt-BR", {
+            minimumFractionDigits: d, maximumFractionDigits: d,
+          });
+        const fmtTempo = (s) => {
+          const m = Math.floor(s / 60);
+          const sec = Math.round(s % 60);
+          return m + " min " + String(sec).padStart(2, "0") + " s";
+        };
+        const potLabel = (potencia / 1000).toFixed(potencia % 1000 === 0 ? 0 : 1);
+        const espLabel = fmtNum(espessura, 2).replace(/\.00$/, "").replace(/,00$/, "");
+
+        const SHEETS = {
+          "1000x2000": "1000 × 2000 mm",
+          "1250x2500": "1250 × 2500 mm",
+          "1500x3000": "1500 × 3000 mm",
+          "2000x4000": "2000 × 4000 mm",
+        };
+        const sheetNome = SHEETS[sheetKey] || sheetKey;
+
+        const agora = new Date();
+        const dataStr =
+          agora.toLocaleDateString("pt-BR") + " às " +
+          String(agora.getHours()).padStart(2, "0") + ":" +
+          String(agora.getMinutes()).padStart(2, "0");
+        const refId = "ORC-" + agora.getTime().toString(36).toUpperCase().slice(-6);
+
+        // ---------- 5. Dados derivados ----------
+        const metros = r.comprimento / 1000;
+        const custoPorMetro = metros > 0 ? r.custoTotal / metros : 0;
+        const segPorPeca = r.tempoTotalS / totalPecas;
+        const numSheets = r.numSheets || 1;
+
+        const sugestoes = Array.isArray(laserUltimasSugestoes)
+          ? laserUltimasSugestoes : [];
+        const sugestoesHTML = sugestoes.map((s) =>
+          "<li><strong>" + esc(strip(s.titulo)) + "</strong> — " +
+          esc(strip(s.texto)) + "</li>"
+        ).join("");
+
+        const cfgLinhas = [
+          ["Material", MAT_NOMES[material] || material],
+          ["Espessura", espLabel + " mm"],
+          ["Potência", potLabel + " kW"],
+          ["Tecnologia", tech === "fibra" ? "Fibra Laser" : "CO₂ Laser"],
+          ["Gás auxiliar", GAS_NOMES[gas] || gas],
+          ["Chapa padrão", sheetNome],
+        ];
+        const tempoLinhas = [
+          ["Corte efetivo", fmtTempo(r.tempoCorteS)],
+          ["Piercing", fmtTempo(r.tempoPiercingS)],
+          ["Setup (por chapa)", fmtTempo(r.tempoSetupS)],
+          ["Tempo total", fmtTempo(r.tempoTotalS)],
+          ["Tempo por peça", fmtNum(segPorPeca, 1) + " s"],
+        ];
+        const custoLinhas = [
+          ["Máquina", fmtBRL(r.custoMaquina)],
+          ["Gás auxiliar", fmtBRL(r.custoGas)],
+          ["Energia elétrica", fmtBRL(r.custoEnergia)],
+          ["Consumíveis", fmtBRL(r.custoConsumiveis)],
+        ];
+        const paramLinhas = [
+          ["Taxa máquina", fmtBRL(machineRate) + " / h"],
+          ["Consumíveis", fmtBRL(consumablesRate) + " / h"],
+          ["Preço do gás", fmtBRL(gasPrice) + " / m³"],
+          ["Energia elétrica", fmtBRL(energyPrice) + " / kWh"],
+          ["Margem aplicada", fmtNum(marginPct, 0) + " %"],
+        ];
+
+        const velocidadeAtual = r.params ? r.params.speed : 0;
+        const pierceAtual = r.params ? r.params.pierce : 0;
+        const gasFlowAtual = r.params ? r.params.gasFlow : 0;
+        const potenciaKW = potencia / 1000;
+        const consumoKW = potenciaKW * 0.7;
+        const porques = [];
+        porques.push(
+          "<strong>Velocidade de corte " + fmtNum(velocidadeAtual, 1) +
+          " mm/s</strong> — valor tabelado para " +
+          esc(MAT_NOMES[material] || material) + ", " + espLabel +
+          " mm, " + potLabel + " kW, gás " + esc(GAS_NOMES[gas] || gas) + "."
+        );
+        porques.push(
+          "<strong>Piercing " + fmtNum(pierceAtual, 2) +
+          " s por furo</strong> — segue a lei 0,3 + 0,05 × e², refletindo " +
+          "o crescimento não-linear do tempo de furo com a espessura."
+        );
+        if (gasFlowAtual > 0) {
+          porques.push(
+            "<strong>Vazão de gás " + fmtNum(gasFlowAtual, 1) +
+            " m³/h</strong> — vazão base + 1,5 m³/h por mm de espessura."
+          );
+        }
+        porques.push(
+          "<strong>Consumo elétrico " + fmtNum(consumoKW, 2) +
+          " kW</strong> — potência nominal (" + fmtNum(potenciaKW, 2) +
+          " kW) × fator de carga 0,7 (a máquina não opera no talo o tempo todo)."
+        );
+        porques.push(
+          "<strong>Margem de " + fmtNum(marginPct, 0) +
+          " %</strong> — aplicada sobre o custo direto (" +
+          fmtBRL(r.custoDireto) + "), resultando em " + fmtBRL(r.custoTotal) + "."
+        );
+
+        // ---------- 5b. Tabela por peça ----------
+        let pecasLinhasHTML = "";
+        if (geom && geom.clusters && geom.clusters.length > 1) {
+          geom.clusters.forEach((c, idx) => {
+            const q = Math.max(0, parseInt(qtds[idx], 10) || 0);
+            if (q === 0) return;
+            const letra = String.fromCharCode(65 + idx);
+            pecasLinhasHTML +=
+              "<tr>" +
+              "<td><strong>Peça " + letra + "</strong></td>" +
+              '<td class="num">' + fmtNum(c.comprimento, 1) + " mm</td>" +
+              '<td class="num">' + c.numFuros + "</td>" +
+              '<td class="num">' + q + "</td>" +
+              '<td class="num">' +
+              fmtNum((c.comprimento * q) / 1000, 3) +
+              " m</td>" +
+              "</tr>";
+          });
+        } else {
+          pecasLinhasHTML =
+            "<tr>" +
+            "<td><strong>Peça A</strong></td>" +
+            '<td class="num">' + fmtNum(r.comprimento, 1) + " mm</td>" +
+            '<td class="num">' + r.numFuros + "</td>" +
+            '<td class="num">' + totalPecas + "</td>" +
+            '<td class="num">' +
+            fmtNum((r.comprimento * totalPecas) / 1000, 3) +
+            " m</td>" +
+            "</tr>";
+        }
+
+        // ---------- 6. Documento A4 ----------
+        const html = `<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8">
+<title>Orçamento de Corte a Laser — ${esc(refId)}</title>
+<style>
+@page { size: A4; margin: 14mm 12mm; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #0f172a; margin: 0; padding: 0; font-size: 10pt; line-height: 1.45;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.doc { max-width: 800px; margin: 0 auto; padding: 16px; }
+header { display: flex; align-items: flex-start; justify-content: space-between;
+  border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 16px; }
+header h1 { margin: 0; font-size: 16pt; font-weight: 800; letter-spacing: -0.02em; color: #0f172a; }
+header .sub { font-size: 8.5pt; color: #64748b; margin-top: 2px; }
+header .meta { text-align: right; font-size: 8pt; color: #64748b; line-height: 1.5; }
+header .meta strong { color: #0f172a; font-weight: 700; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; break-inside: avoid; }
+.card h2 { margin: 0 0 8px 0; font-size: 8.5pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #2563eb; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+.card table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+.card table td { padding: 3px 0; vertical-align: top; }
+.card table td:first-child { color: #64748b; padding-right: 8px; }
+.card table td:last-child { text-align: right; font-weight: 600; color: #0f172a; white-space: nowrap; }
+.piece-info { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1.7fr; gap: 14px; align-items: start; }
+.piece-info .info { min-width: 0; }
+.piece-info .filename { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 8.5pt;
+  color: #0f172a; background: #f1f5f9; padding: 6px 9px; border-radius: 4px;
+  word-break: break-all; margin-bottom: 8px; }
+  .piece-info .img { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
+  padding: 10px; text-align: center; }
+  .piece-info .img img { width: 100%; max-width: 100%; max-height: 420px; display: block; margin: 0 auto; object-fit: contain; }
+.piece-info .img .cap { font-size: 7.5pt; color: #94a3b8; margin-top: 4px; }
+.price-block { grid-column: 1 / -1; background: #f0fdf4; border: 1px solid #86efac;
+  border-radius: 8px; padding: 12px 16px; display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 14px; }
+.price-block .lbl { font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.1em;
+  font-weight: 700; color: #166534; }
+.price-block .val { font-size: 22pt; font-weight: 800; color: #166534;
+  letter-spacing: -0.03em; line-height: 1; }
+.audit { border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px;
+  margin-bottom: 14px; break-inside: avoid; }
+.audit h2 { margin: 0 0 8px 0; font-size: 8.5pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #2563eb; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+.audit ul { margin: 0; padding-left: 18px; }
+.audit li { margin-bottom: 4px; font-size: 9pt; color: #334155; line-height: 1.5; }
+.audit li strong { color: #0f172a; }
+footer { margin-top: 20px; padding-top: 10px; border-top: 1px solid #e2e8f0;
+  font-size: 7.5pt; color: #94a3b8; text-align: center; }
+  .pieces-tbl { width: 100%; border-collapse: collapse; font-size: 9pt; }
+.pieces-tbl th { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.06em;
+  color: #64748b; font-weight: 700; padding: 5px 8px;
+  border-bottom: 1px solid #e2e8f0; text-align: left; }
+.pieces-tbl td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+.pieces-tbl tr:last-child td { border-bottom: none; }
+.pieces-tbl th.num, .pieces-tbl td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.pieces-tbl td strong { color: #0f172a; }
+
+@media print { .doc { padding: 0; max-width: none; } }
+</style></head><body><div class="doc">
+<header>
+  <div>
+    <h1>Orçamento de Corte a Laser</h1>
+    <div class="sub">${esc(laserTituloNome(usuarioLogado) || "—")} · Custos Industriais</div>
+  </div>
+  <div class="meta">
+    <div><strong>${esc(refId)}</strong></div>
+    <div>${esc(dataStr)}</div>
+  </div>
+</header>
+
+<div class="grid">
+  <div class="card piece-info">
+    <div class="info">
+      <div class="filename">${esc(arquivo)}</div>
+      <table>
+        <tr><td>Comprimento total de corte</td><td>${fmtNum(r.comprimento, 1)} mm</td></tr>
+        <tr><td>Metros lineares</td><td>${fmtNum(metros, 3)} m</td></tr>
+        <tr><td>Furos / contornos internos</td><td>${r.numFuros}</td></tr>
+        <tr><td>Quantidade de peças</td><td>${totalPecas}</td></tr>
+        <tr><td>Chapas necessárias</td><td>${numSheets} × ${esc(sheetNome)}</td></tr>
+      </table>
+    </div>
+    <div class="img">
+      ${imgDataURL ? '<img src="' + imgDataURL + '" alt="Geometria da peça">' : '<div style="color:#94a3b8;font-size:8pt;padding:20px 0;">Sem imagem disponível</div>'}
+      <div class="cap">Geometria renderizada a partir do arquivo original</div>
+    </div>
+  </div>
+  <div class="card" style="grid-column: 1 / -1;">
+    <h2>Peças Orçadas</h2>
+    <table class="pieces-tbl">
+      <thead>
+        <tr>
+          <th>Peça</th>
+          <th class="num">Comp. corte</th>
+          <th class="num">Furos</th>
+          <th class="num">Qtd.</th>
+          <th class="num">Total linear</th>
+        </tr>
+      </thead>
+      <tbody>${pecasLinhasHTML}</tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h2>Configuração de Corte</h2>
+    <table>${cfgLinhas.map((l) => "<tr><td>" + esc(l[0]) + "</td><td>" + esc(l[1]) + "</td></tr>").join("")}</table>
+  </div>
+  <div class="card">
+    <h2>Tempo de Processo</h2>
+    <table>${tempoLinhas.map((l) => "<tr><td>" + esc(l[0]) + "</td><td>" + esc(l[1]) + "</td></tr>").join("")}</table>
+  </div>
+</div>
+
+<div class="price-block">
+  <span class="lbl">Preço final</span>
+  <span class="val">${fmtBRL(r.custoTotal)}</span>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2>Composição de Custo</h2>
+    <table>
+      ${custoLinhas.map((l) => "<tr><td>" + esc(l[0]) + "</td><td>" + esc(l[1]) + "</td></tr>").join("")}
+      <tr style="border-top:1px solid #e2e8f0;"><td style="padding-top:6px;color:#0f172a;font-weight:700;">Custo direto</td><td style="padding-top:6px;font-weight:700;">${fmtBRL(r.custoDireto)}</td></tr>
+      <tr><td style="color:#0f172a;font-weight:700;">Margem (${fmtNum(marginPct, 0)}%)</td><td style="font-weight:700;">${fmtBRL(r.custoTotal - r.custoDireto)}</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h2>Parâmetros Aplicados</h2>
+    <table>${paramLinhas.map((l) => "<tr><td>" + esc(l[0]) + "</td><td>" + esc(l[1]) + "</td></tr>").join("")}</table>
+  </div>
+</div>
+
+<div class="audit">
+  <h2>Indicadores Comparativos</h2>
+  <table style="width:100%;border-collapse:collapse;font-size:9pt;">
+    <tr>
+      <td style="color:#64748b;padding:3px 0;">Custo por metro linear</td>
+      <td style="text-align:right;font-weight:600;">${fmtBRL(custoPorMetro)} / m</td>
+    </tr>
+    <tr>
+      <td style="color:#64748b;padding:3px 0;">Tempo por peça</td>
+      <td style="text-align:right;font-weight:600;">${fmtNum(segPorPeca, 1)} s</td>
+    </tr>
+  </table>
+</div>
+
+${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + sugestoesHTML + "</ul></div>" : ""}
+
+<div class="audit">
+  <h2>Memória de Cálculo</h2>
+  <ul>${porques.map((p) => "<li>" + p + "</li>").join("")}</ul>
+</div>
+
+<footer>
+  Documento gerado automaticamente por ${esc(laserTituloNome(usuarioLogado) || "—")} · Custos Industriais<br>
+  Referência ${esc(refId)} · ${esc(dataStr)} · Valores sujeitos a conferência.
+</footer>
+</div></body></html>`;
+
+        const win = window.open("", "_blank");
+        if (!win) {
+          showToast("⚠️ Permita pop-ups para exportar", false);
+          return;
+        }
+        win.document.open();
+        win.document.write(html);
+        win.document.close();
+        win.addEventListener("load", () => {
+          setTimeout(() => {
+            try { win.focus(); win.print(); } catch (e) {}
+          }, 350);
+        });
+
+        showToast("📄 Orçamento gerado — salve em PDF", true);
+      }
+
       function laserRenderSugestoes(sugestoes) {
         const area = document.getElementById("laserSuggestionsArea");
         if (!area) return;
@@ -16096,6 +16677,7 @@
       }
 
       function laserRenderResults(r) {
+        laserUltimoResultado = r;
         const area = document.getElementById("laserResultsArea");
         if (!area) return;
 
@@ -16130,13 +16712,23 @@
           // Header
           '  <div class="laser-results-header">' +
           "    <h2>Resultado do Orçamento</h2>" +
-          '    <span class="badge">' +
+          '    <div class="laser-results-header-right">' +
+          '      <span class="badge">' +
           totalPecas +
           (totalPecas > 1 ? " peças" : " peça") +
           " · " +
           numSheets +
           (numSheets > 1 ? " chapas" : " chapa") +
           "</span>" +
+          '      <button class="laser-btn-export-quote" onclick="laserExportarOrcamento()">' +
+          '        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
+          '          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>' +
+          '          <polyline points="7 10 12 15 17 10"></polyline>' +
+          '          <line x1="12" y1="15" x2="12" y2="3"></line>' +
+          '        </svg>' +
+          '        Exportar orçamento' +
+          '      </button>' +
+          '    </div>' +
           "  </div>" +
 
           // Grid dos 3 cards
