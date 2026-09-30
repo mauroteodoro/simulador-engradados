@@ -2724,11 +2724,218 @@
 
       /* ---------- Celular retrato (≤ 500px) ---------- */
       @media (max-width: 500px) {
-        /* Dashboard da aba Laser: respeita notch nas laterais */
+        /* Trava global contra overflow horizontal */
+        html, body {
+          overflow-x: hidden;
+          max-width: 100vw;
+        }
+        * {
+          box-sizing: border-box;
+        }
+
+        /* ── Dashboard da aba Laser ─────────────────────────── */
         .laser-dashboard {
           padding-left: max(0px, env(safe-area-inset-left));
           padding-right: max(0px, env(safe-area-inset-right));
+          max-width: 100vw;
+          overflow-x: hidden;
         }
+        .laser-dashboard .panel {
+          max-width: 100%;
+          overflow-x: hidden;
+          padding: 16px 14px;
+        }
+
+        /* ── Campos com unidade (R$/h, mm, %) ───────────────── */
+        /* iOS Safari ignora flex: 1 em input[type=number] sem
+           width: 0 explícito. Sem isso, o input "vaza" pra direita
+           e empurra o rótulo da unidade pra fora da tela. */
+        .laser-field-row {
+          gap: 6px;
+          max-width: 100%;
+        }
+        .laser-field-row input,
+        .laser-field-row select {
+          flex: 1 1 0%;
+          width: 0;
+          min-width: 0;
+          max-width: 100%;
+          padding: 9px 10px;
+          font-size: 0.85rem;
+          text-overflow: ellipsis;
+        }
+        .laser-unit-tag {
+          flex: 0 0 auto;
+          padding: 0 8px;
+          font-size: 0.68rem;
+          max-width: 72px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        /* ── Campos em 2 colunas viram 1 coluna ─────────────── */
+        .laser-row-2col {
+          grid-template-columns: 1fr;
+          gap: 10px;
+          max-width: 100%;
+        }
+        .laser-row-2col + .input-group {
+          margin-top: 10px;
+        }
+        .laser-dashboard .input-group {
+          max-width: 100%;
+        }
+        .laser-dashboard input,
+        .laser-dashboard select {
+          max-width: 100%;
+        }
+
+        /* ── Canvas wrap: não estoura nem corta o toggle ────── */
+        .laser-canvas-wrap {
+          max-width: 100%;
+          overflow: hidden;
+        }
+
+        /* ── Toggle 2D/3D: sobe e encolhe ───────────────────── */
+        .laser-view-toggle {
+          top: 8px;
+          right: 8px;
+          padding: 2px;
+        }
+        .laser-view-btn {
+          padding: 4px 9px;
+          font-size: 0.7rem;
+        }
+
+        /* ── Legenda compacta ───────────────────────────────── */
+        .laser-canvas-legend {
+          font-size: 0.6rem;
+          padding: 5px 8px;
+          max-width: 55%;
+          top: 8px;
+          left: 8px;
+          gap: 3px;
+        }
+        .laser-canvas-legend .dot {
+          width: 6px;
+          height: 6px;
+          margin-right: 4px;
+        }
+
+        /* ── Botão Medir: respeita home indicator ───────────── */
+        .laser-measure-btn {
+          bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+          right: calc(12px + env(safe-area-inset-right, 0px)) !important;
+          font-size: 0.72rem;
+          padding: 5px 10px;
+        }
+
+        /* ── Painel de medição: vira cartão na base ─────────── */
+        .laser-measure-panel {
+          top: auto;
+          bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+          left: 8px;
+          right: 8px;
+          min-width: 0;
+          max-width: none;
+          padding: 12px 14px;
+          font-size: 0.76rem;
+        }
+        .laser-measure-panel .laser-measure-title {
+          font-size: 0.62rem;
+        }
+
+        /* ── Controles 3D: tudo empilhado ───────────────────── */
+        .laser-3d-controls {
+          padding: 10px;
+          gap: 8px;
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .laser-3d-btn {
+          justify-content: center;
+          min-height: 42px;
+        }
+        .laser-3d-speed {
+          justify-content: space-between;
+          width: 100%;
+        }
+        .laser-3d-speed select {
+          flex: 1;
+          min-width: 0;
+        }
+        .laser-3d-progress-wrap {
+          min-width: 0;
+          flex-basis: auto;
+          max-width: 100%;
+          margin-left: 0;
+        }
+
+        /* ── Dropdown de cluster: não vaza ──────────────────── */
+        .laser-cluster-dd-panel {
+          max-width: calc(100vw - 48px);
+        }
+        .laser-cluster-dd-item {
+          font-size: 0.72rem;
+          padding: 7px 9px;
+        }
+        .laser-cluster-dd-btn {
+          font-size: 0.78rem;
+          padding: 7px 10px;
+        }
+        .laser-cluster-dd-btn #laserClusterLabel {
+          font-size: 0.76rem;
+        }
+
+        /* ── Cards de resultado ─────────────────────────────── */
+        .laser-results-panel,
+        .laser-suggestions-panel {
+          padding: 16px 14px;
+          border-radius: 14px;
+          max-width: 100%;
+          overflow-x: hidden;
+        }
+        .laser-results-panel h2,
+        .laser-suggestions-panel h2 {
+          font-size: 0.95rem;
+          margin-bottom: 12px;
+          padding-bottom: 10px;
+        }
+        .laser-summary {
+          gap: 8px 16px;
+          margin-top: 14px;
+          padding-top: 14px;
+          font-size: 0.78rem;
+        }
+
+        /* ── Tabela de velocidades ──────────────────────────── */
+        .laser-speed-details summary {
+          font-size: 0.76rem;
+          padding: 9px 12px;
+        }
+        .laser-speed-details table {
+          font-size: 0.7rem;
+        }
+        .laser-speed-details table th,
+        .laser-speed-details table td {
+          padding: 5px 8px;
+        }
+
+        /* ── Dropzone ───────────────────────────────────────── */
+        .laser-dropzone {
+          padding: 14px 10px;
+        }
+        .laser-dropzone-icon {
+          font-size: 1.2rem;
+        }
+        .laser-dropzone-title {
+          font-size: 0.82rem;
+        }
+        .laser-dropzone-hint {
+          font-size: 0.7rem;
+        }
+      }
 
         /* Painéis de resultado e sugestões: mais enxutos */
         .laser-results-panel,
@@ -5586,10 +5793,13 @@
                 Remover arquivo
               </button>
             </div>
+            <!-- Sem `accept` — o iOS Files esconde arquivos cujo tipo
+                 ele não reconhece (DXF cai nesse caso). A validação é
+                 feita no JavaScript (laserHandleFile), que já rejeita
+                 qualquer coisa que não seja .dxf ou .svg. -->
             <input
               type="file"
               id="laserFileInput"
-              accept=".dxf,.svg,image/svg+xml,application/dxf"
               style="display: none"
             />
           </div>
