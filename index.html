@@ -5864,17 +5864,14 @@
                 Remover arquivo
               </button>
             </div>
-            <!-- Input de arquivo compatível com iOS Safari:
-                 - `accept` permissivo: inclui DXF explicitamente e aceita
-                   qualquer tipo como fallback (iOS Files esconde arquivos
-                   de tipos não reconhecidos quando o accept é restritivo).
-                 - `display: none` quebra o .click() em versões antigas do
-                   iOS. Usamos clip + tamanho zero + position absolute —
-                   visualmente invisível, mas clicável via JS. -->
+            <!-- SEM `accept`: o iOS Safari desabilita (cinza) arquivos de
+                 tipos que ele não reconhece no Files picker — e DXF cai
+                 nesse caso. Sem o filtro, todos os arquivos ficam
+                 selecionáveis. A validação de extensão é feita no JS
+                 (laserHandleFile), que rejeita o que não for .dxf/.svg. -->
             <input
               type="file"
               id="laserFileInput"
-              accept=".dxf,.svg,image/svg+xml,image/vnd.dxf,application/dxf,application/octet-stream,*/*"
               style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; overflow: hidden;"
             />
           </div>
