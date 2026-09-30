@@ -15136,7 +15136,7 @@
           clusters.length +
           " peças separadas</div>";
         html +=
-          '<div class="texto">Defina as quantidades para orçar o conjunto completo. O cálculo e o 3D somam todas as peças.</div>';
+          '<div class="texto">Defina as quantidades para orçar o conjunto completo. O cálculo e o 3D somam todas as peças. <strong>Deixe 0 para excluir uma peça.</strong></div>';
 
         html += '<div class="laser-quantities-list">';
         clusters.forEach((c, i) => {
@@ -15151,7 +15151,7 @@
             '<input type="number" class="laser-quantity-input" ' +
             'value="' +
             q +
-            '" min="1" max="999" step="1" ' +
+            '" min="0" max="999" step="1" ' +
             "onchange=\"laserSetClusterQuantity(" +
             i +
             ", this.value)\" " +
@@ -15168,13 +15168,14 @@
       }
 
       // ─── Atualiza a quantidade de um cluster ────────────────────
+      // Quantidade 0 = peça EXCLUÍDA do orçamento e da simulação.
       function laserSetClusterQuantity(idx, val) {
         if (!laserGeometry) return;
-        const q = Math.max(1, Math.min(999, parseInt(val, 10) || 1));
+        const q = Math.max(0, Math.min(999, parseInt(val, 10) || 0));
         if (!laserGeometry.quantities) laserGeometry.quantities = {};
         laserGeometry.quantities[idx] = q;
 
-        // Reconstrói o 3D se estiver ativo
+        // Reconstrói o 3D se estiver ativo (peças com qty 0 não entram)
         if (laser3D && laser3D.active) {
           requestAnimationFrame(() => laser3DBuild(laserGeometry));
         }
@@ -15328,7 +15329,7 @@
             const qtds = d.quantities || {};
             if (d.clusters && d.clusters.length > 1) {
               d.clusters.forEach((cluster, cIdx) => {
-                const q = Math.max(1, parseInt(qtds[cIdx], 10) || 1);
+                const q = Math.max(0, parseInt(qtds[cIdx], 10) || 0);
                 for (let copy = 0; copy < q; copy++) {
                   const polylines = cluster.indices
                     .map((i) => d.polylines[i])
@@ -15345,7 +15346,7 @@
                 }
               });
             } else {
-              const q = Math.max(1, parseInt(qtds[0], 10) || 1);
+              const q = Math.max(0, parseInt(qtds[0], 10) || 0);
               for (let copy = 0; copy < q; copy++) {
                 instances.push({
                   polylines: d.polylines.map((p) => ({
@@ -15432,16 +15433,29 @@
 
         if (d.clusters && d.clusters.length > 1) {
           d.clusters.forEach((c, i) => {
-            const q = Math.max(1, parseInt(qtds[i], 10) || 1);
+            const q = Math.max(0, parseInt(qtds[i], 10) || 0);
             comprimentoTotal += c.comprimento * q;
             furosTotal += c.numFuros * q;
             totalPecas += q;
           });
         } else {
-          const q = Math.max(1, parseInt(qtds[0], 10) || 1);
+          const q = Math.max(0, parseInt(qtds[0], 10) || 0);
           comprimentoTotal = d.comprimento * q;
           furosTotal = d.numFuros * q;
           totalPecas = q;
+        }
+
+        // Se TODAS as peças estão com qty 0, não há o que orçar.
+        if (totalPecas === 0) {
+          showToast(
+            "⚠️ Defina quantidade ≥ 1 em pelo menos uma peça.",
+            false
+          );
+          const areaLimpa = document.getElementById("laserResultsArea");
+          if (areaLimpa) areaLimpa.innerHTML = "";
+          const sugLimpa = document.getElementById("laserSuggestionsArea");
+          if (sugLimpa) sugLimpa.innerHTML = "";
+          return;
         }
 
         const tempoCorteS = comprimentoTotal / params.speed;
@@ -16572,7 +16586,7 @@
 
         if (geoOriginal.clusters && geoOriginal.clusters.length > 1) {
           geoOriginal.clusters.forEach((cluster, cIdx) => {
-            const q = Math.max(1, parseInt(qtds[cIdx], 10) || 1);
+            const q = Math.max(0, parseInt(qtds[cIdx], 10) || 0);
             for (let copy = 0; copy < q; copy++) {
               const polylines = cluster.indices
                 .map((i) => geoOriginal.polylines[i])
@@ -16592,7 +16606,7 @@
             }
           });
         } else {
-          const q = Math.max(1, parseInt(qtds[0], 10) || 1);
+          const q = Math.max(0, parseInt(qtds[0], 10) || 0);
           for (let copy = 0; copy < q; copy++) {
             instances.push({
               polylines: geoOriginal.polylines.map((p) => ({
@@ -16805,58 +16819,218 @@
           );
         }
 
-        // ─── 9. Cabeça de laser ───────────────────────────────────
+        // ─── 9. Cabeça de laser (estilo industrial — Raytools/Precitec) ──
+        //    Origem do grupo = ponto focal (ponta do bico). Tudo
+        //    construído para CIMA (+Y), então posicionar o grupo no
+        //    path já coloca o bico na chapa.
         const headGroup = new THREE.Group();
         headGroup.userData.laser3d = true;
 
-        const headBody = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.014, 0.022, 0.055, 16),
-          new THREE.MeshStandardMaterial({
-            color: 0x18181b,
-            roughness: 0.4,
-            metalness: 0.75,
-          })
-        );
-        headBody.position.y = 0.075;
-        headGroup.add(headBody);
+        // — Materiais
+        const matDark = new THREE.MeshStandardMaterial({
+          color: 0x2a2f36,      // alumínio anodizado escuro
+          roughness: 0.55,
+          metalness: 0.85,
+        });
+        const matMetal = new THREE.MeshStandardMaterial({
+          color: 0xb8c0c8,      // alumínio escovado claro
+          roughness: 0.32,
+          metalness: 0.9,
+        });
+        const matCeramic = new THREE.MeshStandardMaterial({
+          color: 0xf0ece0,      // cerâmica branca (isolante)
+          roughness: 0.7,
+          metalness: 0.02,
+        });
+        const matCopper = new THREE.MeshStandardMaterial({
+          color: 0xc67b3a,      // cobre do bico
+          roughness: 0.28,
+          metalness: 0.95,
+        });
+        const matGlass = new THREE.MeshPhysicalMaterial({
+          color: 0x9ec0dd,      // visor de proteção translúcido
+          roughness: 0.05,
+          metalness: 0.1,
+          transmission: 0.6,
+          transparent: true,
+          opacity: 0.4,
+        });
+        const matRing = new THREE.MeshStandardMaterial({
+          color: 0x1a1a1a,      // anel preto separador
+          roughness: 0.65,
+          metalness: 0.4,
+        });
+        const matRubber = new THREE.MeshStandardMaterial({
+          color: 0x0d0d0d,      // mangueira preta
+          roughness: 0.95,
+          metalness: 0.02,
+        });
+        const matWater = new THREE.MeshStandardMaterial({
+          color: 0x1e5f9e,      // tubo de água azul
+          roughness: 0.7,
+          metalness: 0.1,
+        });
 
-        const nozzle = new THREE.Mesh(
-          new THREE.ConeGeometry(0.008, 0.028, 16),
-          new THREE.MeshStandardMaterial({
-            color: 0xb08050,
-            roughness: 0.25,
-            metalness: 0.9,
-          })
+        // — Corpo de colimação (topo, mais longo)
+        const collimator = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.030, 0.030, 0.075, 24),
+          matDark
         );
-        nozzle.position.y = 0.04;
-        nozzle.rotation.x = Math.PI;
-        headGroup.add(nozzle);
+        collimator.position.y = 0.175;
+        headGroup.add(collimator);
 
-        const beam = new THREE.Mesh(
-          new THREE.ConeGeometry(0.0015, 0.038, 12, 1, true),
+        // — Tampa superior com ranhuras
+        const topCap = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.034, 0.034, 0.012, 24),
+          matMetal
+        );
+        topCap.position.y = 0.219;
+        headGroup.add(topCap);
+
+        // — Corpo de foco (meio, mais largo)
+        const focusBody = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.037, 0.037, 0.055, 24),
+          matMetal
+        );
+        focusBody.position.y = 0.108;
+        headGroup.add(focusBody);
+
+        // — Anel escuro separando foco do visor
+        const sepRing = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.039, 0.039, 0.006, 24),
+          matRing
+        );
+        sepRing.position.y = 0.078;
+        headGroup.add(sepRing);
+
+        // — Cartucho de vidro de proteção (visor)
+        const glassCart = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.030, 0.030, 0.018, 20),
+          matGlass
+        );
+        glassCart.position.y = 0.066;
+        headGroup.add(glassCart);
+
+        // — Anel cerâmico branco (isolante elétrico)
+        const ceramic = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.028, 0.028, 0.014, 20),
+          matCeramic
+        );
+        ceramic.position.y = 0.050;
+        headGroup.add(ceramic);
+
+        // — Corpo inferior (abaixo do cerâmico, segura o bico)
+        const lowerBody = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.024, 0.020, 0.014, 20),
+          matDark
+        );
+        lowerBody.position.y = 0.036;
+        headGroup.add(lowerBody);
+
+        // — Bico de cobre: corpo
+        const nozzleBody = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.018, 0.010, 0.014, 20),
+          matCopper
+        );
+        nozzleBody.position.y = 0.022;
+        headGroup.add(nozzleBody);
+
+        // — Bico de cobre: ponta cônica
+        const nozzleTip = new THREE.Mesh(
+          new THREE.ConeGeometry(0.010, 0.012, 20),
+          matCopper
+        );
+        nozzleTip.position.y = 0.010;
+        nozzleTip.rotation.x = Math.PI;
+        headGroup.add(nozzleTip);
+
+        // — Orifício do bico (pequeno orifício preto)
+        const nozzleHole = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.0016, 0.0016, 0.004, 10),
+          new THREE.MeshBasicMaterial({ color: 0x000000 })
+        );
+        nozzleHole.position.y = 0.002;
+        headGroup.add(nozzleHole);
+
+        // — Conector de fibra óptica (lateral no topo)
+        const fiberPort = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.010, 0.010, 0.026, 12),
+          matMetal
+        );
+        fiberPort.rotation.z = Math.PI / 2;
+        fiberPort.position.set(0.045, 0.195, 0);
+        headGroup.add(fiberPort);
+
+        // — Mangueira de fibra saindo do conector
+        const fiberHose = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.007, 0.007, 0.055, 10),
+          matRubber
+        );
+        fiberHose.rotation.z = Math.PI / 2;
+        fiberHose.position.set(0.085, 0.195, 0);
+        headGroup.add(fiberHose);
+
+        // — Conexões de água (2 tubos finos, um de cada lado)
+        [1, -1].forEach((side) => {
+          const waterPort = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.005, 0.005, 0.018, 10),
+            matMetal
+          );
+          waterPort.rotation.z = Math.PI / 2;
+          waterPort.position.set(side * 0.043, 0.148, 0);
+          headGroup.add(waterPort);
+
+          const waterTube = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.004, 0.004, 0.03, 10),
+            matWater
+          );
+          waterTube.position.set(side * 0.058, 0.17, 0);
+          waterTube.rotation.z = side * 0.35;
+          headGroup.add(waterTube);
+        });
+
+        // — Anel LED (indicador de status verde)
+        const ledRing = new THREE.Mesh(
+          new THREE.TorusGeometry(0.0385, 0.0013, 6, 24),
+          new THREE.MeshBasicMaterial({ color: 0x22c55e })
+        );
+        ledRing.rotation.x = Math.PI / 2;
+        ledRing.position.y = 0.135;
+        headGroup.add(ledRing);
+
+        // — Feixe interno (cilindro fino brilhante dentro do bico)
+        const beamInner = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.0014, 0.0014, 0.05, 8),
           new THREE.MeshBasicMaterial({
             color: 0xfbbf24,
             transparent: true,
-            opacity: 0.4,
+            opacity: 0.65,
             depthWrite: false,
+            blending: THREE.AdditiveBlending,
           })
         );
-        beam.position.y = 0.022;
-        beam.rotation.x = Math.PI;
-        headGroup.add(beam);
+        beamInner.position.y = 0.028;
+        beamInner.userData.isBeam = true;
+        headGroup.add(beamInner);
 
+        // — Brilho do ponto de corte (splash no contato com a chapa)
         const glow = new THREE.Mesh(
-          new THREE.SphereGeometry(0.005, 12, 12),
+          new THREE.SphereGeometry(0.0042, 14, 14),
           new THREE.MeshBasicMaterial({
             color: 0xfbbf24,
             transparent: true,
             opacity: 0.95,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
           })
         );
+        glow.position.y = 0.0004;
+        glow.userData.isBeam = true;
         headGroup.add(glow);
 
-        const glowLight = new THREE.PointLight(0xfbbf24, 1.8, 0.2);
-        glowLight.position.set(0, 0.005, 0);
+        // — Luz pontual do ponto de corte
+        const glowLight = new THREE.PointLight(0xfbbf24, 2.4, 0.16);
+        glowLight.position.set(0, 0.0008, 0);
         headGroup.add(glowLight);
 
         headGroup.position.copy(laser3D.pathPoints[0] || new THREE.Vector3());
@@ -16962,14 +17136,14 @@
           );
           if (laser3D.laserHead) {
             laser3D.laserHead.position.copy(pos);
-            // Esconde o feixe durante o salto (visual mais fiel)
+            // Esconde SÓ o feixe e o glow durante o salto — usa o flag
+            // userData.isBeam, para não esconder o visor de vidro.
             const isJumping =
               laser3D.pointTypes &&
               (laser3D.pointTypes[idx] === "jump" ||
                 laser3D.pointTypes[idx + 1] === "jump");
             laser3D.laserHead.children.forEach((c) => {
-              if (c.material && c.material.transparent) {
-                // Feixe + glow
+              if (c.userData && c.userData.isBeam) {
                 c.visible = !isJumping;
               }
             });
@@ -17042,9 +17216,9 @@
         }
         if (laser3D.laserHead && laser3D.pathPoints.length > 0) {
           laser3D.laserHead.position.copy(laser3D.pathPoints[0]);
-          // Volta a mostrar o feixe e o glow
+          // Volta a mostrar só o feixe e o glow
           laser3D.laserHead.children.forEach((c) => {
-            if (c.material && c.material.transparent) {
+            if (c.userData && c.userData.isBeam) {
               c.visible = true;
             }
           });
