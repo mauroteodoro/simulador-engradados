@@ -6194,12 +6194,22 @@
             gap: 12px;
           "
         >
-          <span style="font-size: 0.78rem; color: var(--text-muted)">
+          <span
+            class="hint-desktop"
+            style="font-size: 0.78rem; color: var(--text-muted)"
+          >
             💡 Scroll = zoom · arraste = mover · duplo clique = recentralizar
             · no modo Medir: <strong>clique</strong> = segmento ·
             <strong>Shift+clique</strong> = contorno ·
             <strong>Alt+clique</strong> = trecho entre quinas ·
             <strong>Ctrl+clique</strong> = somar segmentos
+          </span>
+          <span
+            class="hint-mobile"
+            style="font-size: 0.78rem; color: var(--text-muted)"
+          >
+            💡 Um dedo = mover · dois dedos = zoom · duplo toque =
+            recentralizar · modo Medir: <strong>toque</strong> = segmento
           </span>
         </div>
         </div>
@@ -12676,6 +12686,18 @@
          let laserMeasure = { active: false, selected: null, multi: [] };
       let laserTransform = null;
 
+      // Detecta mobile/touch. Usado para trocar textos que citam
+      // teclas (Esc, Shift, Ctrl, Alt) por equivalentes de toque.
+      function laserEhMobile() {
+        if (window.innerWidth <= 600) return true;
+        if (
+          window.matchMedia &&
+          window.matchMedia("(pointer: coarse)").matches
+        )
+          return true;
+        return false;
+      }
+
       function laserToggleMeasure() {
         laserMeasure.active = !laserMeasure.active;
         const btn = document.getElementById("laserBtnMeasure");
@@ -12683,9 +12705,13 @@
 
         if (btn) {
           btn.classList.toggle("active", laserMeasure.active);
-          btn.textContent = laserMeasure.active
-            ? "✓ Medindo (Esc p/ sair)"
-            : "📏 Medir";
+          if (laserMeasure.active) {
+            btn.textContent = laserEhMobile()
+              ? "✓ Medindo · toque p/ sair"
+              : "✓ Medindo (Esc p/ sair)";
+          } else {
+            btn.textContent = "📏 Medir";
+          }
         }
 
         // Troca o cursor do canvas: mãozinha (pan) ↔ crosshair (medir)
@@ -12806,7 +12832,11 @@
 
         html += '<div class="laser-measure-divider"></div>';
         html +=
-          '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">Ctrl+clique soma/remove segmentos · Alt+clique soma trechos entre quinas · clique fora ou Esc limpa.</div>';
+          '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">' +
+          (laserEhMobile()
+            ? "Toque em outro segmento para somar ou remover · toque no vazio para limpar tudo."
+            : "Ctrl+clique soma/remove segmentos · Alt+clique soma trechos entre quinas · clique fora ou Esc limpa.") +
+          "</div>";
 
         panel.innerHTML = html;
         panel.style.display = "block";
@@ -12967,7 +12997,11 @@
             "</strong></div>";
           html += '<div class="laser-measure-divider"></div>';
           html +=
-            '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">Ctrl+clique mediu o trecho entre duas quinas. Clique simples mede um segmento. Shift+clique mede o contorno inteiro.</div>';
+            '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">' +
+            (laserEhMobile()
+              ? "Toque em um segmento para ver só ele · toque no botão Medir para sair."
+              : "Alt+clique mediu o trecho entre duas quinas. Clique simples mede um segmento. Shift+clique mede o contorno inteiro.") +
+            "</div>";
         } else if (isContour) {
           // ── Modo contorno inteiro ──────────────────────────────────
           html +=
@@ -13028,7 +13062,11 @@
 
           html += '<div class="laser-measure-divider"></div>';
           html +=
-            '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">Shift+clique mediu o contorno inteiro. Clique simples mede apenas um segmento. Ctrl+clique mede o trecho entre quinas.</div>';
+            '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">' +
+            (laserEhMobile()
+              ? "Toque em um segmento para medir só ele · toque no botão Medir para sair."
+              : "Shift+clique mediu o contorno inteiro. Clique simples mede apenas um segmento. Alt+clique mede o trecho entre quinas.") +
+            "</div>";
         } else {
           // ── Modo segmento único ────────────────────────────────────
           html += '<div class="laser-measure-title">Segmento selecionado</div>';
@@ -13080,7 +13118,11 @@
           }
           html += '<div class="laser-measure-divider"></div>';
           html +=
-            '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">Dica: Shift+clique para medir o contorno inteiro (círculo, arco, polyline fechada).</div>';
+            '<div style="font-size:0.68rem; color:#94a3b8; line-height:1.4;">' +
+            (laserEhMobile()
+              ? "Toque em outro segmento para medir · toque no vazio para limpar · toque no botão Medir para sair."
+              : "Dica: Shift+clique para medir o contorno inteiro (círculo, arco, polyline fechada).") +
+            "</div>";
         }
 
         panel.innerHTML = html;
