@@ -4090,7 +4090,8 @@
       }
       /* ============================================================
          MOBILE UX — pílulas compactas (Engradados + Laser)
-         Usa #id para vencer estilos inline do HTML.
+         Sem `!important` em max-height: o JS precisa poder setar
+         a altura exata do conteúdo em pixels durante a animação.
          ============================================================ */
       @media (max-width: 600px) {
 
@@ -4098,14 +4099,14 @@
         #pieceInfoBox.piece-info-box {
           pointer-events: auto !important;
           cursor: pointer;
-          max-height: 54px !important;
-          overflow: hidden !important;
-          transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          max-height: 54px;
+          overflow: hidden;
+          transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           padding: 12px 40px 12px 14px !important;
         }
         #pieceInfoBox.piece-info-box.expanded {
-          max-height: 70vh !important;
-          overflow-y: auto !important;
+          max-height: 70vh;
+          overflow-y: auto;
           -webkit-overflow-scrolling: touch;
         }
         #pieceInfoBox.piece-info-box::after {
@@ -4137,14 +4138,14 @@
         #laserMeasurePanel {
           pointer-events: auto !important;
           cursor: pointer;
-          max-height: 60px !important;
-          overflow: hidden !important;
-          transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          max-height: 60px;
+          overflow: hidden;
+          transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           padding-right: 38px !important;
         }
         #laserMeasurePanel.expanded {
-          max-height: 70vh !important;
-          overflow-y: auto !important;
+          max-height: 70vh;
+          overflow-y: auto;
           -webkit-overflow-scrolling: touch;
         }
         #laserMeasurePanel::after {
@@ -17094,12 +17095,59 @@
 
       // ============================================================
       // MOBILE UX — pílulas compactas no Engradados e no Laser
-      // Captura pointerdown/up na pílula para impedir que o inspetor
-      // de engradados trate o toque como clique no canvas e esconda
-      // a caixa antes de expandir.
+      // Abre/fecha animando para a altura EXATA do conteúdo (medida
+      // em runtime). Sem isso, a transição CSS vai de 70vh até 54px,
+      // passando por ~80% do tempo sem produzir mudança visível — o
+      // famoso "engasgo" no fechamento.
       // ============================================================
       (function laserMobilePanelsInit() {
         const mobile = () => window.innerWidth <= 600;
+        const TRANS_MS = 320;
+
+        function alturaColapsada(el) {
+          return el.id === "laserMeasurePanel" ? "60px" : "54px";
+        }
+
+        function abrir(el) {
+          // Mede a altura natural com max-height desbloqueado
+          el.style.maxHeight = "none";
+          const maxH = Math.round(window.innerHeight * 0.7);
+          const natural = el.scrollHeight;
+          const alvo = Math.min(natural, maxH);
+
+          // Trava em 54/60px (mesmo valor do CSS recolhido) para
+          // garantir um ponto de partida conhecido
+          el.style.maxHeight = alturaColapsada(el);
+          void el.offsetHeight;
+
+          // Aplica o estado expandido + altura exata do conteúdo
+          el.classList.add("expanded");
+          el.style.maxHeight = alvo + "px";
+
+          // Depois da transição, solta a altura para o CSS cuidar
+          // (max-height: 70vh, com scroll se o conteúdo for maior)
+          setTimeout(function () {
+            if (el.classList.contains("expanded")) {
+              el.style.maxHeight = "";
+            }
+          }, TRANS_MS);
+        }
+
+        function fechar(el) {
+          // Fixa a altura atual em pixel ANTES de desmontar o estado
+          const atual = el.offsetHeight;
+          el.style.maxHeight = atual + "px";
+          void el.offsetHeight; // reflow: browser sabe que estamos em "atual"
+
+          // Remove a classe e solta o inline → CSS assume 54/60px
+          el.classList.remove("expanded");
+          el.style.maxHeight = "";
+        }
+
+        function toggle(el) {
+          if (el.classList.contains("expanded")) fechar(el);
+          else abrir(el);
+        }
 
         // ---------- ENGRADADOS ----------
         const pieceInfo = document.getElementById("pieceInfoBox");
@@ -17109,16 +17157,14 @@
           pieceInfo.addEventListener(
             "pointerdown",
             function (e) {
-              if (!mobile()) return;
-              e.stopPropagation();
+              if (mobile()) e.stopPropagation();
             },
             true
           );
           pieceInfo.addEventListener(
             "pointerup",
             function (e) {
-              if (!mobile()) return;
-              e.stopPropagation();
+              if (mobile()) e.stopPropagation();
             },
             true
           );
@@ -17126,13 +17172,16 @@
           pieceInfo.addEventListener("click", function (e) {
             if (!mobile()) return;
             e.stopPropagation();
-            this.classList.toggle("expanded");
+            toggle(this);
           });
 
           const piTitle = document.getElementById("piTitle");
           if (piTitle && window.MutationObserver) {
             const obs = new MutationObserver(function () {
-              if (mobile()) pieceInfo.classList.remove("expanded");
+              if (!mobile()) return;
+              if (pieceInfo.classList.contains("expanded")) {
+                fechar(pieceInfo);
+              }
             });
             obs.observe(piTitle, {
               childList: true,
@@ -17150,7 +17199,7 @@
           measurePanel.addEventListener("click", function (e) {
             if (!mobile()) return;
             e.stopPropagation();
-            this.classList.toggle("expanded");
+            toggle(this);
           });
 
           if (window.MutationObserver) {
