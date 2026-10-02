@@ -476,6 +476,14 @@
         gap: 20px;
         max-width: 1400px;
         margin: 0 auto;
+        /* align-items: stretch (padrão do grid) faz os dois painéis
+           ocuparem a MESMA altura de linha. Quem dita o tamanho é o
+           painel de configuração (sidebar). Se a sidebar cresce — ao
+           carregar um template, ao aparecer o aviso de código
+           duplicado, etc. — o painel do canvas estica junto. Se
+           encolhe, o canvas acompanha. Topo e base ficam sempre
+           alinhados. */
+        align-items: stretch;
       }
 
       .panel {
@@ -614,8 +622,16 @@
       }
       #canvas-container {
         width: 100%;
+        /* flex: 1 faz o canvas preencher TODO o espaço que sobra do
+           painel — abaixo do <h2> "Visualização da Geometria" e
+           acima do .canvas-hint. Combinado com o align-items: stretch
+           do grid, o canvas fica exatamente com a mesma altura da
+           sidebar de configuração. Topo e base alinhados, sempre. */
         flex: 1;
-        min-height: 350px;
+        /* Piso mínimo de segurança — só evita que o canvas suma em
+           casos extremos (janela minúscula). Não interfere no
+           alinhamento normal com a sidebar. */
+        min-height: 200px;
         background: var(--canvas-bg);
         border-radius: 12px;
         overflow: hidden;
@@ -1723,6 +1739,13 @@
         color: var(--text-muted);
         font-style: italic;
       }
+      .historico-item-codigo.especial {
+        background: rgba(217, 119, 6, 0.15);
+        color: #b45309;
+        border: 1px solid rgba(217, 119, 6, 0.35);
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
 
       .historico-item-actions {
         display: flex;
@@ -2791,7 +2814,265 @@
           font-size: 0.9rem;
         }
       }
-            /* ============================================================
+      /* ============================================================
+         PROJEÇÃO — placeholder "em construção"
+         ============================================================ */
+         .proj-em-breve {
+        max-width: 640px;
+        margin: 60px auto;
+        text-align: center;
+        padding: 48px 32px;
+      }
+      .proj-em-breve-icon {
+        font-size: 3rem;
+        line-height: 1;
+        margin-bottom: 16px;
+      }
+      .proj-em-breve h2 {
+        border: none;
+        padding: 0;
+        margin: 0 0 12px 0;
+        font-size: 1.35rem;
+        font-weight: 700;
+      }
+      .proj-em-breve p {
+        margin: 0 0 10px 0;
+        color: var(--text-main);
+        font-size: 0.95rem;
+        line-height: 1.55;
+      }
+      .proj-em-breve .proj-em-breve-sub {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        line-height: 1.6;
+        margin-top: 16px;
+      }
+
+      /* ============================================================
+         PROJEÇÃO — layout da composição assistida (legado)
+         ============================================================ */
+         .proj-layout {
+        display: grid;
+        grid-template-columns: 340px minmax(0, 1fr);
+        gap: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+        align-items: start;
+      }
+      .proj-main-col {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      .proj-vazio {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: var(--text-muted);
+        padding: 60px 20px;
+        font-size: 0.9rem;
+      }
+      .proj-vazio .icon {
+        font-size: 2.6rem;
+        margin-bottom: 12px;
+        opacity: 0.5;
+      }
+
+      /* ---------- Cabeçalho da peça ---------- */
+      .proj-peca-header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 14px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-light);
+        margin-bottom: 20px;
+      }
+      .proj-peca-header h3 {
+        margin: 0 0 4px 0;
+        font-size: 1.05rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .proj-peca-header .meta {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+      .proj-peca-header .badge-ref {
+        display: inline-block;
+        background: var(--primary-subtle);
+        color: var(--primary);
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 5px;
+        margin-left: 8px;
+        font-family: "Geist Mono", ui-monospace, monospace;
+      }
+
+      /* ---------- Seção (fase) ---------- */
+      .proj-fase {
+        margin-bottom: 22px;
+      }
+      .proj-fase-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 0;
+        margin-bottom: 8px;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .proj-fase-titulo {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--primary);
+      }
+      .proj-fase-total {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* ---------- Linha de tempo/insumo ---------- */
+      .proj-linha {
+        display: grid;
+        grid-template-columns: 1fr 90px 120px 100px;
+        gap: 12px;
+        align-items: center;
+        padding: 7px 0;
+        font-size: 0.85rem;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .proj-linha:last-child {
+        border-bottom: none;
+      }
+      .proj-linha .nome {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .proj-linha .codigo {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        margin-right: 6px;
+      }
+      .proj-linha input[type="number"] {
+        width: 100%;
+        padding: 6px 8px;
+        text-align: right;
+        font-size: 0.84rem;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        background: var(--bg-panel-2);
+        border: 1px solid var(--border-light);
+        border-radius: 6px;
+        color: var(--text-main);
+        outline: none;
+      }
+      .proj-linha input[type="number"]:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-subtle);
+        background: var(--bg-panel);
+      }
+      .proj-linha .unidade {
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        text-align: right;
+      }
+      .proj-linha .custo {
+        text-align: right;
+        font-weight: 600;
+        color: var(--text-main);
+        font-variant-numeric: tabular-nums;
+      }
+      .proj-linha-remove {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-dim);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 6px;
+        font-size: 0.75rem;
+        transition: all 0.15s;
+      }
+      .proj-linha-remove:hover {
+        color: var(--danger-text);
+        border-color: var(--danger-border);
+        background: var(--danger-bg);
+      }
+
+      /* ---------- Cards de totais ---------- */
+      .proj-resumo {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        margin-top: 22px;
+        padding-top: 20px;
+        border-top: 2px solid var(--border-light);
+      }
+      .proj-resumo-card {
+        background: var(--bg-panel-2);
+        border: 1px solid var(--border-light);
+        border-radius: 10px;
+        padding: 14px 16px;
+      }
+      .proj-resumo-card .label {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+      }
+      .proj-resumo-card .valor {
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+        color: var(--text-main);
+      }
+      .proj-resumo-card.destaque {
+        background: rgba(52, 199, 89, 0.08);
+        border-color: rgba(52, 199, 89, 0.3);
+      }
+      .proj-resumo-card.destaque .valor {
+        color: #16a34a;
+      }
+
+      @media (max-width: 900px) {
+        .proj-layout {
+          grid-template-columns: 1fr;
+        }
+        .proj-linha {
+          grid-template-columns: 1fr 80px 90px;
+          gap: 8px;
+        }
+        .proj-linha .unidade {
+          display: none;
+        }
+        .proj-resumo {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 600px) {
+        .proj-peca-header {
+          grid-template-columns: 1fr;
+        }
+      }
+
+
+      /* ============================================================
          CORTE A LASER — RESPONSIVO MOBILE
          Ajustes específicos para celular (retrato e paisagem).
          Respeita safe-area (notch e home indicator do iPhone).
@@ -3325,34 +3606,6 @@
       .btn-export:active,
       #btnSalvarHistorico:active {
         background: var(--bg-panel-2) !important;
-        transform: none !important;
-      }
-
-      /* ---------- Botão "Carregar template" (Engradados) ---------- */
-      /* Mesmo feedback visual do dropzone do Corte a Laser:
-         borda azul + fundo azul translúcido ao passar o mouse. */
-      #btnTemplate {
-        border: 1px solid var(--border-light) !important;
-        background: transparent !important;
-        color: var(--text-muted) !important;
-        border-radius: 6px !important;
-        padding: 9px 14px !important;
-        font-size: 0.78rem !important;
-        font-weight: 500 !important;
-        font-family: inherit !important;
-        transition: all 0.15s ease !important;
-        box-shadow: none !important;
-        transform: none !important;
-      }
-      #btnTemplate:hover {
-        border-color: var(--primary) !important;
-        background: var(--primary-subtle) !important;
-        color: var(--primary) !important;
-        box-shadow: none !important;
-        transform: none !important;
-      }
-      #btnTemplate:active {
-        background: var(--primary-subtle) !important;
         transform: none !important;
       }
 
@@ -4154,7 +4407,8 @@
       }
 
       /* Botão "Remover arquivo" — pílula vermelha, alvo de toque ≥ 44px */
-      #laserBtnRemoverArquivo {
+      #laserBtnRemoverArquivo,
+      #btnRemoverTemplate {
         display: none;
         align-items: center;
         justify-content: center;
@@ -4178,22 +4432,26 @@
         color: #b91c1c;
         box-shadow: 0 1px 2px rgba(220, 38, 38, 0.06);
       }
-      #laserBtnRemoverArquivo svg {
+      #laserBtnRemoverArquivo svg,
+      #btnRemoverTemplate svg {
         flex-shrink: 0;
         transition: transform 0.18s ease;
       }
-      #laserBtnRemoverArquivo:hover {
+      #laserBtnRemoverArquivo:hover,
+      #btnRemoverTemplate:hover {
         background: rgba(220, 38, 38, 0.12) !important;
         border-color: rgba(220, 38, 38, 0.45) !important;
         transform: translateY(-1px);
         box-shadow: 0 3px 8px rgba(220, 38, 38, 0.14);
       }
-      #laserBtnRemoverArquivo:active svg {
+      #laserBtnRemoverArquivo:active svg,
+      #btnRemoverTemplate:active svg {
         transform: rotate(-12deg);
       }
 
       @media (max-width: 600px) {
-        #laserBtnRemoverArquivo {
+        #laserBtnRemoverArquivo,
+        #btnRemoverTemplate {
           min-height: 44px !important;
           padding: 10px 18px 10px 14px !important;
           font-size: 0.82rem !important;
@@ -4201,11 +4459,279 @@
           width: 100%;
           margin-top: 12px;
         }
-        #laserBtnRemoverArquivo svg {
+        #laserBtnRemoverArquivo svg,
+        #btnRemoverTemplate svg {
           width: 15px;
           height: 15px;
         }
       }
+      /* ============================================================
+         SELECT CUSTOM — estilo unificado da aba Corte a Laser
+         Substitui o <select> nativo por um dropdown estilizado.
+         ============================================================ */
+         .laser-cs-wrap {
+        position: relative;
+        width: 100%;
+      }
+      .laser-cs-btn {
+        width: 100%;
+        padding: 9px 12px;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        color: var(--text-main);
+        font-family: inherit;
+        font-size: 0.88rem;
+        font-weight: 500;
+        text-align: left;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        min-height: 38px;
+        transition: border-color 0.15s ease, background 0.15s ease,
+          box-shadow 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .laser-cs-btn:hover {
+        border-color: var(--border-strong);
+      }
+      .laser-cs-btn.open {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-subtle);
+      }
+      .laser-cs-btn .laser-cs-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+        min-width: 0;
+      }
+      .laser-cs-btn .laser-cs-arrow {
+        width: 13px;
+        height: 13px;
+        flex-shrink: 0;
+        opacity: 0.55;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+      }
+      .laser-cs-btn.open .laser-cs-arrow {
+        transform: rotate(180deg);
+        opacity: 1;
+        color: var(--primary);
+      }
+      .laser-cs-panel {
+        position: absolute;
+        top: calc(100% + 5px);
+        left: 0;
+        right: 0;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08),
+          0 1px 3px rgba(0, 0, 0, 0.05);
+        padding: 4px;
+        z-index: 500;
+        display: none;
+        max-height: 280px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .laser-cs-panel.open {
+        display: block;
+        animation: laserCsIn 0.15s ease-out;
+      }
+      @keyframes laserCsIn {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .laser-cs-item {
+        padding: 8px 10px;
+        border-radius: var(--radius-sm);
+        font-size: 0.82rem;
+        color: var(--text-main);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.12s ease;
+        user-select: none;
+        line-height: 1.35;
+      }
+      .laser-cs-item:hover {
+        background: var(--bg-subtle);
+      }
+      .laser-cs-item.selected {
+        background: var(--primary-subtle);
+        color: var(--primary);
+        font-weight: 600;
+      }
+      .laser-cs-item.selected::after {
+        content: "";
+        margin-left: auto;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--primary);
+        flex-shrink: 0;
+      }
+
+      /* ============================================================
+         IMPORTAÇÃO DE CUSTOS — barra + prévia
+         ============================================================ */
+         .precos-import-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 16px;
+        flex-wrap: wrap;
+      }
+      .precos-import-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 16px;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-md);
+        color: var(--text-main);
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+      .precos-import-btn:hover {
+        background: var(--bg-subtle);
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+      .precos-import-btn:active {
+        transform: scale(0.98);
+      }
+      .precos-import-hint {
+        font-size: 0.76rem;
+        color: var(--text-muted);
+        line-height: 1.45;
+        flex: 1;
+        min-width: 220px;
+      }
+      .precos-import-preview {
+        display: none;
+        margin-top: 16px;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        background: var(--bg-panel);
+      }
+      .precos-import-preview.visible {
+        display: block;
+      }
+      .precos-import-head {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-light);
+        background: var(--bg-panel-2);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .precos-import-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-main);
+      }
+      .precos-import-stats {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+      }
+      .precos-import-stats strong {
+        color: var(--text-main);
+        font-weight: 700;
+      }
+      .precos-import-tablewrap {
+        max-height: 340px;
+        overflow-y: auto;
+      }
+      .precos-import-tablewrap .precos-tabela {
+        border: none;
+        border-radius: 0;
+      }
+      .precos-import-tablewrap tr.linha-igual {
+        opacity: 0.5;
+      }
+      .precos-import-tablewrap tr.linha-mudou td {
+        background: rgba(16, 185, 129, 0.06);
+      }
+      .precos-import-tablewrap td.numero {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 0.78rem;
+      }
+      .precos-import-warn {
+        padding: 12px 16px;
+        background: rgba(217, 119, 6, 0.06);
+        border-top: 1px solid var(--border-light);
+        font-size: 0.8rem;
+        color: var(--text-main);
+      }
+      .precos-import-warn strong {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--accent-warning);
+        font-weight: 700;
+      }
+      .precos-import-warn ul {
+        margin: 0;
+        padding-left: 20px;
+        color: var(--text-muted);
+        font-size: 0.76rem;
+      }
+      .precos-import-warn code {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        background: var(--bg-panel-2);
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+      .precos-import-actions {
+        padding: 12px 16px;
+        border-top: 1px solid var(--border-light);
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        align-items: center;
+      }
+      .precos-import-btn-cancel {
+        padding: 10px 18px;
+        background: transparent;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-md);
+        color: var(--text-main);
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s ease;
+      }
+      .precos-import-btn-cancel:hover {
+        background: var(--bg-subtle);
+      }
+      .precos-import-error {
+        padding: 16px;
+        text-align: center;
+        color: var(--danger-text);
+        font-size: 0.82rem;
+        line-height: 1.5;
+      }
+
       /* ---------- Dropdown custom de cluster (aba Laser) ---------- */
       /* Reaproveita a base do .filtro-dropdown do Histórico, mas com
          ajustes de altura e tipografia para casar com os outros
@@ -4766,6 +5292,13 @@
       >
         Corte a Laser
       </button>
+      <button
+        class="module-btn"
+        data-module="projecao"
+        onclick="switchModule('projecao')"
+      >
+        Projeção
+      </button>
     </div>
 
     <!-- ABAS DO MÓDULO ENGRADADOS -->
@@ -4776,8 +5309,18 @@
       <button class="tab-btn" onclick="switchTab('historico')">
         Histórico
       </button>
-      <button class="tab-btn" onclick="switchTab('precos')">Preços</button>
+      <button class="tab-btn" onclick="switchTab('precos')">Tabela de Custos</button>
       <button class="tab-btn" onclick="switchTab('manual')">Manual</button>
+    </nav>
+
+    <!-- ABAS DO MÓDULO PROJEÇÃO -->
+    <nav class="tabs" id="tabs-projecao" style="display: none">
+      <button class="tab-btn active" onclick="switchTab('projecao')">
+        Visualizador
+      </button>
+      <button class="tab-btn" onclick="switchTab('projecao-manual')">
+        Manual
+      </button>
     </nav>
 
     <!-- ABAS DO MÓDULO CORTE A LASER -->
@@ -4796,6 +5339,33 @@
         <!-- SIDEBAR PARÂMETROS -->
         <div class="panel">
           <h2>Configuração de Peça</h2>
+
+          <div class="input-group" style="background: rgba(37, 99, 235, 0.05); padding: 12px; border-radius: 10px; border: 1px solid rgba(37, 99, 235, 0.2); margin-bottom: 12px;">
+            <label style="color: var(--primary);">Código do Engradado <span style="color: var(--accent-danger);">*</span></label>
+            <input
+              type="text"
+              id="codigoEngradado"
+              placeholder="Ex: 31019A79"
+              autocomplete="off"
+              spellcheck="false"
+              style="text-transform: uppercase;"
+              oninput="this.value = this.value.toUpperCase(); if (this.value.trim().length > 0 && document.getElementById('tipoProjeto').value !== 'padrao') { setSelectValue('tipoProjeto', 'padrao'); } atualizarHabilitacaoMedidas(); verificarCodigoExistenteDebounce();"
+            />
+            <div id="codigoAviso" style="display: none; margin-top: 8px;"></div>
+          </div>
+
+          <div class="input-group">
+            <label>Tipo de Projeto</label>
+            <select
+              id="tipoProjeto"
+              class="laser-select"
+              onchange="atualizarHabilitacaoMedidas(); verificarCodigoExistenteDebounce();"
+            >
+              <option value="padrao" selected>Padrão</option>
+              <option value="especial">Especial</option>
+            </select>
+          </div>
+
           <div class="input-group">
             <label>Comprimento Interno (m)</label>
             <input
@@ -4803,7 +5373,7 @@
               id="cInt"
               value="0,930"
               inputmode="decimal"
-              onblur="formatarMedida(this)"
+              onblur="formatarMedida(this); verificarCodigoExistenteDebounce();"
             />
           </div>
           <div class="input-group">
@@ -4813,7 +5383,7 @@
               id="lInt"
               value="0,930"
               inputmode="decimal"
-              onblur="formatarMedida(this)"
+              onblur="formatarMedida(this); verificarCodigoExistenteDebounce();"
             />
           </div>
           <div class="input-group">
@@ -4823,30 +5393,18 @@
               id="aInt"
               value="0,050"
               inputmode="decimal"
-              onblur="formatarMedida(this)"
+              onblur="formatarMedida(this); verificarCodigoExistenteDebounce();"
             />
           </div>
           <div class="input-group">
             <label>Corte do MDF</label>
-            <select
-              id="metodoCorteMdf"
-              style="
-                width: 100%;
-                padding: 12px;
-                background: var(--bg-body);
-                border: 1px solid var(--border-light);
-                border-radius: 8px;
-                color: var(--text-main);
-                font-size: 1rem;
-                outline: none;
-                cursor: pointer;
-              "
-            >
+            <select id="metodoCorteMdf" class="laser-select">
               <option value="router" selected>Router CNC</option>
               <option value="serra">Serra Circular</option>
             </select>
           </div>
-          <button class="btn-calc" onclick="atualizarModelo(true)">
+
+          <button id="btnProcessar" class="btn-calc" onclick="atualizarModelo(true)">
             Processar Produção
           </button>
 
@@ -4858,50 +5416,50 @@
             style="display: none"
             onchange="carregarTemplate(this)"
           />
-          <div style="display: flex; gap: 8px; margin-top: 12px">
-            <button
-              type="button"
-              id="btnTemplate"
-              onclick="document.getElementById('inputTemplate').click()"
-              style="
-                flex: 1;
-                padding: 9px 14px;
-                border-radius: 6px;
-                border: 1px solid var(--border-light);
-                background: transparent;
-                color: var(--text-muted);
-                font-size: 0.78rem;
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.15s;
-                font-family: inherit;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-              "
-            >
-              📎 Carregar template da planilha
-            </button>
+          <div
+            class="laser-dropzone"
+            id="templateDropzone"
+            role="button"
+            tabindex="0"
+            style="margin-top: 12px"
+            onclick="document.getElementById('inputTemplate').click()"
+            onkeydown="if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); document.getElementById('inputTemplate').click(); }"
+          >
+            <span class="laser-dropzone-icon" id="templateDropzoneIcon">📎</span>
+            <div class="laser-dropzone-title" id="templateDropzoneTitle">
+              Carregar template da planilha
+            </div>
+            <div class="laser-dropzone-hint" id="templateDropzoneHint">
+              Arquivo .xlsx · clique para selecionar
+            </div>
+            <div
+              class="laser-dropzone-filename"
+              id="templateDropzoneFilename"
+            ></div>
             <button
               type="button"
               id="btnRemoverTemplate"
-              onclick="removerTemplateEngradados()"
-              title="Remover template carregado"
-              style="
-                display: none;
-                padding: 11px 14px;
-                border-radius: 8px;
-                border: 1px solid var(--border-light);
-                background: transparent;
-                color: var(--text-muted);
-                font-size: 0.9rem;
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.15s;
-              "
+              onclick="event.stopPropagation(); removerTemplateEngradados();"
+              style="display: none"
             >
-              ✕
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                ></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+              Remover template
             </button>
           </div>
 
@@ -5230,7 +5788,7 @@
         <h2
           style="color: var(--primary); font-size: 1.35rem; margin-bottom: 8px"
         >
-          💰 Tabela de Preços
+          💰 Tabela de Custos
         </h2>
         <p
           style="
@@ -5241,9 +5799,32 @@
           "
         >
           Edite os valores unitários abaixo e clique em
-          <strong>Salvar preços</strong>. As mudanças se aplicam a todos os
+          <strong>Salvar</strong>. As mudanças se aplicam a todos os
           relatórios do histórico (presentes e futuros).
         </p>
+
+        <div class="precos-import-bar">
+          <input
+            type="file"
+            id="precosImportInput"
+            accept=".xlsx"
+            style="display: none"
+            onchange="precosImportHandleFile(this.files[0]); this.value='';"
+          />
+          <button
+            type="button"
+            class="precos-import-btn"
+            onclick="document.getElementById('precosImportInput').click()"
+          >
+            📎 Importar planilha de custos (.xlsx)
+          </button>
+          <span class="precos-import-hint">
+            Antes de subir, abra a planilha no Excel e salve com
+            <strong>Ctrl+S</strong> para o cache das fórmulas ser gravado.
+          </span>
+        </div>
+
+        <div id="precosImportPreview" class="precos-import-preview"></div>
       </div>
 
       <div class="panel" style="margin-bottom: 20px">
@@ -5272,6 +5853,7 @@
         <table class="precos-tabela" id="precosMOTable">
           <thead>
             <tr>
+              <th style="width: 90px">Código</th>
               <th>Processo</th>
               <th style="width: 130px; text-align: right">R$ / minuto</th>
             </tr>
@@ -6232,6 +6814,24 @@
         </p>
       </div>
     </div>
+
+    <!-- ============================================================
+         ABA PROJEÇÃO — em construção
+         ============================================================ -->
+         <div id="projecao-tab" class="tab-content">
+          <div class="panel proj-em-breve">
+            <div class="proj-em-breve-icon">🚧</div>
+            <h2>Projeção</h2>
+            <p>
+              Esta aba está em construção e será liberada em breve.
+            </p>
+            <p class="proj-em-breve-sub">
+              Em breve você poderá montar orçamentos de peças novas a partir
+              de referências do catálogo, editar tempos de produção, informar
+              o valor de matéria-prima e salvar a projeção.
+            </p>
+          </div>
+        </div>
 
     <!-- ABA 4: CORTE A LASER -->
     <div id="laser-tab" class="tab-content">
@@ -7682,18 +8282,24 @@
 
         const tabsEngradados = document.getElementById("tabs-engradados");
         const tabsLaser = document.getElementById("tabs-laser");
+        const tabsProjecao = document.getElementById("tabs-projecao");
         if (tabsEngradados)
           tabsEngradados.style.display =
             modulo === "engradados" ? "flex" : "none";
         if (tabsLaser)
           tabsLaser.style.display = modulo === "laser" ? "flex" : "none";
+        if (tabsProjecao)
+          tabsProjecao.style.display =
+            modulo === "projecao" ? "flex" : "none";
 
-        // Persiste o módulo atual para restaurar no próximo reload
         try {
           localStorage.setItem("artefacto_modulo_atual", modulo);
         } catch (e) {}
 
-        const primeiraAba = modulo === "engradados" ? "simulador" : "laser";
+        const primeiraAba =
+          modulo === "engradados" ? "simulador"
+          : modulo === "projecao" ? "projecao"
+          : "laser";
         const botao = document.querySelector(`#tabs-${modulo} .tab-btn`);
         if (botao) botao.click();
         else switchTab(primeiraAba);
@@ -8316,13 +8922,15 @@
           );
           const distAtual = dir.length();
 
-          // Base de referência: 1.5× o lado maior é suficiente em paisagem.
-          // Em retrato, multiplica por (1 / aspect) para compensar.
-          let distIdeal = lM * 1.5;
+          // Distância natural correspondente a "recentrar câmera":
+          // posição (lM*1.5, max(1, aI*4), lM*1.5) a partir da origem
+          const alturaCam = Math.max(1, aI * 4);
+          let distIdeal = Math.sqrt(
+            2 * Math.pow(lM * 1.5, 2) + Math.pow(alturaCam, 2)
+          );
           if (camera.aspect < 1) {
             distIdeal = (distIdeal / camera.aspect) * 0.85;
           }
-          // Não afasta demais — sempre cabendo no maxDistance
           distIdeal = Math.min(distIdeal, lM * 6);
 
           // Só ajusta se a diferença for grande, para não "puxar" a câmera
@@ -10117,11 +10725,11 @@
 
         controls.maxDistance = ladoMaior * 4;
 
-        camera.position.set(
-          ladoMaior * 1.5,
-          Math.max(1, aInt * 4),
-          ladoMaior * 1.5
-        );
+        // Em vez de setar a câmera manualmente, chama a mesma função
+        // do botão "Recentralizar câmera" — assim os dois ficam sempre
+        // idênticos e o onWindowResize não vai "puxar" a câmera pra frente.
+        recentrarCamera();
+
         if (isExploded) {
           updateExplosion(document.getElementById("rangeExplode").value);
         }
@@ -10131,6 +10739,214 @@
         let val = input.value.trim().replace(",", ".");
         if (val === "" || isNaN(val)) return;
         input.value = parseFloat(val).toFixed(3).replace(".", ",");
+      }
+      // ---- Define o valor de um select custom e sincroniza o rótulo visual ----
+      function setSelectValue(id, value) {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        sel.value = value;
+
+        // Atualiza o rótulo e o item marcado no painel do wrapper custom
+        const wrap = sel.closest(".laser-cs-wrap");
+        if (wrap) {
+          const label = wrap.querySelector(".laser-cs-label");
+          const items = wrap.querySelectorAll(".laser-cs-item");
+          const options = Array.from(sel.options);
+          const idx = options.findIndex((o) => o.value === value);
+          if (idx >= 0 && label) {
+            label.textContent = options[idx].textContent;
+            items.forEach((el, i) =>
+              el.classList.toggle("selected", i === idx)
+            );
+          }
+        }
+
+        // Dispara change para os handlers existentes reagirem
+        sel.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+
+      // ---- Habilita / desabilita campos de medida conforme código ou tipo ----
+      function atualizarHabilitacaoMedidas() {
+        const codigoEl = document.getElementById("codigoEngradado");
+        const tipoEl = document.getElementById("tipoProjeto");
+        if (!codigoEl || !tipoEl) return;
+
+        const codigo = (codigoEl.value || "").trim();
+        const tipo = tipoEl.value;
+        const habilitado = codigo.length > 0 || tipo === "especial";
+
+        // ---- Campos de texto simples (cInt, lInt, aInt) ----
+        ["cInt", "lInt", "aInt"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.disabled = !habilitado;
+            el.style.opacity = habilitado ? "1" : "0.55";
+            el.style.cursor = habilitado ? "" : "not-allowed";
+          }
+        });
+
+        // ---- Select custom do MDF (precisa atuar no botão do wrapper) ----
+        const mdfSel = document.getElementById("metodoCorteMdf");
+        if (mdfSel) {
+          mdfSel.disabled = !habilitado;
+          const mdfWrap = mdfSel.closest(".laser-cs-wrap");
+          if (mdfWrap) {
+            const mdfBtn = mdfWrap.querySelector(".laser-cs-btn");
+            if (mdfBtn) {
+              mdfBtn.disabled = !habilitado;
+              mdfBtn.style.opacity = habilitado ? "1" : "0.55";
+              mdfBtn.style.cursor = habilitado ? "" : "not-allowed";
+              mdfBtn.style.pointerEvents = habilitado ? "" : "none";
+            }
+          } else {
+            // Fallback: se por algum motivo não foi envelopado (JS ainda não rodou)
+            mdfSel.style.opacity = habilitado ? "1" : "0.55";
+            mdfSel.style.cursor = habilitado ? "" : "not-allowed";
+          }
+        }
+
+        // ---- Botão Processar Produção ----
+        const btn = document.getElementById("btnProcessar");
+        if (btn) {
+          btn.disabled = !habilitado;
+          btn.style.opacity = habilitado ? "1" : "0.55";
+          btn.style.cursor = habilitado ? "" : "not-allowed";
+        }
+
+        // ---- Esconde Exportar / Salvar quando não houver código ----
+        const btnExport = document.getElementById("btnExport");
+        const btnSalvar = document.getElementById("btnSalvarHistorico");
+        if (!habilitado) {
+          if (btnExport) btnExport.style.display = "none";
+          if (btnSalvar) btnSalvar.style.display = "none";
+        }
+      }
+
+      // ---- Verificação de duplicidade (código + medidas) ----
+      let _codigoVerifTimer = null;
+      function verificarCodigoExistenteDebounce() {
+        if (_codigoVerifTimer) clearTimeout(_codigoVerifTimer);
+        _codigoVerifTimer = setTimeout(verificarCodigoExistente, 500);
+      }
+
+      async function verificarCodigoExistente() {
+        const input = document.getElementById("codigoEngradado");
+        const aviso = document.getElementById("codigoAviso");
+        const tipoEl = document.getElementById("tipoProjeto");
+        if (!input || !aviso) return;
+
+        const codigo = (input.value || "").trim().toUpperCase();
+        const tipo = tipoEl ? tipoEl.value : "padrao";
+
+        if (!codigo && tipo !== "especial") {
+          aviso.style.display = "none";
+          aviso.innerHTML = "";
+          return;
+        }
+
+        if (typeof db === "undefined" || !db) return;
+
+        const cInt = parseFloat((document.getElementById("cInt").value || "").replace(",", "."));
+        const lInt = parseFloat((document.getElementById("lInt").value || "").replace(",", "."));
+        const aInt = parseFloat((document.getElementById("aInt").value || "").replace(",", "."));
+        const temMedidas = !isNaN(cInt) && !isNaN(lInt) && !isNaN(aInt);
+
+        try {
+          const snap = await db.collection("simulacoes").get();
+
+          const porCodigo = [];
+          const porMedidas = [];
+
+          snap.forEach((doc) => {
+            const s = doc.data();
+            const sId = doc.id;
+
+            if (codigo && (s.codigo || "").toUpperCase() === codigo) {
+              porCodigo.push({ id: sId, ...s });
+            }
+
+            if (temMedidas && s.medidas) {
+              const m = s.medidas;
+              const igual =
+                Math.abs((m.comprimentoInterno || 0) - cInt) < 0.001 &&
+                Math.abs((m.larguraInterna || 0) - lInt) < 0.001 &&
+                Math.abs((m.alturaInterna || 0) - aInt) < 0.001;
+              if (igual && !porCodigo.find((x) => x.id === sId)) {
+                porMedidas.push({ id: sId, ...s });
+              }
+            }
+          });
+
+          if (porCodigo.length === 0 && porMedidas.length === 0) {
+            aviso.style.display = "none";
+            aviso.innerHTML = "";
+            return;
+          }
+
+          const fmtMed = (m) => {
+            const f = (v) => (v || 0).toFixed(2).replace(".", ",");
+            return `${f(m.comprimentoInterno)} × ${f(m.larguraInterna)} × ${f(m.alturaInterna)} m`;
+          };
+
+          let html = "";
+
+          if (porCodigo.length > 0) {
+            html += '<div style="background: rgba(220, 38, 38, 0.08); border-left: 4px solid #dc2626; padding: 10px 12px; border-radius: 6px; margin-bottom: 8px;">';
+            html += '<strong style="color: #b91c1c; display: block; margin-bottom: 4px; font-size: 0.82rem;">❌ Código já cadastrado</strong>';
+            html += '<div style="font-size: 0.76rem; color: #92400e; line-height: 1.5;">';
+            porCodigo.forEach((s) => {
+              html += '<div style="margin-bottom: 4px;">';
+              html += '<strong style="color: #b91c1c;">' + (s.codigo || "") + '</strong> — ' + fmtMed(s.medidas || {});
+              html += ' <a href="#" onclick="irParaSimulacao(\'' + s.id + '\'); return false;" style="color: var(--primary); font-weight: 600; text-decoration: underline; margin-left: 6px;">Ver no histórico →</a>';
+              html += '</div>';
+            });
+            html += '</div></div>';
+          }
+
+          if (porMedidas.length > 0) {
+            html += '<div style="background: rgba(217, 119, 6, 0.08); border-left: 4px solid #d97706; padding: 10px 12px; border-radius: 6px;">';
+            html += '<strong style="color: #b45309; display: block; margin-bottom: 4px; font-size: 0.82rem;">⚠️ Já existe engradado com estas medidas</strong>';
+            html += '<div style="font-size: 0.76rem; color: #92400e; line-height: 1.5;">';
+            porMedidas.forEach((s) => {
+              const tag = s.tipo === "especial" ? "ESPECIAL" : (s.codigo || "SEM CÓDIGO");
+              html += '<div style="margin-bottom: 4px;">';
+              html += 'Código: <strong>' + tag + '</strong> — ' + fmtMed(s.medidas || {});
+              html += ' <a href="#" onclick="irParaSimulacao(\'' + s.id + '\'); return false;" style="color: var(--primary); font-weight: 600; text-decoration: underline; margin-left: 6px;">Ver no histórico →</a>';
+              html += '</div>';
+            });
+            html += '</div></div>';
+          }
+
+          aviso.style.display = "block";
+          aviso.innerHTML = html;
+        } catch (e) {
+          console.warn("[CÓDIGO] Erro ao verificar:", e);
+        }
+      }
+
+      // ---- Navega até uma simulação específica no Histórico ----
+      function irParaSimulacao(id) {
+        switchTab("historico");
+
+        setTimeout(() => {
+          const idSeguro = id.replace(/[^a-zA-Z0-9]/g, "");
+          const el = document.getElementById("hist-item-" + idSeguro);
+          if (!el) return;
+
+          if (!el.classList.contains("expanded")) {
+            toggleHistoricoItem(idSeguro);
+          }
+
+          setTimeout(() => {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            const original = el.style.boxShadow;
+            el.style.transition = "box-shadow 0.3s";
+            el.style.boxShadow = "0 0 0 3px var(--primary), 0 8px 24px rgba(37, 99, 235, 0.3)";
+            setTimeout(() => {
+              el.style.boxShadow = original;
+            }, 2500);
+          }, 200);
+        }, 900);
       }
 
       // --- SISTEMA DE ATUALIZAÇÃO E MATEMÁTICA ---
@@ -10682,21 +11498,31 @@
           ":" +
           String(secH13).padStart(2, "0");
 
-        let minTotal =
-          Math.ceil(totalSegundosH9 / 60) +
-          Math.ceil(totalSegundosH10 / 60) +
-          Math.ceil(totalSegundosH11 / 60) +
-          Math.ceil(totalSegundosH12 / 60) +
-          Math.ceil(totalSegundosH13 / 60) +
-          Math.ceil(tRouterSetup / 60) +
-          Math.ceil(tRouterUsinagem / 60);
+        // Soma dos minutos ARREDONDADOS PARA CIMA de cada fase (idêntico à planilha)
+        let minTotal = 
+            Math.ceil(totalSegundosH9 / 60) +
+            Math.ceil(totalSegundosH10 / 60) +
+            Math.ceil(totalSegundosH11 / 60) +
+            Math.ceil(totalSegundosH12 / 60) +
+            Math.ceil(totalSegundosH13 / 60) +
+            Math.ceil(tRouterSetup / 60) +
+            Math.ceil(tRouterUsinagem / 60);
 
-        let textoH15 = minTotal + " min";
+        // Soma dos segundos EXATOS (para mostrar o tempo real discreto abaixo)
+        let totalSegundosGeral = totalSegundosH9 + totalSegundosH10 + totalSegundosH11 + totalSegundosH12 + totalSegundosH13 + tRouterSetup + tRouterUsinagem;
 
-        let hr = Math.floor(minTotal / 60);
-        let mt = minTotal % 60;
-        let tooltipHover =
-          hr > 0 ? `Equivale a ${hr}h e ${mt}m` : `${mt} minutos`;
+        let hr = Math.floor(totalSegundosGeral / 3600);
+        let mt = Math.floor((totalSegundosGeral % 3600) / 60);
+        let sc = Math.round(totalSegundosGeral % 60);
+        if (sc === 60) { mt++; sc = 0; if (mt === 60) { hr++; mt = 0; } }
+
+        let tempoFormatado = hr > 0
+          ? `${hr}h ${String(mt).padStart(2, "0")}m ${String(sc).padStart(2, "0")}s`
+          : `${mt}m ${String(sc).padStart(2, "0")}s`;
+
+        let textoH15 = `${minTotal} min<br><small style="font-size: 0.72rem; font-weight: 400; color: var(--text-muted); display: block; margin-top: 2px;">(${tempoFormatado})</small>`;
+
+        let tooltipHover = `Tempo exato: ${tempoFormatado}`;
 
         document.getElementById("outComp").innerText =
           cExt.toFixed(3).replace(".", ",") + " m";
@@ -10731,8 +11557,18 @@
         document.getElementById("outH15").innerHTML = textoH15;
         document.getElementById("outH15").title = tooltipHover;
 
-        document.getElementById("btnExport").style.display = "block";
-        document.getElementById("btnSalvarHistorico").style.display = "block";
+        const codEl = document.getElementById("codigoEngradado");
+        const tipoEl = document.getElementById("tipoProjeto");
+        const codOk = codEl && codEl.value.trim().length > 0;
+        const tipoOk = tipoEl && tipoEl.value === "especial";
+
+        if (codOk || tipoOk) {
+          document.getElementById("btnExport").style.display = "block";
+          document.getElementById("btnSalvarHistorico").style.display = "block";
+        } else {
+          document.getElementById("btnExport").style.display = "none";
+          document.getElementById("btnSalvarHistorico").style.display = "none";
+        }
 
         // Guarda tudo que a exportação precisa — em segundos puros (sem formatação)
         dadosSimulacao = {
@@ -10769,14 +11605,24 @@
 
       // ============ SISTEMA DE TEMPLATE ============
       const TEMPLATE_KEY = "artefacto_template_engradado";
+      const TEMPLATE_FILENAME_KEY = "artefacto_template_engradado_nome";
 
+      // Handler do <input type="file">. Extrai o arquivo e delega.
       function carregarTemplate(input) {
         const file = input.files && input.files[0];
+        if (!file) return;
+        carregarTemplateArquivo(file);
+        // Permite recarregar o mesmo arquivo depois
+        input.value = "";
+      }
+
+      // Núcleo — recebe um File e grava o template em localStorage.
+      // Usado tanto pelo input quanto pelo drag-and-drop do dropzone.
+      function carregarTemplateArquivo(file) {
         if (!file) return;
 
         if (!file.name.toLowerCase().endsWith(".xlsx")) {
           showToast("❌ Envie um arquivo .xlsx", false);
-          input.value = "";
           return;
         }
 
@@ -10794,6 +11640,11 @@
             }
             const base64 = btoa(binary);
             localStorage.setItem(TEMPLATE_KEY, base64);
+            // Guarda o nome do arquivo — o dropzone exibe em verde,
+            // igual ao "Arquivo carregado" do Corte a Laser.
+            try {
+              localStorage.setItem(TEMPLATE_FILENAME_KEY, file.name);
+            } catch (e) {}
             atualizarStatusTemplate();
             showToast("✅ Template carregado com sucesso!", true);
           } catch (err) {
@@ -10807,28 +11658,35 @@
         reader.readAsArrayBuffer(file);
       }
 
+      // Atualiza o estado visual do dropzone de template (Engradados).
+      // Espelha exatamente o comportamento do .laser-dropzone do Corte a Laser.
       function atualizarStatusTemplate() {
-        const btn = document.getElementById("btnTemplate");
+        const dropzone = document.getElementById("templateDropzone");
+        const icon = document.getElementById("templateDropzoneIcon");
+        const title = document.getElementById("templateDropzoneTitle");
+        const hint = document.getElementById("templateDropzoneHint");
+        const filename = document.getElementById("templateDropzoneFilename");
         const btnRem = document.getElementById("btnRemoverTemplate");
-        if (!btn) return;
-        const temTemplate = !!localStorage.getItem(TEMPLATE_KEY);
+        if (!dropzone) return;
 
-        if (btnRem) {
-          btnRem.style.display = temTemplate ? "inline-flex" : "none";
-        }
+        const temTemplate = !!localStorage.getItem(TEMPLATE_KEY);
+        const nomeArquivo =
+          localStorage.getItem(TEMPLATE_FILENAME_KEY) || "template.xlsx";
 
         if (temTemplate) {
-          btn.innerHTML = "✅ Template carregado (clique para trocar)";
-          btn.style.borderStyle = "solid";
-          btn.style.borderColor = "rgba(52, 199, 89, 0.5)";
-          btn.style.background = "rgba(52, 199, 89, 0.08)";
-          btn.style.color = "#34c759";
+          dropzone.classList.add("has-file");
+          if (icon) icon.textContent = "✅";
+          if (title) title.textContent = "Template carregado";
+          if (hint) hint.textContent = "Clique para trocar";
+          if (filename) filename.textContent = nomeArquivo;
+          if (btnRem) btnRem.style.display = "inline-flex";
         } else {
-          btn.innerHTML = "📎 Carregar template da planilha";
-          btn.style.borderStyle = "dashed";
-          btn.style.borderColor = "var(--border-light)";
-          btn.style.background = "transparent";
-          btn.style.color = "var(--text-muted)";
+          dropzone.classList.remove("has-file");
+          if (icon) icon.textContent = "📎";
+          if (title) title.textContent = "Carregar template da planilha";
+          if (hint) hint.textContent = "Arquivo .xlsx · clique para selecionar";
+          if (filename) filename.textContent = "";
+          if (btnRem) btnRem.style.display = "none";
         }
       }
 
@@ -10841,6 +11699,7 @@
         if (!confirm("Remover o template da planilha carregado?")) return;
         try {
           localStorage.removeItem(TEMPLATE_KEY);
+          localStorage.removeItem(TEMPLATE_FILENAME_KEY);
         } catch (e) {
           console.warn("Falha ao remover template:", e);
         }
@@ -11053,6 +11912,17 @@
 
       // ============ EXPORTAÇÃO USANDO O TEMPLATE ============
       function exportarExcel() {
+        // ---- Validação obrigatória: código OU especial ----
+        const codInput = document.getElementById("codigoEngradado");
+        const tipoInput = document.getElementById("tipoProjeto");
+        const codigoDigitado = (codInput ? codInput.value.trim() : "").toUpperCase();
+        const tipoProjeto = tipoInput ? tipoInput.value : "padrao";
+
+        if (!codigoDigitado && tipoProjeto !== "especial") {
+          showToast("⚠️ Digite um código ou marque como ESPECIAL.", false);
+          return;
+        }
+
         const templateB64 = localStorage.getItem(TEMPLATE_KEY);
         if (!templateB64) {
           showToast("⚠️ Carregue o template da planilha primeiro", false);
@@ -11291,7 +12161,7 @@
               };
 
               // ---- Minutos dos processos (linhas 57 a 88) ----
-              const min = (seg) => Math.round((seg || 0) / 60);
+              const min = (seg) => Math.ceil((seg || 0) / 60);
 
               wsFases.getCell("C59").value = min(d.segH10); // PLAINA
               wsFases.getCell("C61").value = min(d.segH9); // DESENGROSSADEIRA
@@ -11503,7 +12373,73 @@
 
         const d = dadosSimulacao;
         const btn = document.getElementById("btnSalvarHistorico");
+
+        // ---- Validação obrigatória: código OU especial ----
+        const codInput = document.getElementById("codigoEngradado");
+        const tipoInput = document.getElementById("tipoProjeto");
+        const codigoDigitado = (codInput ? codInput.value.trim() : "").toUpperCase();
+        const tipoProjeto = tipoInput ? tipoInput.value : "padrao";
+
+        if (!codigoDigitado && tipoProjeto !== "especial") {
+          showToast("⚠️ Digite um código ou marque como ESPECIAL.", false);
+          return;
+        }
+
+        // ---- Verificação de duplicidade antes de salvar ----
         btn.disabled = true;
+        btn.innerText = "🔎 Verificando...";
+
+        try {
+          const snap = await db.collection("simulacoes").get();
+          let conflitoCodigo = null;
+          let conflitoMedidas = null;
+
+          const cIntNum = parseFloat(d.cInt);
+          const lIntNum = parseFloat(d.lInt);
+          const aIntNum = parseFloat(d.aInt);
+
+          snap.forEach((doc) => {
+            const s = doc.data();
+            if (codigoDigitado && (s.codigo || "").toUpperCase() === codigoDigitado) {
+              if (!conflitoCodigo) conflitoCodigo = { id: doc.id, ...s };
+            }
+            if (s.medidas) {
+              const igual =
+                Math.abs((s.medidas.comprimentoInterno || 0) - cIntNum) < 0.001 &&
+                Math.abs((s.medidas.larguraInterna || 0) - lIntNum) < 0.001 &&
+                Math.abs((s.medidas.alturaInterna || 0) - aIntNum) < 0.001;
+              if (igual && !conflitoMedidas) {
+                conflitoMedidas = { id: doc.id, ...s };
+              }
+            }
+          });
+
+          if (conflitoCodigo || conflitoMedidas) {
+            btn.disabled = false;
+            btn.innerText = "💾 Salvar no histórico";
+
+            let msg = "⚠️ Não foi possível salvar:\n\n";
+            if (conflitoCodigo) {
+              msg += "• O código \"" + codigoDigitado + "\" já está cadastrado.\n";
+            }
+            if (conflitoMedidas) {
+              const tag = conflitoMedidas.tipo === "especial"
+                ? "ESPECIAL"
+                : (conflitoMedidas.codigo || "SEM CÓDIGO");
+              msg += "• Já existe um engradado com estas medidas (código: " + tag + ").\n";
+            }
+            msg += "\nDeseja ir até o registro existente no Histórico?";
+
+            if (confirm(msg)) {
+              const idAlvo = (conflitoCodigo || conflitoMedidas).id;
+              irParaSimulacao(idAlvo);
+            }
+            return;
+          }
+        } catch (err) {
+          console.warn("[SALVAR] erro na verificação:", err);
+        }
+
         btn.innerText = "💾 Salvando...";
 
         try {
@@ -11528,7 +12464,7 @@
           }
 
           // ---- 2. Helpers de formatação ----
-          const min = (seg) => Math.round((seg || 0) / 60);
+          const min = (seg) => Math.ceil((seg || 0) / 60);
           const minTotal =
             min(d.segH9) +
             min(d.segH10) +
@@ -11642,7 +12578,7 @@
             },
 
             {
-              codigo: "33010071",
+              codigo: "33010O71",
               descricao: 'PARAFUSO SEXTAVADO PONTA OGIVADA 5,5MM X 2.1/4"',
               unidade: "UN",
               quantidade: d.hexScrews,
@@ -11806,7 +12742,8 @@
             // ----- Cabeçalho -----
             usuario: usuarioLogado || "DESCONHECIDO",
             dataCriacao: firebase.firestore.FieldValue.serverTimestamp(),
-            codigo: "", // ← EDITÁVEL DEPOIS
+            codigo: codigoDigitado,
+            tipo: tipoProjeto,
             responsavel: "", // ← editável depois
             revisadoPor: "", // ← editável depois
             natureza: "PROJEÇÃO",
@@ -11860,6 +12797,23 @@
         } finally {
           btn.disabled = false;
           btn.innerText = "💾 Salvar no histórico";
+
+          // Limpa o código
+          const codInputFim = document.getElementById("codigoEngradado");
+          if (codInputFim) codInputFim.value = "";
+
+          // Reseta o tipo de projeto (usa o helper para sincronizar o rótulo visual)
+          setSelectValue("tipoProjeto", "padrao");
+
+          // Esconde o aviso de duplicidade
+          const aviso = document.getElementById("codigoAviso");
+          if (aviso) {
+            aviso.style.display = "none";
+            aviso.innerHTML = "";
+          }
+
+          // Reaplica o estado (campos cinzas, botões escondidos)
+          atualizarHabilitacaoMedidas();
         }
       }
 
@@ -11894,7 +12848,7 @@
           unidade: "PECA",
         },
         {
-          codigo: "33010071",
+          codigo: "33010O71",
           descricao: 'PARAFUSO SEXTAVADO PONTA OGIVADA 5,5MM X 2.1/4"',
           unidade: "UN",
         },
@@ -11919,12 +12873,27 @@
         },
       ];
 
-      // Lista padrão das taxas de Mão de Obra e GGF
+      // Lista padrão das taxas de Mão de Obra e GGF.
+      // `codigo` = código do ERP (aparece na planilha de custos).
+      // `nome`   = rótulo exibido; a chave do Firestore continua
+      //            sendo "MO_" + nome para preservar o histórico.
       const TAXAS_HORA_PADRAO = [
-        "TX HORA HOMEM - MARCENARIA MODELO",
-        "TX HORA MAQ. ROUTER - MARC. MODELO",
-        "TX HORA GGF - MARCENARIA MODELO",
-        "TX HORA GGF - MAQ. ROUTER - MARC. MODELO",
+        {
+          codigo: "40900008",
+          nome: "TX HORA HOMEM - MARCENARIA MODELO",
+        },
+        {
+          codigo: "40900028",
+          nome: "TX HORA MAQ. ROUTER - MARC. MODELO",
+        },
+        {
+          codigo: "40902208",
+          nome: "TX HORA GGF - MARCENARIA MODELO",
+        },
+        {
+          codigo: "40902228",
+          nome: "TX HORA GGF - MAQ. ROUTER - MARC. MODELO",
+        },
       ];
 
       // -------------------------------------------------------------
@@ -12138,6 +13107,24 @@
       }
 
       // -------------------------------------------------------------
+      // Normaliza códigos legados que foram salvos com erro de digitação.
+      // (33010071 → 33010O71; "0" no lugar de "O")
+      // -------------------------------------------------------------
+      function normalizarCodigoLegado(codigo) {
+        if (codigo === "33010071") return "33010O71";
+        return codigo;
+      }
+
+      // -------------------------------------------------------------
+      // Normaliza códigos legados que foram salvos com erro de digitação.
+      // (33010071 → 33010O71; "0" no lugar de "O")
+      // -------------------------------------------------------------
+      function normalizarCodigoLegado(codigo) {
+        if (codigo === "33010071") return "33010O71";
+        return codigo;
+      }
+
+      // -------------------------------------------------------------
       // Renderiza UM card no formato do Relatório de Assinatura
       // -------------------------------------------------------------
       function renderizarSimulacaoCard(s) {
@@ -12312,7 +13299,7 @@
 
           linhasInsumos += `
       <tr>
-        <td>${it.codigo || "—"}</td>
+        <td>${normalizarCodigoLegado(it.codigo) || "—"}</td>
         <td>${it.descricao || "—"}</td>
         <td>${it.unidade || "—"}</td>
         <td class="numero">${qtd}</td>
@@ -12357,19 +13344,31 @@
         <td>${p.nome || "—"}</td>
         <td class="numero">${p.minutos || 0}</td>
         <td class="numero">${pct.toFixed(2).replace(".", ",")}%</td>
-        <td class="numero">${precoFase > 0 ? fmtUnitario(precoFase) : "-"}</td>
+        <td class="numero">${precoMO > 0 ? fmtUnitario(precoMO) : "-"}</td>
+        <td class="numero">${precoGGF > 0 ? fmtUnitario(precoGGF) : "-"}</td>
         <td class="moeda">${custoFase > 0 ? fmtMoeda(custoFase) : "-"}</td>
       </tr>`;
         });
 
+        // CUSTO SECO = Insumos + MO (SEM GGF).
+        // CUSTO STANDARD = (Insumos + MO + GGF) × 1,20.
+        // O GGF entra na base de cálculo do fator de setup, mas não
+        // compõe o Custo Seco.
+        let subtotalMaoDeObra = totalMO_seco + totalGGF;
         let custoSeco = totalInsumos + totalMO_seco;
-        let somaTudo = custoSeco + totalGGF;
-        let fatorSetup = somaTudo * 0.2;
-        let custoStandard = somaTudo + fatorSetup;
+        let baseStandard = totalInsumos + subtotalMaoDeObra;
+        let fatorSetup = baseStandard * 0.2;
+        let custoStandard = baseStandard + fatorSetup;
 
         const codigoAtual = (s.codigo || "").replace(/"/g, "&quot;");
         const codigoVazio = !s.codigo;
         const idSeguro = s.id.replace(/[^a-zA-Z0-9]/g, "");
+
+        const isEspecial = s.tipo === "especial";
+        const badgeClasse = s.codigo
+          ? (isEspecial ? "especial" : "")
+          : (isEspecial ? "especial" : "vazio");
+        const badgeTexto = s.codigo || (isEspecial ? "ESPECIAL" : "SEM CÓDIGO");
 
         return `
     <div class="historico-item" id="hist-item-${idSeguro}" data-id="${s.id}">
@@ -12379,9 +13378,10 @@
         <span class="historico-item-chevron">▶</span>
 
         <span
-          class="historico-item-codigo ${s.codigo ? "" : "vazio"}"
+          class="historico-item-codigo ${badgeClasse}"
           id="badge-codigo-${idSeguro}"
-        >${s.codigo || "SEM CÓDIGO"}</span>
+          data-tipo="${isEspecial ? "especial" : "padrao"}"
+        >${badgeTexto}</span>
 
         <div class="historico-item-info">
           <div class="historico-item-titulo">${nomeProdutoCurto}</div>
@@ -12493,26 +13493,31 @@
             <div class="historico-secao-titulo">Mão de Obra</div>
             <table class="historico-tabela">
               <thead>
-                <tr>
-                  <th>Processo</th>
-                  <th style="text-align: right;">Minutos</th>
-                  <th style="text-align: right;">% da fase</th>
-                  <th style="text-align: right;">CUSTO UNIT. (R$)</th>
-                  <th style="text-align: right;">Custo total</th>
-                </tr>
-              </thead>
-              <tbody>${
-                linhasMdo ||
-                '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Sem processos registrados</td></tr>'
-              }</tbody>
-              <tfoot>
-                <tr>
-                  <td colspan="4" style="text-align:right;">Subtotal Mão de Obra</td>
-                  <td class="moeda destaque">${fmtMoeda(
-                    totalMO_seco + totalGGF
-                  )}</td>
-                </tr>
-              </tfoot>
+            <tr>
+              <th>Processo</th>
+              <th style="text-align: right;">Minutos</th>
+              <th style="text-align: right;">% da fase</th>
+              <th style="text-align: right;">TX MO (R$)</th>
+              <th style="text-align: right;">TX GGF (R$)</th>
+              <th style="text-align: right;">Custo total</th>
+            </tr>
+          </thead>
+          <tbody>${
+            linhasMdo ||
+            '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Sem processos registrados</td></tr>'
+          }</tbody>
+          <tfoot>
+            <tr>
+              <td style="text-align:right; font-weight:700;">TOTAL</td>
+              <td class="numero" style="font-weight:700;">${totalMin} min</td>
+              <td class="numero" style="font-weight:700;">100%</td>
+              <td style="text-align:right; font-weight:700;">—</td>
+              <td style="text-align:right; font-weight:700;">Subtotal</td>
+              <td class="moeda destaque">${fmtMoeda(
+                totalMO_seco + totalGGF
+              )}</td>
+            </tr>
+          </tfoot>
             </table>
 
             <!-- Resumo de custos -->
@@ -12713,7 +13718,8 @@
         const input = document.getElementById(`cod-${idSeguro}`);
         if (!input) return;
 
-        const novoCodigo = input.value.trim();
+        const novoCodigo = input.value.trim().toUpperCase();
+        input.value = novoCodigo;
         const btn = input.parentElement.querySelector(
           ".historico-codigo-salvar"
         );
@@ -12734,12 +13740,15 @@
 
           // Atualiza o badge na linha colapsada (SEM CÓDIGO ↔ código)
           if (badge) {
+            const isEsp = badge.dataset.tipo === "especial";
             if (novoCodigo) {
               badge.textContent = novoCodigo;
               badge.classList.remove("vazio");
+              if (isEsp) badge.classList.add("especial");
             } else {
-              badge.textContent = "SEM CÓDIGO";
+              badge.textContent = isEsp ? "ESPECIAL" : "SEM CÓDIGO";
               badge.classList.add("vazio");
+              if (isEsp) badge.classList.add("especial");
             }
           }
 
@@ -12816,16 +13825,18 @@
           });
         }
 
-        // MO — a "chave" para o Firestore é o próprio nome da taxa (com prefixo)
+        // MO — a "chave" para o Firestore continua sendo "MO_" + nome,
+        // para preservar os valores já salvos. O código aparece só na UI.
         const tbodyMO = document.getElementById("precosMOBody");
         if (tbodyMO) {
           tbodyMO.innerHTML = "";
-          TAXAS_HORA_PADRAO.forEach((nome) => {
-            const chave = "MO_" + nome;
+          TAXAS_HORA_PADRAO.forEach((taxa) => {
+            const chave = "MO_" + taxa.nome;
             const valor = precosCache[chave] || 0;
             const tr = document.createElement("tr");
             tr.innerHTML = `
-        <td>${nome}</td>
+        <td>${taxa.codigo}</td>
+        <td>${taxa.nome}</td>
         <td style="text-align:right;">
           <input
             type="number"
@@ -12839,6 +13850,326 @@
         </td>`;
             tbodyMO.appendChild(tr);
           });
+        }
+      }
+
+      // ============================================================
+      // IMPORTAÇÃO DE CUSTOS — planilha .xlsx
+      // ------------------------------------------------------------
+      // O usuário sobe a planilha "TABELA DE CUSTOS" (que já vem com
+      // os VLOOKUPs cacheados pelo Excel). O parser lê a coluna A
+      // (código) e a coluna D (valor), casa com os códigos conhecidos
+      // (INSUMOS_PADRAO + TAXAS_HORA_PADRAO), mostra a prévia e aplica
+      // em batch no Firestore.
+      //
+      // Tolerância a "O" vs "0" no código: normaliza ambos os lados
+      // para "0" antes de comparar (ex.: 33010O71 casa com 33010071).
+      // ============================================================
+      let precosImportPendente = null;
+
+      function precosReadCell(cell) {
+        if (!cell || cell.value === null || cell.value === undefined) return "";
+        const v = cell.value;
+        if (typeof v === "object") {
+          // Fórmula com cache do Excel: { formula, result }
+          if ("result" in v) return v.result;
+          // Rich text
+          if (v.richText) return v.richText.map((r) => r.text).join("");
+          // Hyperlink
+          if (v.text) return v.text;
+          return "";
+        }
+        return v;
+      }
+
+      function precosNormCode(s) {
+        return String(s || "")
+          .trim()
+          .toUpperCase()
+          .replace(/O/g, "0")
+          .replace(/\s+/g, "");
+      }
+
+      function precosFmtValor(v) {
+        return (v || 0).toLocaleString("pt-BR", {
+          minimumFractionDigits: 4,
+          maximumFractionDigits: 4,
+        });
+      }
+
+      async function precosImportHandleFile(file) {
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith(".xlsx")) {
+          showToast("❌ Envie um arquivo .xlsx", false);
+          return;
+        }
+        if (typeof ExcelJS === "undefined") {
+          showToast("❌ Biblioteca ExcelJS não carregada", false);
+          return;
+        }
+
+        const preview = document.getElementById("precosImportPreview");
+        if (preview) {
+          preview.classList.add("visible");
+          preview.innerHTML =
+            '<div class="precos-import-error" style="color:var(--text-muted)">⏳ Lendo planilha...</div>';
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const buffer = e.target.result;
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(buffer);
+
+            const sheet =
+              workbook.getWorksheet("Tabela de Custos") ||
+              workbook.worksheets[0];
+
+            if (!sheet) throw new Error("Aba 'Tabela de Custos' não encontrada");
+
+            const linhas = [];
+            sheet.eachRow((row, rowNumber) => {
+              if (rowNumber === 1) return;
+              const codigo = precosReadCell(row.getCell(1));
+              const valorRaw = precosReadCell(row.getCell(4));
+              if (!codigo) return;
+
+              let valor = null;
+              if (typeof valorRaw === "number") valor = valorRaw;
+              else if (typeof valorRaw === "string") {
+                const limpo = valorRaw.replace(/\s/g, "").replace(",", ".");
+                const n = parseFloat(limpo);
+                if (isFinite(n)) valor = n;
+              }
+              if (valor === null) return;
+
+              linhas.push({
+                codigo: String(codigo).trim(),
+                valor: valor,
+              });
+            });
+
+            if (linhas.length === 0) {
+              preview.innerHTML =
+                '<div class="precos-import-error">Nenhuma linha com valor numérico encontrada. Você abriu a planilha no Excel e salvou com Ctrl+S antes de subir?</div>';
+              return;
+            }
+
+            // Mapa: código normalizado → item do app
+            const mapa = {};
+            INSUMOS_PADRAO.forEach((i) => {
+              mapa[precosNormCode(i.codigo)] = {
+                tipo: "insumo",
+                codigoApp: i.codigo,
+                nome: i.descricao,
+                chaveFirestore: i.codigo,
+              };
+            });
+            TAXAS_HORA_PADRAO.forEach((t) => {
+              mapa[precosNormCode(t.codigo)] = {
+                tipo: "maoDeObra",
+                codigoApp: t.codigo,
+                nome: t.nome,
+                chaveFirestore: "MO_" + t.nome,
+              };
+            });
+
+            const casados = [];
+            const naoCasados = [];
+            linhas.forEach((l) => {
+              const match = mapa[precosNormCode(l.codigo)];
+              if (match) {
+                casados.push({
+                  ...match,
+                  codigoPlanilha: l.codigo,
+                  valorPlanilha: l.valor,
+                  valorAntigo: precosCache[match.chaveFirestore] || 0,
+                });
+              } else {
+                naoCasados.push(l);
+              }
+            });
+
+            precosImportPendente = { casados, naoCasados };
+            precosRenderPreview(casados, naoCasados);
+          } catch (err) {
+            console.error("[IMPORT PRECOS] erro:", err);
+            preview.innerHTML =
+              '<div class="precos-import-error">❌ Falha ao ler planilha: ' +
+              (err.message || "desconhecido") +
+              "</div>";
+          }
+        };
+        reader.onerror = () => {
+          showToast("❌ Erro ao ler arquivo", false);
+        };
+        reader.readAsArrayBuffer(file);
+      }
+
+      function precosRenderPreview(casados, naoCasados) {
+        const preview = document.getElementById("precosImportPreview");
+        if (!preview) return;
+
+        let html = '<div class="precos-import-head">';
+        html += '<div class="precos-import-title">Prévia da importação</div>';
+        html += '<div class="precos-import-stats">';
+        html +=
+          "<strong>" +
+          casados.length +
+          "</strong> casaram · <strong>" +
+          naoCasados.length +
+          "</strong> não encontrados";
+        html += "</div></div>";
+
+        if (casados.length > 0) {
+          html += '<div class="precos-import-tablewrap">';
+          html += '<table class="precos-tabela">';
+          html += "<thead><tr>";
+          html += '<th style="width:90px">Código</th>';
+          html += "<th>Descrição</th>";
+          html += '<th style="width:110px; text-align:right">Antes</th>';
+          html += '<th style="width:110px; text-align:right">Depois</th>';
+          html += "</tr></thead><tbody>";
+          casados.forEach((c) => {
+            const mudou = Math.abs(c.valorAntigo - c.valorPlanilha) > 1e-6;
+            const cls = mudou ? "linha-mudou" : "linha-igual";
+            html += '<tr class="' + cls + '">';
+            html += "<td>" + c.codigoApp + "</td>";
+            html += "<td>" + c.nome + "</td>";
+            html +=
+              '<td class="numero">' + precosFmtValor(c.valorAntigo) + "</td>";
+            html +=
+              '<td class="numero"><strong>' +
+              precosFmtValor(c.valorPlanilha) +
+              "</strong></td>";
+            html += "</tr>";
+          });
+          html += "</tbody></table></div>";
+        }
+
+        if (naoCasados.length > 0) {
+          html += '<div class="precos-import-warn">';
+          html +=
+            "<strong>⚠️ " +
+            naoCasados.length +
+            " código(s) da planilha não estão cadastrados no app:</strong>";
+          html += "<ul>";
+          naoCasados.forEach((l) => {
+            html +=
+              "<li><code>" +
+              l.codigo +
+              "</code> — valor " +
+              precosFmtValor(l.valor) +
+              "</li>";
+          });
+          html += "</ul></div>";
+        }
+
+        html += '<div class="precos-import-actions">';
+        html +=
+          '<button type="button" class="precos-import-btn-cancel" onclick="precosImportCancelar()">Cancelar</button>';
+        html +=
+          '<button type="button" class="btn-calc" style="max-width:220px" onclick="precosImportAplicar()">✅ Aplicar ' +
+          casados.length +
+          " alteraç" +
+          (casados.length === 1 ? "ão" : "ões") +
+          "</button>";
+        html += "</div>";
+
+        preview.innerHTML = html;
+      }
+
+      function precosImportCancelar() {
+        precosImportPendente = null;
+        const preview = document.getElementById("precosImportPreview");
+        if (preview) {
+          preview.classList.remove("visible");
+          preview.innerHTML = "";
+        }
+      }
+
+      async function precosImportAplicar() {
+        if (
+          !precosImportPendente ||
+          precosImportPendente.casados.length === 0
+        ) {
+          showToast("⚠️ Nada para aplicar", false);
+          return;
+        }
+        if (typeof db === "undefined" || !db) {
+          showToast("❌ Firebase não inicializado", false);
+          return;
+        }
+
+        const casados = precosImportPendente.casados;
+        const btnAplicar = document.querySelector(
+          "#precosImportPreview .btn-calc"
+        );
+        if (btnAplicar) {
+          btnAplicar.disabled = true;
+          btnAplicar.textContent = "💾 Aplicando...";
+        }
+
+        try {
+          // Backup automático (últimos 5 no localStorage)
+          try {
+            const backup = casados.map((c) => ({
+              chave: c.chaveFirestore,
+              valor: c.valorAntigo,
+            }));
+            localStorage.setItem(
+              "artefacto_precos_backup_" + Date.now(),
+              JSON.stringify(backup)
+            );
+          } catch (e) {}
+
+          const batch = db.batch();
+          casados.forEach((c) => {
+            const ref = db.collection("precos").doc(c.chaveFirestore);
+            batch.set(
+              ref,
+              {
+                valor: c.valorPlanilha,
+                tipo: c.tipo,
+                atualizadoEm: new Date(),
+              },
+              { merge: true }
+            );
+            precosCache[c.chaveFirestore] = c.valorPlanilha;
+          });
+
+          await batch.commit();
+          console.log(
+            "[IMPORT PRECOS] " + casados.length + " preços atualizados."
+          );
+
+          popularTabelaPrecos();
+          precosImportCancelar();
+          showToast(
+            "💰 " + casados.length + " preços atualizados!",
+            true
+          );
+
+          // Se o histórico estiver aberto, re-renderiza com os novos valores
+          if (
+            document
+              .getElementById("historico-tab")
+              .classList.contains("active")
+          ) {
+            aplicarFiltrosHistorico();
+          }
+        } catch (err) {
+          console.error("[IMPORT PRECOS] erro ao aplicar:", err);
+          showToast(
+            "❌ Erro ao aplicar: " + (err.message || "desconhecido"),
+            false
+          );
+          if (btnAplicar) {
+            btnAplicar.disabled = false;
+            btnAplicar.textContent = "✅ Aplicar alterações";
+          }
         }
       }
 
@@ -12928,7 +14259,7 @@
             case "33010796":
               flatScrews = q;
               break;
-            case "33010071":
+              case "33010O71":
               hexScrews = q;
               break;
             case "33014I46":
@@ -13502,6 +14833,135 @@
 
         panel.innerHTML = html;
         panel.style.display = "block";
+      }
+
+      /* ============================================================
+         SELECT CUSTOM — transforma <select class="laser-select">
+         em um dropdown estilizado (mesma linguagem do "Ver no 2D").
+         O <select> nativo continua no DOM (escondido) para que todo
+         o código existente que lê .value continue funcionando.
+         ============================================================ */
+         function laserInitCustomSelects() {
+        // Listeners globais (uma única vez) — fecham qualquer painel
+        // aberto ao clicar fora ou apertar Esc.
+        if (!document.body.dataset.laserCsBound) {
+          document.body.dataset.laserCsBound = "1";
+
+          document.addEventListener("click", (e) => {
+            if (e.target.closest(".laser-cs-wrap")) return;
+            document.querySelectorAll(".laser-cs-panel.open").forEach((p) => {
+              p.classList.remove("open");
+              if (p.previousElementSibling)
+                p.previousElementSibling.classList.remove("open");
+            });
+          });
+          document.addEventListener("keydown", (e) => {
+            if (e.key !== "Escape") return;
+            document.querySelectorAll(".laser-cs-panel.open").forEach((p) => {
+              p.classList.remove("open");
+              if (p.previousElementSibling)
+                p.previousElementSibling.classList.remove("open");
+            });
+          });
+        }
+
+        document
+          .querySelectorAll("select.laser-select")
+          .forEach((sel) => {
+            if (sel.dataset.csBound === "1") return;
+            sel.dataset.csBound = "1";
+
+            // 1. Esconde o <select> nativo (mantém no DOM)
+            sel.style.display = "none";
+
+            // 2. Wrapper
+            const wrap = document.createElement("div");
+            wrap.className = "laser-cs-wrap";
+
+            // 3. Botão
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "laser-cs-btn";
+
+            const label = document.createElement("span");
+            label.className = "laser-cs-label";
+            label.textContent =
+              (sel.options[sel.selectedIndex] || {}).textContent || "";
+
+            const arrow = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "svg"
+            );
+            arrow.setAttribute("viewBox", "0 0 24 24");
+            arrow.setAttribute("fill", "none");
+            arrow.setAttribute("stroke", "currentColor");
+            arrow.setAttribute("stroke-width", "2");
+            arrow.setAttribute("stroke-linecap", "round");
+            arrow.setAttribute("stroke-linejoin", "round");
+            arrow.classList.add("laser-cs-arrow");
+            const poly = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "polyline"
+            );
+            poly.setAttribute("points", "6 9 12 15 18 9");
+            arrow.appendChild(poly);
+
+            btn.appendChild(label);
+            btn.appendChild(arrow);
+            wrap.appendChild(btn);
+
+            // 4. Painel
+            const panel = document.createElement("div");
+            panel.className = "laser-cs-panel";
+
+            Array.from(sel.options).forEach((opt, idx) => {
+              const item = document.createElement("div");
+              item.className =
+                "laser-cs-item" + (idx === sel.selectedIndex ? " selected" : "");
+              item.textContent = opt.textContent;
+              item.dataset.value = opt.value;
+              item.addEventListener("click", (e) => {
+                e.stopPropagation();
+                sel.selectedIndex = idx;
+                label.textContent = opt.textContent;
+                panel
+                  .querySelectorAll(".laser-cs-item")
+                  .forEach((el, i) =>
+                    el.classList.toggle("selected", i === idx)
+                  );
+                panel.classList.remove("open");
+                btn.classList.remove("open");
+                // Dispara change/input para que os handlers existentes rodem
+                sel.dispatchEvent(new Event("change", { bubbles: true }));
+                sel.dispatchEvent(new Event("input", { bubbles: true }));
+              });
+              panel.appendChild(item);
+            });
+
+            wrap.appendChild(panel);
+
+            // 5. Substitui o <select> pelo wrapper no DOM
+            sel.parentNode.insertBefore(wrap, sel);
+            wrap.appendChild(sel);
+
+            // 6. Toggle do painel
+            btn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const wasOpen = panel.classList.contains("open");
+              // Fecha qualquer outro painel aberto primeiro
+              document
+                .querySelectorAll(".laser-cs-panel.open")
+                .forEach((p) => {
+                  p.classList.remove("open");
+                  if (p.previousElementSibling)
+                    p.previousElementSibling.classList.remove("open");
+                });
+              if (!wasOpen) {
+                panel.classList.add("open");
+                btn.classList.add("open");
+              }
+            });
+          });
       }
 
       function laserInit() {
@@ -18296,6 +19756,11 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
       }
 
       // ============================================================
+      // MÓDULO PROJEÇÃO — removido (placeholder no HTML)
+      // ============================================================
+
+
+      // ============================================================
       // MOBILE UX — pílulas compactas (Engradados + Laser)
       // Animação via Web Animations API — roda no compositor e não
       // trava. O backdrop-filter é desligado durante a animação para
@@ -18523,7 +19988,9 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
           const modSalvo = localStorage.getItem("artefacto_modulo_atual");
           const tabSalvo = localStorage.getItem("artefacto_tab_atual");
 
-          if (modSalvo === "laser") {
+          if (modSalvo === "projecao") {
+            switchModule("projecao");
+          } else if (modSalvo === "laser") {
             switchModule("laser");
             if (tabSalvo && tabSalvo !== "laser") {
               const btn = Array.from(
@@ -18557,7 +20024,38 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         init3D();
         atualizarStatusTemplate();
         laserInit();
+        laserInitCustomSelects();
         laserLimparEmojis();
+
+        // Bind do drag-and-drop no dropzone de template (Engradados).
+        // Mesmo comportamento do dropzone do Corte a Laser.
+        (function bindTemplateDropzone() {
+          const dz = document.getElementById("templateDropzone");
+          if (!dz || dz.dataset.dndBound === "1") return;
+          dz.dataset.dndBound = "1";
+
+          ["dragenter", "dragover"].forEach((ev) =>
+            dz.addEventListener(ev, (e) => {
+              e.preventDefault();
+              dz.classList.add("dragover");
+            })
+          );
+          ["dragleave", "drop"].forEach((ev) =>
+            dz.addEventListener(ev, (e) => {
+              e.preventDefault();
+              dz.classList.remove("dragover");
+            })
+          );
+          dz.addEventListener("drop", (e) => {
+            const f = e.dataTransfer.files && e.dataTransfer.files[0];
+            if (f) carregarTemplateArquivo(f);
+          });
+        })();
+
+        // Garante que os botões de exportar/salvar nasçam escondidos
+        // (roda DEPOIS do primeiro atualizarModelo do init3D)
+        setTimeout(atualizarHabilitacaoMedidas, 100);
+        setTimeout(atualizarHabilitacaoMedidas, 500);
 
         // Quando as fontes terminarem de baixar, força um recálculo geral.
         if (document.fonts && document.fonts.ready) {
