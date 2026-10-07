@@ -2149,11 +2149,19 @@
       /* Coluna direita: canvas + resultados + sugestões empilhados
          num flex-column próprio. Cada bloco fica colado no anterior,
          sem sofrer com a altura da sidebar. */
-      .laser-main-col {
+         .laser-main-col {
         display: flex;
         flex-direction: column;
         gap: 20px;
         min-width: 0;
+      }
+
+      /* Respiro entre o canvas 3D e o painel de resultado abaixo.
+         O `gap` do flex já dá 20px entre blocos — este margin-top
+         adiciona mais 24px só no resultado, para o olho não saltar
+         direto do desenho para o orçamento. */
+      #laserResultsArea {
+        margin-top: 24px;
       }
 
       /* Painel do canvas: altura natural, sem esticar para igualar a
@@ -2245,8 +2253,8 @@
         background: rgba(0, 113, 227, 0.06);
       }
       .laser-dropzone.has-file {
-        border-color: rgba(52, 199, 89, 0.5);
-        background: rgba(52, 199, 89, 0.06);
+        border-color: var(--primary);
+        background: var(--bg-panel-2);
       }
       .laser-dropzone-icon {
         font-size: 1.6rem;
@@ -2268,7 +2276,7 @@
       .laser-dropzone-filename {
         font-size: 0.8rem;
         font-weight: 600;
-        color: #34c759;
+        color: var(--text-main);
         margin-top: 6px;
         word-break: break-all;
       }
@@ -4359,11 +4367,12 @@
 
       /* Aviso de "múltiplas peças no arquivo" — cria classe própria
          para não usar laranja saturado inline */
-      .laser-cluster-warning {
+         .laser-cluster-warning {
         margin-top: 12px;
         padding: 10px 12px;
         background: var(--bg-panel-2);
-        border-left: 3px solid var(--accent-warning);
+        border: 1px solid var(--border-light);
+        border-left: 2px solid var(--primary);
         border-radius: var(--radius-md);
         font-size: 0.78rem;
         line-height: 1.5;
@@ -7375,17 +7384,19 @@
           text-align: left;
         "
       >
-        <h2
-          style="
-            color: var(--primary);
-            font-size: 1.35rem;
-            margin-bottom: 8px;
-            border: none;
-            padding: 0;
-          "
-        >
-          🔥 Orçamento de Corte a Laser
-        </h2>
+      <h2
+      style="
+        color: var(--text-main);
+        font-size: 1.05rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        margin-bottom: 6px;
+        border: none;
+        padding: 0;
+      "
+    >
+      Orçamento de Corte a Laser
+    </h2>
         <p
           style="
             color: var(--text-muted);
@@ -7419,7 +7430,7 @@
               role="button"
               tabindex="0"
             >
-              <span class="laser-dropzone-icon" id="laserDropzoneIcon">📎</span>
+
               <div class="laser-dropzone-title" id="laserDropzoneTitle">
                 Clique ou arraste o arquivo aqui
               </div>
@@ -7484,16 +7495,33 @@
           <!-- Espessura + Potência em 2 colunas (compacta a sidebar) -->
           <div class="laser-row-2col">
             <div class="input-group">
-              <label>Espessura (mm)</label>
-              <input
-                type="number"
-                id="laserThickness"
-                value="4"
-                min="0.5"
-                max="40"
-                step="0.5"
-                inputmode="decimal"
-              />
+              <label>Espessura</label>
+              <select id="laserThickness" class="laser-select">
+                <option value="1">1,00 mm</option>
+                <option value="1.5">1,50 mm</option>
+                <option value="2">2,00 mm</option>
+                <option value="2.5">2,50 mm</option>
+                <option value="3">3,00 mm</option>
+                <option value="4" selected>4,00 mm</option>
+                <option value="5">5,00 mm</option>
+                <option value="6">6,00 mm</option>
+                <option value="8">8,00 mm</option>
+                <option value="10">10,00 mm</option>
+                <option value="12">12,00 mm</option>
+                <option value="16">16,00 mm</option>
+                <option value="20">20,00 mm</option>
+                <option value="25">25,00 mm</option>
+                <option value="1.59">1/16" · 1,59 mm</option>
+                <option value="3.175">1/8" · 3,18 mm</option>
+                <option value="4.76">3/16" · 4,76 mm</option>
+                <option value="6.35">1/4" · 6,35 mm</option>
+                <option value="7.94">5/16" · 7,94 mm</option>
+                <option value="9.53">3/8" · 9,53 mm</option>
+                <option value="12.7">1/2" · 12,70 mm</option>
+                <option value="15.88">5/8" · 15,88 mm</option>
+                <option value="19.05">3/4" · 19,05 mm</option>
+                <option value="25.4">1" · 25,40 mm</option>
+              </select>
             </div>
             <div class="input-group">
               <label>Potência</label>
@@ -7508,6 +7536,9 @@
               </select>
             </div>
           </div>
+
+          <!-- Aviso dinâmico de incompatibilidade material × espessura × potência -->
+          <div id="laserPowerAlert" style="display: none;"></div>
 
           <div class="input-group" style="margin-top: 4px">
             <label>Tecnologia</label>
@@ -7526,6 +7557,9 @@
               <option value="nenhum">Nenhum (fusão)</option>
             </select>
           </div>
+
+          <!-- Aviso dinâmico de incompatibilidade gás × material -->
+          <div id="laserGasCompatAlert" style="display: none;"></div>
 
           <div class="input-group">
             <label>Chapa Padrão</label>
@@ -7578,7 +7612,7 @@
                 <div class="input-group">
                   <label>Taxa Máquina</label>
                   <div class="laser-field-row">
-                    <input type="number" id="laserMachineRate" value="380" min="0" step="10" inputmode="decimal" />
+                    <input type="number" id="laserMachineRate" value="450" min="0" step="10" inputmode="decimal" />
                     <span class="laser-unit-tag">R$/h</span>
                   </div>
                 </div>
@@ -7606,12 +7640,49 @@
                   </div>
                 </div>
               </div>
+              <div class="laser-row-2col" style="margin-top: 12px">
+                <div class="input-group">
+                  <label>Programação + Setup</label>
+                  <div class="laser-field-row">
+                    <input type="number" id="laserSetupTime" value="20" min="0" step="1" inputmode="decimal" />
+                    <span class="laser-unit-tag">min</span>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <label>Faturamento Mínimo</label>
+                  <div class="laser-field-row">
+                    <input type="number" id="laserMinCharge" value="150" min="0" step="10" inputmode="decimal" />
+                    <span class="laser-unit-tag">R$</span>
+                  </div>
+                </div>
+              </div>
               <div class="input-group" style="margin-top: 12px">
                 <label>Margem do Fornecedor</label>
                 <div class="laser-field-row">
                   <input type="number" id="laserMargin" value="30" min="0" max="200" step="1" inputmode="decimal" />
                   <span class="laser-unit-tag">%</span>
                 </div>
+              </div>
+              <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-light);">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: var(--text-main); margin-bottom: 0;">
+                  <input
+                    type="checkbox"
+                    id="laserIncludeMaterial"
+                    onchange="laserToggleMaterialCost()"
+                    style="width: 18px; height: 18px; padding: 0; margin: 0; min-height: 0; flex-shrink: 0; cursor: pointer;"
+                  />
+                  Incluir material da chapa no orçamento
+                </label>
+              </div>
+              <div class="input-group" id="laserMaterialCostWrap" style="margin-top: 12px; display: none;">
+                <label>Custo da Chapa (material)</label>
+                <div class="laser-field-row">
+                  <input type="number" id="laserMaterialCostPerSheet" value="0" min="0" step="10" inputmode="decimal" />
+                  <span class="laser-unit-tag">R$/chapa</span>
+                </div>
+                <small id="laserMaterialCostHint" style="display: block; margin-top: 6px; font-size: 0.72rem; color: var(--text-muted); line-height: 1.4;">
+                  O valor é calculado automaticamente conforme material, espessura e tamanho da chapa.
+                </small>
               </div>
             </div>
           </details>
@@ -7640,7 +7711,7 @@
             disabled
             onclick="laserProcessar()"
           >
-            ⚙️ Processar Corte
+            Processar Corte
           </button>
         </div>
 
@@ -7685,17 +7756,16 @@
             onclick="laserToggleMeasure()"
             style="position: absolute; bottom: 12px; right: 12px; z-index: 10"
           >
-            📏 Medir
+            Medir
           </button>
           <div id="laserMeasurePanel" class="laser-measure-panel"></div>
 
-            <div class="laser-canvas-empty" id="laserCanvasEmpty">
-              <span class="icon">📐</span>
-              <span>Nenhum arquivo carregado</span>
-              <span style="font-size: 0.75rem; margin-top: 6px">
-                Importe um DXF ou SVG para visualizar a geometria da peça
-              </span>
-            </div>
+          <div class="laser-canvas-empty" id="laserCanvasEmpty">
+            <span>Nenhum arquivo carregado</span>
+            <span style="font-size: 0.75rem; margin-top: 6px">
+              Importe um DXF ou SVG para visualizar a geometria da peça
+            </span>
+          </div>
 
             <div
               class="laser-canvas-legend"
@@ -7714,22 +7784,22 @@
             class="laser-3d-controls"
             style="display: none"
           >
-            <button
-              type="button"
-              id="laser3DPlay"
-              class="laser-3d-btn laser-3d-btn-primary"
-              onclick="laser3DTogglePlay()"
-            >
-              ▶ Simular
-            </button>
-            <button
-              type="button"
-              id="laser3DReset"
-              class="laser-3d-btn"
-              onclick="laser3DReset()"
-            >
-              ⟲ Reiniciar
-            </button>
+          <button
+          type="button"
+          id="laser3DPlay"
+          class="laser-3d-btn laser-3d-btn-primary"
+          onclick="laser3DTogglePlay()"
+        >
+          Simular
+        </button>
+        <button
+          type="button"
+          id="laser3DReset"
+          class="laser-3d-btn"
+          onclick="laser3DReset()"
+        >
+          Reiniciar
+        </button>
             <div class="laser-3d-speed">
               <label for="laser3DSpeed">Velocidade</label>
               <select
@@ -7766,23 +7836,23 @@
             gap: 12px;
           "
         >
-          <span
-            class="hint-desktop"
-            style="font-size: 0.78rem; color: var(--text-muted)"
-          >
-            💡 Scroll = zoom · arraste = mover · duplo clique = recentralizar
-            · no modo Medir: <strong>clique</strong> = segmento ·
-            <strong>Shift+clique</strong> = contorno ·
-            <strong>Alt+clique</strong> = trecho entre quinas ·
-            <strong>Ctrl+clique</strong> = somar segmentos
-          </span>
-          <span
-            class="hint-mobile"
-            style="font-size: 0.78rem; color: var(--text-muted)"
-          >
-            💡 Um dedo = mover · dois dedos = zoom · duplo toque =
-            recentralizar · modo Medir: <strong>toque</strong> = segmento
-          </span>
+        <span
+        class="hint-desktop"
+        style="font-size: 0.78rem; color: var(--text-muted)"
+      >
+        Scroll = zoom · arraste = mover · duplo clique = recentralizar
+        · no modo Medir: <strong>clique</strong> = segmento ·
+        <strong>Shift+clique</strong> = contorno ·
+        <strong>Alt+clique</strong> = trecho entre quinas ·
+        <strong>Ctrl+clique</strong> = somar segmentos
+      </span>
+      <span
+      class="hint-mobile"
+      style="font-size: 0.78rem; color: var(--text-muted)"
+    >
+      Um dedo = mover · dois dedos = zoom · duplo toque =
+      recentralizar · modo Medir: <strong>toque</strong> = segmento
+    </span>
         </div>
         </div>
 
@@ -16143,10 +16213,10 @@
           btn.classList.toggle("active", laserMeasure.active);
           if (laserMeasure.active) {
             btn.textContent = laserEhMobile()
-              ? "✓ Medindo · toque p/ sair"
-              : "✓ Medindo (Esc p/ sair)";
+              ? "Medindo · toque p/ sair"
+              : "Medindo (Esc p/ sair)";
           } else {
-            btn.textContent = "📏 Medir";
+            btn.textContent = "Medir";
           }
         }
 
@@ -16602,6 +16672,67 @@
           if (laserGeometry) laserDrawCanvas(laserGeometry);
         });
 
+        // ─── Listeners de recálculo automático de custos ─────────
+        // Quando o usuário troca material, espessura, potência ou chapa,
+        // os campos derivados (taxa máquina, custo da chapa) se ajustam.
+        ["laserMaterial", "laserSheetSize"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el)
+            el.addEventListener("change", () => {
+              laserAtualizarCustoMaterial();
+              if (id === "laserMaterial") {
+                laserRenderHint("laserMaterial");
+                // O gás pode ter ficado incompatível com o novo material
+                laserRenderGasCompatAlert();
+                // E a combinação potência × espessura pode ter mudado
+                laserRenderPowerAlert();
+              }
+            });
+        });
+        const thickEl = document.getElementById("laserThickness");
+        if (thickEl) {
+          thickEl.addEventListener("change", () => {
+            laserAtualizarCustoMaterial();
+            laserAutoSugerirCampos();
+            laserRenderPowerAlert();
+            // Reconstrói o 3D se estiver visível — a espessura mudou
+            if (laser3D && laser3D.active && laserGeometry) {
+              laser3DBuild(laserGeometry);
+            }
+          });
+        }
+        const potEl = document.getElementById("laserPower");
+        if (potEl)
+          potEl.addEventListener("change", () => {
+            laserAutoSugerirCampos();
+            laserRenderPowerAlert();
+            laserRenderHint("laserConsumablesRate");
+          });
+
+        // Verificação inicial ao carregar a página
+        laserRenderPowerAlert();
+
+        // Hint do preço do gás depende do gás escolhido — atualiza ao trocar.
+        // Também atualiza o aviso de compatibilidade ao lado do Material.
+        const gasEl = document.getElementById("laserGas");
+        if (gasEl)
+          gasEl.addEventListener("change", () => {
+            laserRenderHint("laserGasPrice");
+            laserRenderGasCompatAlert();
+          });
+
+        // Popula os valores iniciais e os hints ao carregar a página.
+        // Ordem importa: o `laserInitCustomSelects` (chamado no onload)
+        // transforma os <select> em dropdowns customizados. Por isso,
+        // agendamos os hints para o próximo frame — assim eles são
+        // inseridos DEPOIS da transformação, ficando fora do wrapper.
+        laserAtualizarCustoMaterial();
+        laserAutoSugerirCampos();
+        laserRenderGasCompatAlert();
+        requestAnimationFrame(() => {
+          laserRenderTodosHints();
+        });
+
         laserInitCanvasInteraction();
       }
 
@@ -16898,8 +17029,6 @@
         // Dropzone volta ao estado inicial
         const dz = document.getElementById("laserDropzone");
         if (dz) dz.classList.remove("has-file");
-        const ic = document.getElementById("laserDropzoneIcon");
-        if (ic) ic.textContent = "📎";
         const ti = document.getElementById("laserDropzoneTitle");
         if (ti) ti.textContent = "Clique ou arraste o arquivo aqui";
         const hi = document.getElementById("laserDropzoneHint");
@@ -17036,7 +17165,6 @@
 
 
         dz.classList.add("has-file");
-        document.getElementById("laserDropzoneIcon").textContent = "✅";
         document.getElementById("laserDropzoneTitle").textContent =
           "Arquivo carregado";
         document.getElementById("laserDropzoneHint").textContent =
@@ -18440,6 +18568,13 @@
       }
 
       function laserGetCutParams(material, espessura, potencia, gas) {
+        // ─── Fator de tecnologia (Fibra vs CO₂) ───────────────────
+        // CO₂ é ~3× mais lento em chapas finas e não corta
+        // alumínio/cobre/latão de forma eficiente.
+        const techEl = document.getElementById("laserTech");
+        const tech = techEl ? techEl.value : "fibra";
+        const techSpeedFactor = tech === "co2" ? 0.35 : 1.0;
+
         // ─── Fatores de correção (no topo, antes de qualquer uso) ───
         const matFactors = {
           inox304: 1.0, inox316: 0.9, aluminio5052: 1.8, aluminio6061: 1.6,
@@ -18484,7 +18619,9 @@
         const interpolarPotencia = (row, pot) => {
           const validas = chavesPot.filter((k) => row[k] > 0);
           if (validas.length === 0) return null;
-          if (pot <= validas[0]) return row[validas[0]];
+          // Potência abaixo do mínimo da tabela → fisicamente impossível.
+          // NÃO retorna o valor da menor potência (isso mascararia o erro).
+          if (pot < validas[0]) return null;
           if (pot >= validas[validas.length - 1])
             return row[validas[validas.length - 1]];
           for (let i = 0; i < validas.length - 1; i++) {
@@ -18507,6 +18644,10 @@
           return v !== null && v > 0;
         });
         if (espValidas.length === 0) return null;
+
+        // Se a espessura pedida é MAIOR que o máximo viável nessa
+        // potência, é fisicamente impossível. Retorna null (não extrapola).
+        if (espessura > espValidas[espValidas.length - 1]) return null;
 
         // 2. Acha as 2 espessuras vizinhas
         let espA, espB;
@@ -18535,11 +18676,12 @@
 
         if (!speedRaw || speedRaw <= 0) return null;
 
-        // 4. Aplica fatores de material e de gás
+        // 4. Aplica fatores de material, gás e tecnologia
         const speed =
           speedRaw *
           (matFactors[material] || 1.0) *
-          (gasSpeedFactors[gas] || 1.0);
+          (gasSpeedFactors[gas] || 1.0) *
+          techSpeedFactor;
 
         // ─── Piercing — lei de potência calibrada ──────────────────
         // Fórmula antiga (0,3 + t×0,4) subestimava muito chapas grossas.
@@ -18742,6 +18884,28 @@
         });
       }
 
+      // ─── Dicionário de chapas padrão (dimensões em mm) ──────
+      // Usado para calcular quantas chapas o material do orçamento cobre.
+      const LASER_SHEET_DIMS = {
+        "1000x2000": { w: 1000, h: 2000, label: "1000 × 2000 mm" },
+        "1250x2500": { w: 1250, h: 2500, label: "1250 × 2500 mm" },
+        "1500x3000": { w: 1500, h: 3000, label: "1500 × 3000 mm" },
+        "2000x4000": { w: 2000, h: 4000, label: "2000 × 4000 mm" },
+      };
+
+      function laserToggleMaterialCost() {
+        const cb = document.getElementById("laserIncludeMaterial");
+        const wrap = document.getElementById("laserMaterialCostWrap");
+        if (!cb || !wrap) return;
+        wrap.style.display = cb.checked ? "block" : "none";
+        if (cb.checked) {
+          // Ao ligar, popula o custo da chapa e a taxa máquina
+          // com os valores calculados automaticamente.
+          laserAtualizarCustoMaterial();
+          laserAtualizarTaxaMaquina();
+        }
+      }
+
       function laserProcessar() {
         if (!laserGeometry) {
           showToast("⚠️ Carregue um arquivo primeiro.", false);
@@ -18848,6 +19012,15 @@
         const marginPct =
           parseFloat(document.getElementById("laserMargin").value) || 0;
 
+        // ─── Novos campos de custo ──────────────────────────────────
+        const setupTimeMin =
+          parseFloat(document.getElementById("laserSetupTime").value) || 0;
+        const minCharge =
+          parseFloat(document.getElementById("laserMinCharge").value) || 0;
+        const includeMaterial = document.getElementById("laserIncludeMaterial").checked;
+        const materialCostPerSheet =
+          parseFloat(document.getElementById("laserMaterialCostPerSheet").value) || 0;
+
         const params = laserGetCutParams(material, espessura, potencia, gas);
         if (!params) {
           showToast(
@@ -18892,30 +19065,85 @@
           return;
         }
 
+        // ─── Peso estimado das peças (kg) ─────────────────────────
+        // Área dos contornos externos (nesting par) × espessura × densidade.
+        // A área de cada polyline está em mm²; o volume sai em mm³ e é
+        // convertido para m³ dividindo por 1e9.
+        const matInfo = LASER_COST_PARAMS.materiais[material];
+        const densidade = matInfo ? matInfo.densidade : 8000;
+        let areaTotalMm2 = 0;
+        if (d.clusters && d.clusters.length > 1) {
+          d.clusters.forEach((cluster, i) => {
+            const q = Math.max(0, parseInt(qtds[i], 10) || 0);
+            let aC = 0;
+            cluster.indices.forEach((pi) => {
+              const pp = d.polylines[pi];
+              if (pp && pp.closed && pp.nesting % 2 === 0) {
+                aC += Math.abs(pp.area || 0);
+              }
+            });
+            areaTotalMm2 += aC * q;
+          });
+        } else {
+          const q = Math.max(0, parseInt(qtds[0], 10) || 0);
+          d.polylines.forEach((pp) => {
+            if (pp.closed && pp.nesting % 2 === 0) {
+              areaTotalMm2 += Math.abs(pp.area || 0);
+            }
+          });
+          areaTotalMm2 *= q;
+        }
+        const pesoTotalKg = (areaTotalMm2 * espessura * densidade) / 1e9;
+
         const tempoCorteS = comprimentoTotal / params.speed;
         const tempoPiercingS = furosTotal * params.pierce;
         const tempoEfetivoS = tempoCorteS + tempoPiercingS;
 
-        // ─── Setup × número de chapas ──────────────────────────────
-        // Cada chapa consome 60s de setup (posicionar, alinhar, iniciar).
-        // Se as peças cabem numa só chapa, é um setup. Se espalham por
-        // N chapas, são N setups.
+        // ─── Setup / Programação ──────────────────────────────────
+        // O setup agora é um valor configurável em minutos (padrão 20 min),
+        // que cobre CAD/CAM, posicionamento da chapa, verificação de foco
+        // e peça de teste. É um custo por ORDEM, não por chapa.
         const numSheets = laserGeometry.numSheets || 1;
-        const tempoSetupS = 60 * numSheets;
+        const tempoSetupS = setupTimeMin * 60;
         const tempoTotalS = tempoEfetivoS + tempoSetupS;
         const tempoTotalH = tempoTotalS / 3600;
 
+        // ─── Custo do Material da Chapa ───────────────────────────
+        // Se o usuário marcou "Incluir material", o custo das chapas
+        // necessárias entra no orçamento. É o maior componente em peças
+        // grossas (ex.: alumínio 3/8").
+        let custoMaterial = 0;
+        if (includeMaterial && materialCostPerSheet > 0) {
+          custoMaterial = materialCostPerSheet * numSheets;
+        }
+
+        // ─── Composição do Custo Direto ──────────────────────────
         const custoMaquina = machineRate * tempoTotalH;
         const custoGas =
           gasPrice * params.gasFlow * (tempoEfetivoS / 3600);
+        // CO₂ consome ~2,5× mais energia que Fibra para a mesma potência
+        // (a variável `tech` já foi declarada no topo desta função)
+        const fatorEnergia = tech === "co2" ? 1.8 : 0.7;
         const potenciaKW = potencia / 1000;
-        const consumoKW = potenciaKW * 0.7;
+        const consumoKW = potenciaKW * fatorEnergia;
         const custoEnergia =
           energyPrice * consumoKW * (tempoTotalS / 3600);
         const custoConsumiveis = consumablesRate * tempoTotalH;
         const custoDireto =
-          custoMaquina + custoGas + custoEnergia + custoConsumiveis;
-        const custoTotal = custoDireto * (1 + marginPct / 100);
+          custoMaterial +
+          custoMaquina +
+          custoGas +
+          custoEnergia +
+          custoConsumiveis;
+
+        // ─── Faturamento Mínimo ──────────────────────────────────
+        // Nenhuma oficina fatura uma peça pelo tempo real se isso for
+        // menor que a taxa mínima de lote. Aplicamos o piso.
+        const custoSemMargem = Math.max(
+          custoDireto,
+          minCharge > 0 ? minCharge : 0
+        );
+        const custoTotal = custoSemMargem * (1 + marginPct / 100);
 
         const resultados = {
           comprimento: comprimentoTotal,
@@ -18924,16 +19152,22 @@
           tempoPiercingS: tempoPiercingS,
           tempoSetupS: tempoSetupS,
           tempoTotalS: tempoTotalS,
+          custoMaterial: custoMaterial,
           custoMaquina: custoMaquina,
           custoGas: custoGas,
           custoEnergia: custoEnergia,
           custoConsumiveis: custoConsumiveis,
           custoDireto: custoDireto,
+          custoSemMargem: custoSemMargem,
+          minCharge: minCharge,
+          minChargeAplicado: minCharge > 0 && minCharge > custoDireto,
           custoTotal: custoTotal,
           params: params,
           totalPecas: totalPecas,
           numSheets: numSheets,
           sheetDef: laserGeometry._sheetDef,
+          pesoTotalKg: pesoTotalKg,
+          densidadeMaterial: densidade,
         };
 
         laserRenderResults(resultados);
@@ -18954,6 +19188,17 @@
         const sugestoesGeradas = laserGerarSugestoes(resultados, inputs);
         laserUltimasSugestoes = sugestoesGeradas;
         laserRenderSugestoes(sugestoesGeradas);
+
+        // Rola suavemente até o painel de resultado depois de processar.
+        // O requestAnimationFrame garante que o HTML já foi aplicado no
+        // DOM antes do scroll — sem isso, o elemento ainda não tem a
+        // altura final e o scroll pode parar no lugar errado.
+        requestAnimationFrame(() => {
+          const results = document.getElementById("laserResultsArea");
+          if (results && typeof results.scrollIntoView === "function") {
+            results.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
 
         showToast("✅ Corte processado!", true);
       }
@@ -18976,6 +19221,688 @@
         ar: "Ar Comprimido",
         nenhum: "Nenhum",
       };
+
+      // ============================================================
+      // BASE DE DADOS DE CUSTOS — referências de mercado (BR, 2026)
+      // ------------------------------------------------------------
+      // Estes valores alimentam automaticamente os campos da sidebar.
+      // O usuário pode sobrescrever qualquer campo manualmente — o
+      // valor digitado sempre vence o valor sugerido.
+      //
+      // Fontes: SINAPI 2026, cotações de distribuidores BR, LME + margem.
+      // Atualização recomendada: revisar trimestralmente.
+      // ============================================================
+      const LASER_COST_PARAMS = {
+        // ── Materiais: densidade (kg/m³) + preço por kg (R$) ──
+        materiais: {
+          inox304:      { densidade: 8000, precoKg: 32,  label: "Aço Inox 304",     fonte: "SINAPI 2026" },
+          inox316:      { densidade: 8000, precoKg: 48,  label: "Aço Inox 316L",    fonte: "Mercado BR" },
+          aluminio5052: { densidade: 2680, precoKg: 30,  label: "Alumínio 5052",    fonte: "LME + margem" },
+          aluminio6061: { densidade: 2700, precoKg: 35,  label: "Alumínio 6061",    fonte: "Mercado BR" },
+          aco1020:      { densidade: 7870, precoKg: 8,   label: "Aço Carbono 1020", fonte: "Mercado BR" },
+          aco1045:      { densidade: 7870, precoKg: 12,  label: "Aço Carbono 1045", fonte: "Mercado BR" },
+          latao:        { densidade: 8500, precoKg: 55,  label: "Latão",            fonte: "LME" },
+          cobre:        { densidade: 8960, precoKg: 167, label: "Cobre",            fonte: "SINAPI 2026" },
+        },
+
+        // ── Taxa máquina cheia (R$/h): depreciação + operador + GGF ──
+        // NÃO é a taxa da máquina seca — é o custo total da hora produtiva.
+        taxaMaquinaPorPotencia: {
+          1500:  280,
+          2000:  320,
+          3000:  450,
+          4000:  500,
+          6000:  580,
+          8000:  680,
+          12000: 800,
+        },
+
+        // ── Vazão de gás: base (m³/h) + incremento por mm de espessura ──
+        gasBase: {
+          n2:     { base: 12, porMm: 1.5 },
+          o2:     { base: 6,  porMm: 0.8 },
+          ar:     { base: 5,  porMm: 0.6 },
+          nenhum: { base: 0,  porMm: 0 },
+        },
+
+        // ── Faturamento mínimo (R$) — piso por potência ──
+        // Máquinas maiores têm overhead maior e não podem faturar barato.
+        minChargePorPotencia: {
+          1500: 120, 2000: 140, 3000: 150,
+          4000: 180, 6000: 200, 8000: 260, 12000: 320,
+        },
+
+        // ── Consumíveis (R$/h) — desgaste cresce com a potência ──
+        // Bicos, lentes e cerâmicas duram menos em máquinas grandes.
+        consumiveisPorPotencia: {
+          1500: 25, 2000: 30, 3000: 45,
+          4000: 55, 6000: 70, 8000: 90, 12000: 120,
+        },
+      };
+
+      // Setup (min) cresce com a espessura e a potência.
+      // Chapas grossas exigem mais tempo de foco, troca de bico e teste.
+      function laserCalcSetupTime(potencia, espessuraMm) {
+        let base = 15;
+        if (espessuraMm > 4) {
+          base += Math.min(20, (espessuraMm - 4) * 1.5);
+        }
+        if (potencia >= 6000) base += 5;
+        return Math.round(base);
+      }
+
+      // Calcula o custo da chapa cheia (material) a partir do material,
+      // espessura e tamanho da chapa escolhidos.
+      // Retorna { pesoKg, custo, formula, fonte, densidade, precoKg } ou null.
+      function laserCalcMaterialCost(materialId, thicknessMm, sheetKey) {
+        const mat = LASER_COST_PARAMS.materiais[materialId];
+        const dim = LASER_SHEET_DIMS[sheetKey];
+        if (!mat || !dim) return null;
+
+        const wM = dim.w / 1000;
+        const hM = dim.h / 1000;
+        const tM = thicknessMm / 1000;
+        const volumeM3 = wM * hM * tM;
+        const pesoKg = volumeM3 * mat.densidade;
+        const custo = pesoKg * mat.precoKg;
+
+        return {
+          pesoKg: pesoKg,
+          custo: custo,
+          densidade: mat.densidade,
+          precoKg: mat.precoKg,
+          fonte: mat.fonte,
+          label: mat.label,
+          wM: wM,
+          hM: hM,
+          tM: tM,
+          volumeM3: volumeM3,
+        };
+      }
+
+      // Atualiza o campo "Custo da Chapa" e o hint abaixo dele.
+      // Chamada sempre que material, espessura ou tamanho de chapa mudarem.
+      function laserAtualizarCustoMaterial() {
+        const campo = document.getElementById("laserMaterialCostPerSheet");
+        const hint = document.getElementById("laserMaterialCostHint");
+        const cb = document.getElementById("laserIncludeMaterial");
+        if (!campo) return;
+
+        const materialId = document.getElementById("laserMaterial").value;
+        const espessura = parseFloat(
+          document.getElementById("laserThickness").value
+        ) || 0;
+        const sheetKey =
+          document.getElementById("laserSheetSize").value || "1500x3000";
+
+        const info = laserCalcMaterialCost(materialId, espessura, sheetKey);
+        if (!info) return;
+
+        // Só sobrescreve se o usuário NÃO tiver digitado um valor manual.
+        // Para saber isso, guardamos o último valor "auto" no dataset.
+        const ultimoAuto = parseFloat(campo.dataset.autoValue || "-1");
+        const valorAtual = parseFloat(campo.value) || 0;
+        const usuarioMexeu = Math.abs(valorAtual - ultimoAuto) > 0.01;
+
+        if (!usuarioMexeu || ultimoAuto < 0) {
+          campo.value = info.custo.toFixed(2);
+          campo.dataset.autoValue = info.custo.toFixed(2);
+        }
+
+        // Hint com memória de cálculo visível
+        if (hint) {
+          const wCm = (info.wM * 1000).toFixed(0);
+          const hCm = (info.hM * 1000).toFixed(0);
+          const tMm = (info.tM * 1000).toFixed(2).replace(/\.?0+$/, "");
+          const peso = info.pesoKg.toFixed(1).replace(".", ",");
+          const preco = info.precoKg.toFixed(2).replace(".", ",");
+          const custo = info.custo.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+          hint.innerHTML =
+            "<strong>" + info.label + "</strong> — " +
+            wCm + "×" + hCm + "×" + tMm + " mm · " +
+            "<strong>" + peso + " kg</strong> × R$ " + preco + "/kg = " +
+            "<strong>" + custo + "</strong>" +
+            "<br>Fonte: " + info.fonte +
+            (usuarioMexeu ? " · <em>valor sobrescrito manualmente</em>" : " · <em>valor calculado automaticamente</em>");
+        }
+      }
+
+      // Atualiza a taxa máquina sugerida com base na potência escolhida.
+      function laserAtualizarTaxaMaquina() {
+        const potEl = document.getElementById("laserPower");
+        const taxaEl = document.getElementById("laserMachineRate");
+        if (!potEl || !taxaEl) return;
+
+        const pot = parseInt(potEl.value, 10);
+        const sugerida = LASER_COST_PARAMS.taxaMaquinaPorPotencia[pot];
+        if (!sugerida) return;
+
+        // Mesma regra: só sobrescreve se o usuário não digitou nada manual
+        const ultimoAuto = parseFloat(taxaEl.dataset.autoValue || "-1");
+        const valorAtual = parseFloat(taxaEl.value) || 0;
+        const usuarioMexeu = Math.abs(valorAtual - ultimoAuto) > 0.01;
+
+        if (!usuarioMexeu || ultimoAuto < 0) {
+          taxaEl.value = sugerida;
+          taxaEl.dataset.autoValue = sugerida;
+        }
+
+        // Hint discreto de fonte
+        let hint = document.getElementById("laserMachineRateHint");
+        if (!hint) {
+          hint = document.createElement("small");
+          hint.id = "laserMachineRateHint";
+          hint.style.cssText =
+            "display:block; margin-top:6px; font-size:0.7rem; color:var(--text-muted); line-height:1.4;";
+          taxaEl.closest(".input-group").appendChild(hint);
+        }
+        hint.innerHTML =
+          "Sugerido para <strong>" + (pot / 1000).toFixed(pot % 1000 === 0 ? 0 : 1) +
+          " kW</strong>: R$ " + sugerida + "/h (depreciação + operador + GGF)" +
+          (usuarioMexeu ? " · <em>sobrescrito</em>" : "");
+      }
+
+      // ============================================================
+      // AUTO-SUGESTÃO DE CAMPOS — todos os valores padrão se ajustam
+      // ao serviço sendo orçado (potência + espessura). O usuário
+      // sempre pode sobrescrever; o valor digitado vence.
+      // ============================================================
+      function laserAplicarSugestao(inputId, novoValor) {
+        const el = document.getElementById(inputId);
+        if (!el) return;
+        const ultimoAuto = parseFloat(el.dataset.autoValue || "-1");
+        const valorAtual = parseFloat(el.value) || 0;
+        const usuarioMexeu = Math.abs(valorAtual - ultimoAuto) > 0.01;
+
+        if (!usuarioMexeu || ultimoAuto < 0) {
+          el.value = novoValor;
+          el.dataset.autoValue = novoValor;
+        }
+      }
+
+      // ============================================================
+      // VERIFICAÇÃO DE COMPATIBILIDADE MATERIAL × ESPESSURA × POTÊNCIA
+      // Retorna:
+      //   { ok: true }
+      //   { ok: false, motivo: "impossivel", potenciaMinima }
+      //   { ok: false, motivo: "abaixo-ideal", potenciaRecomendada }
+      // ============================================================
+      function laserCheckPowerCompat(material, espessura, potencia) {
+        if (!laserGetCutParams) return { ok: true };
+
+        // 1. Testa se é fisicamente possível
+        const params = laserGetCutParams(material, espessura, potencia, "n2");
+        if (!params || !params.speed || params.speed <= 0) {
+          // Encontra a MENOR potência da lista que ainda corta essa espessura
+          const potencias = [1500, 2000, 3000, 4000, 6000, 8000, 12000];
+          let minima = null;
+          for (let i = 0; i < potencias.length; i++) {
+            const t = laserGetCutParams(material, espessura, potencias[i], "n2");
+            if (t && t.speed > 0) {
+              minima = potencias[i];
+              break;
+            }
+          }
+          return { ok: false, motivo: "impossivel", potenciaMinima: minima };
+        }
+
+        // 2. Verifica se está abaixo da potência recomendada
+        const ideal = laserPotenciaIdeal(material, espessura);
+        if (potencia < ideal) {
+          return {
+            ok: false,
+            motivo: "abaixo-ideal",
+            potenciaRecomendada: ideal,
+          };
+        }
+
+        return { ok: true };
+      }
+
+      // Renderiza o aviso de incompatibilidade na sidebar e
+      // bloqueia o botão "Processar Corte" se for impossível.
+      function laserRenderPowerAlert() {
+        const matEl = document.getElementById("laserMaterial");
+        const thEl = document.getElementById("laserThickness");
+        const potEl = document.getElementById("laserPower");
+        const techEl = document.getElementById("laserTech");
+        const alertEl = document.getElementById("laserPowerAlert");
+        const btnProc = document.getElementById("laserBtnProcess");
+        if (!matEl || !thEl || !potEl || !alertEl) return;
+
+        const material = matEl.value;
+        const espessura = parseFloat(thEl.value) || 0;
+        const potencia = parseInt(potEl.value, 10);
+        const tech = techEl ? techEl.value : "fibra";
+
+        // CO₂ não corta alumínio, cobre ou latão de forma eficiente
+        const matRefletivo =
+          material === "aluminio5052" ||
+          material === "aluminio6061" ||
+          material === "cobre" ||
+          material === "latao";
+        if (tech === "co2" && matRefletivo) {
+          alertEl.style.cssText =
+            "display:block; background: rgba(220,38,38,0.06); border-left: 3px solid var(--accent-danger); padding: 10px 12px; border-radius: 8px; font-size: 0.78rem; line-height: 1.5; margin: 12px 0;";
+          alertEl.innerHTML =
+            "<strong style='color:var(--accent-danger); display:block; margin-bottom:4px;'>CO₂ não corta este material</strong>" +
+            "O feixe de 10,6 μm é quase totalmente refletido por alumínio, cobre e latão. " +
+            "Use <strong>Fibra Laser</strong> para esses materiais.";
+          if (btnProc) btnProc.disabled = true;
+          return;
+        }
+
+        const check = laserCheckPowerCompat(material, espessura, potencia);
+        const matNome = LASER_MAT_NOMES[material] || material;
+        const potLabel = (potencia / 1000).toFixed(potencia % 1000 === 0 ? 0 : 1);
+        const espLabel = espessura.toFixed(2).replace(/\.?0+$/, "");
+
+        const temGeom =
+          typeof laserGeometry !== "undefined" && laserGeometry;
+
+        if (check.ok) {
+          alertEl.style.display = "none";
+          alertEl.innerHTML = "";
+          if (btnProc) btnProc.disabled = !temGeom;
+          return;
+        }
+
+        if (check.motivo === "impossivel") {
+          const sug = check.potenciaMinima
+            ? "Menor potência viável para essa espessura: <strong>" +
+              (check.potenciaMinima / 1000).toFixed(
+                check.potenciaMinima % 1000 === 0 ? 0 : 1
+              ) +
+              " kW</strong>."
+            : "Nenhuma potência da lista é capaz de cortar essa combinação.";
+          alertEl.style.cssText =
+            "display:block; background: rgba(220,38,38,0.06); border-left: 3px solid var(--accent-danger); padding: 10px 12px; border-radius: 8px; font-size: 0.78rem; line-height: 1.5; margin: 12px 0;";
+          alertEl.innerHTML =
+            "<strong style='color:var(--accent-danger); display:block; margin-bottom:4px;'>Combinação impossível</strong>" +
+            potLabel +
+            " kW não corta <strong>" +
+            espLabel +
+            " mm</strong> de " +
+            matNome +
+            ".<br>" +
+            sug;
+          if (btnProc) btnProc.disabled = true;
+          return;
+        }
+
+        if (check.motivo === "abaixo-ideal") {
+          const rec = check.potenciaRecomendada;
+          const recLabel = (rec / 1000).toFixed(rec % 1000 === 0 ? 0 : 1);
+          alertEl.style.cssText =
+            "display:block; background: rgba(217,119,6,0.06); border-left: 3px solid var(--accent-warning); padding: 10px 12px; border-radius: 8px; font-size: 0.78rem; line-height: 1.5; margin: 12px 0;";
+          alertEl.innerHTML =
+            "<strong style='color:var(--accent-warning); display:block; margin-bottom:4px;'>Potência abaixo do recomendado</strong>" +
+            potLabel +
+            " kW corta <strong>" +
+            espLabel +
+            " mm</strong> de " +
+            matNome +
+            ", mas com velocidade e qualidade reduzidas.<br>Recomendado: <strong>" +
+            recLabel +
+            " kW</strong>.";
+          if (btnProc) btnProc.disabled = !temGeom;
+          return;
+        }
+      }
+
+      function laserAutoSugerirCampos() {
+        const potEl = document.getElementById("laserPower");
+        const thEl = document.getElementById("laserThickness");
+        if (!potEl || !thEl) return;
+
+        const pot = parseInt(potEl.value, 10);
+        const esp = parseFloat(thEl.value) || 0;
+        const P = LASER_COST_PARAMS;
+
+        // Taxa máquina
+        laserAtualizarTaxaMaquina();
+
+        // Faturamento mínimo
+        if (P.minChargePorPotencia[pot] !== undefined) {
+          laserAplicarSugestao("laserMinCharge", P.minChargePorPotencia[pot]);
+        }
+
+        // Consumíveis
+        if (P.consumiveisPorPotencia[pot] !== undefined) {
+          laserAplicarSugestao(
+            "laserConsumablesRate",
+            P.consumiveisPorPotencia[pot]
+          );
+        }
+
+        // Setup — depende de potência E espessura
+        laserAplicarSugestao(
+          "laserSetupTime",
+          laserCalcSetupTime(pot, esp)
+        );
+
+        // Redesenha os hints (podem ter ficado "sobrescrito" ou não)
+        if (typeof laserRenderTodosHints === "function") {
+          laserRenderTodosHints();
+        }
+      }
+
+      // ============================================================
+      // HINTS EXPLICATIVOS — cada campo de custo ganha um texto
+      // abaixo dele justificando o valor sugerido, a faixa de
+      // mercado e o que ele cobre. O objetivo é dar credibilidade:
+      // o usuário entende POR QUE aquele número está ali.
+      // ============================================================
+      // Retorna "" ou " · sobrescrito" conforme o campo tenha sido
+      // mexido manualmente (dataset.autoValue diferente do valor atual).
+      function laserIndicadorSobrescrito(inputId) {
+        const el = document.getElementById(inputId);
+        if (!el) return "";
+        const ultimoAuto = parseFloat(el.dataset.autoValue || "-1");
+        if (ultimoAuto < 0) return "";
+        const valorAtual = parseFloat(el.value) || 0;
+        return Math.abs(valorAtual - ultimoAuto) > 0.01
+          ? " · <em>sobrescrito manualmente</em>"
+          : "";
+      }
+
+      // ============================================================
+      // COMPATIBILIDADE GÁS × MATERIAL
+      // ------------------------------------------------------------
+      // Retorna null (compatível) ou { nivel, msg } com o aviso.
+      //   nivel = "danger"  → inaceitável tecnicamente
+      //   nivel = "warning" → funciona, mas com penalidade
+      //   nivel = "info"    → só uma dica, não é problema
+      // ============================================================
+      function laserCheckGasCompat(materialId, gasId) {
+        if (!gasId || gasId === "nenhum") {
+          return {
+            nivel: "danger",
+            msg:
+              "Sem gás auxiliar, o corte vira fusão descontrolada — rebarba grossa e borda irregular.",
+          };
+        }
+
+        const ehCarbono = materialId === "aco1020" || materialId === "aco1045";
+        const ehInox = materialId === "inox304" || materialId === "inox316";
+        const ehAluminio =
+          materialId === "aluminio5052" || materialId === "aluminio6061";
+        const ehCobre = materialId === "cobre" || materialId === "latao";
+
+        // Aço carbono: O₂ é o ideal (reação exotérmica acelera ~3×)
+        if (ehCarbono && gasId === "n2") {
+          return {
+            nivel: "warning",
+            msg:
+              "Aço carbono com N₂ funciona, mas é ~3× mais lento. O O₂ acelera o corte por reação exotérmica e deixa borda escura.",
+          };
+        }
+
+        // Inox / alumínio / cobre / latão: N₂ é obrigatório para borda limpa
+        if ((ehInox || ehAluminio || ehCobre) && gasId === "o2") {
+          const matNome = ehInox
+            ? "inox"
+            : ehAluminio
+            ? "alumínio"
+            : "cobre/latão";
+          return {
+            nivel: "danger",
+            msg:
+              "O₂ oxida a borda e deixa rebarba. Inaceitável estruturalmente em " +
+              matNome +
+              ". Use N₂.",
+          };
+        }
+
+        // Ar comprimido: qualidade intermediária
+        if (gasId === "ar") {
+          if (ehInox || ehCobre) {
+            return {
+              nivel: "warning",
+              msg:
+                "Ar comprimido deixa borda levemente oxidada. Aceitável apenas em peças não aparentes ou de baixa exigência.",
+            };
+          }
+          return {
+            nivel: "info",
+            msg:
+              "Ar comprimido é econômico e serve para alumínio fino (< 4 mm) e aço carbono não crítico.",
+          };
+        }
+
+        return null;
+      }
+
+      // ============================================================
+      // AVISO DE INCOMPATIBILIDADE GÁS × MATERIAL
+      // Renderiza logo abaixo do campo Material, na seção de
+      // configuração de corte — não nos parâmetros de custo.
+      // ============================================================
+      function laserRenderGasCompatAlert() {
+        const alertEl = document.getElementById("laserGasCompatAlert");
+        const matEl = document.getElementById("laserMaterial");
+        const gasEl = document.getElementById("laserGas");
+        if (!alertEl || !matEl || !gasEl) return;
+
+        const compat = laserCheckGasCompat(matEl.value, gasEl.value);
+
+        if (!compat) {
+          alertEl.style.display = "none";
+          alertEl.innerHTML = "";
+          return;
+        }
+
+        const cor =
+          compat.nivel === "danger"
+            ? "var(--accent-danger)"
+            : compat.nivel === "warning"
+            ? "var(--accent-warning)"
+            : "var(--text-muted)";
+
+        const bg =
+          compat.nivel === "danger"
+            ? "rgba(220,38,38,0.06)"
+            : compat.nivel === "warning"
+            ? "rgba(217,119,6,0.06)"
+            : "var(--bg-panel-2)";
+
+        const titulo =
+          compat.nivel === "danger"
+            ? "Gás incompatível com o material"
+            : compat.nivel === "warning"
+            ? "Atenção à combinação material × gás"
+            : "Nota sobre o gás escolhido";
+
+        alertEl.style.cssText =
+          "display:block; background: " +
+          bg +
+          "; border-left: 3px solid " +
+          cor +
+          "; padding: 10px 12px; border-radius: 8px; font-size: 0.76rem; line-height: 1.5; margin-top: -6px; margin-bottom: 14px;";
+        alertEl.innerHTML =
+          "<strong style='color:" +
+          cor +
+          "; display:block; margin-bottom:3px;'>" +
+          titulo +
+          "</strong>" +
+          compat.msg;
+      }
+
+      const LASER_HINTS = {
+        laserConsumablesRate: () => {
+          const potEl = document.getElementById("laserPower");
+          const pot = parseInt(potEl ? potEl.value : 3000, 10);
+          const sugerido =
+            (LASER_COST_PARAMS.consumiveisPorPotencia || {})[pot] || 45;
+          const potLabel = (pot / 1000).toFixed(pot % 1000 === 0 ? 0 : 1);
+
+          // Faixa de referência por potência
+          let faixa = "";
+          let explicacao = "";
+          if (pot <= 2000) {
+            faixa = "R$ 15–35/h";
+            explicacao =
+              "Máquina leve. Desgaste baixo de bico e lente — respingos menores.";
+          } else if (pot <= 4000) {
+            faixa = "R$ 30–60/h";
+            explicacao =
+              "Uso geral. Bico e lente duram entre 300–500 h. Cerâmica dura ~4.000 h.";
+          } else if (pot <= 6000) {
+            faixa = "R$ 50–90/h";
+            explicacao =
+              "Produção industrial. Mais respingos de metal fundido aceleram o desgaste do bico.";
+          } else {
+            faixa = "R$ 80–150/h";
+            explicacao =
+              "Alta potência. O bico dura ~40–200 h (vs. 300–500 h em máquinas menores) porque " +
+              "a energia concentrada gera muito mais respingos e calor no cabeçote.";
+          }
+
+          return (
+            "Bicos de corte, lentes de proteção, cerâmica e fole — desgaste por hora de operação. " +
+            "Faixa de mercado para <strong>" +
+            potLabel +
+            " kW</strong>: <strong>" +
+            faixa +
+            "</strong>. " +
+            explicacao +
+            " Sugerido: <strong>R$ " +
+            sugerido +
+            "/h</strong>." +
+            laserIndicadorSobrescrito("laserConsumablesRate")
+          );
+        },
+
+          laserGasPrice: () => {
+          const gasEl = document.getElementById("laserGas");
+          const gas = gasEl ? gasEl.value : "n2";
+          if (gas === "n2")
+            return "Nitrogênio industrial (99,999%). Faixa de mercado BR: <strong>R$ 8-15/m³</strong>.";
+          if (gas === "o2")
+            return "Oxigênio industrial. Faixa de mercado BR: <strong>R$ 14-27/m³</strong>.";
+          if (gas === "ar")
+            return "Ar comprimido — custo apenas da energia do compressor. Faixa: <strong>R$ 0,5-2/m³</strong>.";
+          return "Sem gás auxiliar — o processo opera por fusão simples.";
+        },
+
+        laserEnergyPrice: () =>
+          "Tarifa industrial de baixa tensão. Faixa SINAPI 2026: <strong>R$ 1,08-1,27/kWh</strong>. " +
+          "Indústrias de médio porte normalmente ficam entre <strong>R$ 0,85-1,10/kWh</strong>.",
+
+          laserSetupTime: () =>
+          "CAD/CAM, nesting, posicionamento da chapa, checagem de foco e peça de teste. " +
+          "Sugerido: <strong>" +
+          laserCalcSetupTime(
+            parseInt((document.getElementById("laserPower") || {}).value, 10) || 3000,
+            parseFloat((document.getElementById("laserThickness") || {}).value) || 4
+          ) +
+          " min</strong> (cresce com a espessura e a potência)." +
+          laserIndicadorSobrescrito("laserSetupTime"),
+
+        laserMinCharge: () =>
+          "Piso de faturamento — nenhuma oficina cobra peça pequena pelo tempo real de máquina. " +
+          "Referência: 3 kW: <strong>R$ 150</strong> · 6 kW: <strong>R$ 200</strong> · 12 kW: <strong>R$ 320</strong>." +
+          laserIndicadorSobrescrito("laserMinCharge"),
+
+          laserMargin: () =>
+          "Serviço recorrente: <strong>20-30%</strong> · sob demanda: <strong>30-50%</strong> · " +
+          "protótipo único / urgência: <strong>50-80%</strong>." +
+          laserIndicadorSobrescrito("laserMargin"),
+
+        // ── Material: propriedades + dificuldade de corte ────────
+        laserMaterial: () => {
+          const el = document.getElementById("laserMaterial");
+          const v = el ? el.value : "inox304";
+          const map = {
+            inox304:
+              "Padrão da indústria. Boa resistência à corrosão e soldabilidade. " +
+              "<strong>Corte médio</strong> — exige nitrogênio para borda limpa.",
+            inox316:
+              "Adiciona molibdênio. Resistente a cloretos e ácidos. " +
+              "<strong>~10% mais lento</strong> que o 304 e ~50% mais caro.",
+            aluminio5052:
+              "Liga marítima. Excelente resistência à corrosão. " +
+              "<strong>Reflete muito o feixe</strong> — exige potência alta e N₂.",
+            aluminio6061:
+              "Liga estrutural tratável termicamente, mais dura que a 5052. " +
+              "<strong>Corte médio-alto</strong>, exige N₂.",
+            aco1020:
+              "Aço carbono comum. <strong>O mais fácil e barato de cortar</strong> — " +
+              "usa O₂, que acelera o processo por reação exotérmica.",
+            aco1045:
+              "Aço carbono com mais carbono. Mais duro e resistente ao desgaste. " +
+              "<strong>Corte mais lento</strong> que o 1020.",
+            latao:
+              "Liga de cobre e zinco. <strong>Altamente refletivo</strong> e o zinco " +
+              "evapora em fumos tóxicos — requer exaustão.",
+            cobre:
+              "O pior caso. Reflete <strong>~95% do feixe infravermelho</strong>. " +
+              "Exige potência altíssima e ainda assim é lento.",
+          };
+          return map[v] || "";
+        },
+
+        // ── Potência: capacidade + taxa máquina sugerida ─────────
+        laserPower: () => {
+          const el = document.getElementById("laserPower");
+          const v = parseInt(el ? el.value : 3000, 10);
+          const taxa =
+            (LASER_COST_PARAMS.taxaMaquinaPorPotencia || {})[v] || 0;
+          const map = {
+            1500:
+              "Oficina pequena, produção leve. <strong>Inox até 2 mm</strong>, alumínio até 3 mm.",
+            2000:
+              "Uso leve. <strong>Inox até 3 mm</strong>, alumínio até 4 mm. Bom custo-benefício para baixa demanda.",
+            3000:
+              "Uso geral. Padrão em pequenas e médias oficinas. <strong>Inox até 6 mm</strong>, alumínio até 8 mm.",
+            4000:
+              "Produção industrial. <strong>Inox até 8 mm</strong>, alumínio até 10 mm.",
+            6000:
+              "Padrão industrial. <strong>Inox até 12 mm</strong>, alumínio até 16 mm, aço carbono até 20 mm.",
+            8000:
+              "Alta produção. Chapas grossas (até 20 mm inox). Requer infraestrutura robusta.",
+            12000:
+              "Máxima capacidade. <strong>Até 25 mm inox</strong>. Aplicações pesadas (naval, petróleo).",
+          };
+          const base = map[v] || "";
+          const taxaTxt = taxa
+            ? " · Taxa sugerida da máquina: <strong>R$ " +
+              taxa +
+              "/h</strong>."
+            : "";
+          return base + taxaTxt;
+        },
+      };
+
+      // Cria (ou atualiza) o <small> de hint abaixo do input.
+      function laserRenderHint(inputId) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const group = input.closest(".input-group");
+        if (!group) return;
+
+        let hint = group.querySelector(".laser-cost-hint");
+        if (!hint) {
+          hint = document.createElement("small");
+          hint.className = "laser-cost-hint";
+          hint.style.cssText =
+            "display:block; margin-top:6px; font-size:0.7rem; color:var(--text-muted); line-height:1.45;";
+          group.appendChild(hint);
+        }
+
+        const fn = LASER_HINTS[inputId];
+        if (fn) hint.innerHTML = fn();
+      }
+
+      // Redesenha todos os hints de uma vez.
+      function laserRenderTodosHints() {
+        Object.keys(LASER_HINTS).forEach(laserRenderHint);
+      }
 
       // Potência mínima recomendada por material + espessura
       // (tabela de referência de mercado)
@@ -19268,6 +20195,16 @@
         const consumablesRate = parseFloat((el("laserConsumablesRate") || {}).value) || 0;
         const marginPct = parseFloat((el("laserMargin") || {}).value) || 0;
 
+        // ─── Novos campos do motor de custo ────────────────────
+        const setupTimeMin =
+          parseFloat((el("laserSetupTime") || {}).value) || 0;
+        const minCharge =
+          parseFloat((el("laserMinCharge") || {}).value) || 0;
+        const includeMaterial =
+          (el("laserIncludeMaterial") || {}).checked || false;
+        const materialCostPerSheet =
+          parseFloat((el("laserMaterialCostPerSheet") || {}).value) || 0;
+
         const MAT_NOMES = {
           inox304: "Aço Inox 304", inox316: "Aço Inox 316L",
           aluminio5052: "Alumínio 5052", aluminio6061: "Alumínio 6061",
@@ -19500,17 +20437,26 @@
           ["Tempo total", fmtTempo(r.tempoTotalS)],
           ["Tempo por peça", fmtNum(segPorPeca, 1) + " s"],
         ];
-        const custoLinhas = [
+        const custoLinhas = [];
+        if ((r.custoMaterial || 0) > 0) {
+          custoLinhas.push([
+            "Material da chapa (" + numSheets + "×)",
+            fmtBRL(r.custoMaterial),
+          ]);
+        }
+        custoLinhas.push(
           ["Máquina", fmtBRL(r.custoMaquina)],
           ["Gás auxiliar", fmtBRL(r.custoGas)],
           ["Energia elétrica", fmtBRL(r.custoEnergia)],
-          ["Consumíveis", fmtBRL(r.custoConsumiveis)],
-        ];
+          ["Consumíveis", fmtBRL(r.custoConsumiveis)]
+        );
         const paramLinhas = [
           ["Taxa máquina", fmtBRL(machineRate) + " / h"],
           ["Consumíveis", fmtBRL(consumablesRate) + " / h"],
           ["Preço do gás", fmtBRL(gasPrice) + " / m³"],
           ["Energia elétrica", fmtBRL(energyPrice) + " / kWh"],
+          ["Programação + setup", fmtNum(setupTimeMin, 0) + " min"],
+          ["Faturamento mínimo", fmtBRL(minCharge)],
           ["Margem aplicada", fmtNum(marginPct, 0) + " %"],
         ];
 
@@ -19518,7 +20464,9 @@
         const pierceAtual = r.params ? r.params.pierce : 0;
         const gasFlowAtual = r.params ? r.params.gasFlow : 0;
         const potenciaKW = potencia / 1000;
-        const consumoKW = potenciaKW * 0.7;
+        // Fator de energia: Fibra = 0,7 · CO₂ = 1,8 (mesma regra do laserProcessar)
+        const fatorEnergiaExport = tech === "co2" ? 1.8 : 0.7;
+        const consumoKW = potenciaKW * fatorEnergiaExport;
         const porques = [];
         porques.push(
           "<strong>Velocidade de corte " + fmtNum(velocidadeAtual, 1) +
@@ -19542,10 +20490,36 @@
           " kW</strong> — potência nominal (" + fmtNum(potenciaKW, 2) +
           " kW) × fator de carga 0,7 (a máquina não opera no talo o tempo todo)."
         );
+        if ((r.custoMaterial || 0) > 0) {
+          porques.push(
+            "<strong>Material da chapa " +
+            fmtBRL(r.custoMaterial) +
+            "</strong> — " + numSheets + " chapa(s) × " +
+            fmtBRL(materialCostPerSheet) +
+            ". Incluído por opção do usuário."
+          );
+        }
+        porques.push(
+          "<strong>Programação + setup " + fmtNum(setupTimeMin, 0) +
+          " min</strong> — CAD/CAM, nesting, posicionamento de chapa e peça de teste."
+        );
+        if (r.minChargeAplicado) {
+          porques.push(
+            "<strong>Piso de faturamento aplicado: " +
+            fmtBRL(r.minCharge) +
+            "</strong> — o custo direto (" +
+            fmtBRL(r.custoDireto) +
+            ") ficou abaixo do mínimo de lote. Base usada para margem: " +
+            fmtBRL(r.custoSemMargem) +
+            "."
+          );
+        }
         porques.push(
           "<strong>Margem de " + fmtNum(marginPct, 0) +
-          " %</strong> — aplicada sobre o custo direto (" +
-          fmtBRL(r.custoDireto) + "), resultando em " + fmtBRL(r.custoTotal) + "."
+          " %</strong> — aplicada sobre " +
+          (r.minChargeAplicado ? "o piso de faturamento" : "o custo direto") +
+          " (" + fmtBRL(r.custoSemMargem) + "), resultando em " +
+          fmtBRL(r.custoTotal) + "."
         );
 
         // ---------- 5b. Tabela por peça ----------
@@ -19660,6 +20634,7 @@ footer { margin-top: 20px; padding-top: 10px; border-top: 1px solid #e2e8f0;
         <tr><td>Metros lineares</td><td>${fmtNum(metros, 3)} m</td></tr>
         <tr><td>Furos / contornos internos</td><td>${r.numFuros}</td></tr>
         <tr><td>Quantidade de peças</td><td>${totalPecas}</td></tr>
+        <tr><td>Peso estimado das peças</td><td>${fmtNum(r.pesoTotalKg || 0, 2)} kg</td></tr>
         <tr><td>Chapas necessárias</td><td>${numSheets} × ${esc(sheetNome)}</td></tr>
       </table>
     </div>
@@ -19704,7 +20679,16 @@ footer { margin-top: 20px; padding-top: 10px; border-top: 1px solid #e2e8f0;
     <table>
       ${custoLinhas.map((l) => "<tr><td>" + esc(l[0]) + "</td><td>" + esc(l[1]) + "</td></tr>").join("")}
       <tr style="border-top:1px solid #e2e8f0;"><td style="padding-top:6px;color:#0f172a;font-weight:700;">Custo direto</td><td style="padding-top:6px;font-weight:700;">${fmtBRL(r.custoDireto)}</td></tr>
-      <tr><td style="color:#0f172a;font-weight:700;">Margem (${fmtNum(marginPct, 0)}%)</td><td style="font-weight:700;">${fmtBRL(r.custoTotal - r.custoDireto)}</td></tr>
+      ${
+        r.minChargeAplicado
+          ? '<tr><td style="color:#b45309;font-weight:700;">Piso de faturamento</td><td style="color:#b45309;font-weight:700;">' +
+            fmtBRL(r.minCharge) +
+            '</td></tr><tr><td style="color:#64748b;font-size:9pt;">Base usada para margem</td><td style="color:#64748b;font-size:9pt;">' +
+            fmtBRL(r.custoSemMargem) +
+            "</td></tr>"
+          : ""
+      }
+      <tr><td style="color:#0f172a;font-weight:700;">Margem (${fmtNum(marginPct, 0)}%)</td><td style="font-weight:700;">${fmtBRL(r.custoTotal - r.custoSemMargem)}</td></tr>
     </table>
   </div>
   <div class="card">
@@ -19867,6 +20851,9 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
           '      <div class="laser-result-row"><strong>Velocidade de corte</strong><span>' +
           fmtNum(r.params.speed, 1) +
           " mm/s</span></div>" +
+          '      <div class="laser-result-row"><strong>Peso estimado</strong><span>' +
+          fmtNum(r.pesoTotalKg || 0, 2) +
+          " kg</span></div>" +
           '      <div class="laser-result-row"><strong>Chapas necessárias</strong><span>' +
           numSheets +
           (r.sheetDef
@@ -19884,8 +20871,8 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
           '      <div class="laser-result-row"><strong>Piercing</strong><span>' +
           fmtTempo(r.tempoPiercingS) +
           " min</span></div>" +
-          '      <div class="laser-result-row"><strong>Setup</strong><span>' +
-          fmtTempo(r.tempoSetupS) +
+          '      <div class="laser-result-row"><strong>Setup + Programação</strong><span>' +
+          Math.round(r.tempoSetupS / 60) +
           " min</span></div>" +
           '      <div class="laser-result-row"><strong>Tempo por peça</strong><span>' +
           Math.round(segPorPeca) +
@@ -19898,6 +20885,11 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
           // Custo
           '    <div class="laser-result-card card-custo">' +
           '      <h3><span class="icon">◆</span> Custo</h3>' +
+          ((r.custoMaterial || 0) > 0
+            ? '      <div class="laser-result-row"><strong>Material da chapa</strong><span>' +
+              fmtBRL(r.custoMaterial) +
+              "</span></div>"
+            : "") +
           '      <div class="laser-result-row"><strong>Máquina</strong><span>' +
           fmtBRL(r.custoMaquina) +
           "</span></div>" +
@@ -19913,6 +20905,14 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
           '      <div class="laser-result-row laser-result-row--sum"><strong>Custo direto</strong><span>' +
           fmtBRL(r.custoDireto) +
           "</span></div>" +
+          (r.minChargeAplicado
+            ? '      <div class="laser-result-row" style="color: var(--accent-warning);"><strong style="color: var(--accent-warning);">Piso de faturamento</strong><span>' +
+              fmtBRL(r.minCharge) +
+              "</span></div>" +
+              '      <div class="laser-result-row" style="font-size: 0.7rem; color: var(--text-muted); padding-top: 0;"><strong style="font-weight: 400; color: var(--text-muted); font-size: 0.7rem;">Base usada para margem</strong><span style="font-size: 0.7rem;">' +
+              fmtBRL(r.custoSemMargem) +
+              "</span></div>"
+            : "") +
           "    </div>" +
 
           "  </div>" +
@@ -20693,7 +21693,14 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         laserGeometry.numSheets = sheets.length;
 
         const SCALE = 0.001;
-        const SHEET_THICK = 0.003;
+        // Espessura real da chapa escolhida pelo usuário → world units.
+        // 3 mm vira 0.003; 20 mm vira 0.020. A cabeça de laser sobe
+        // automaticamente junto com o topo da chapa (pathPoints herda yTop).
+        const thicknessMm =
+          parseFloat(
+            (document.getElementById("laserThickness") || {}).value
+          ) || 3;
+        const SHEET_THICK = thicknessMm * SCALE;
         const sheetWm = sheetDef.w * SCALE;
         const sheetHm = sheetDef.h * SCALE;
 
@@ -21227,13 +22234,13 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         if (fill) fill.style.width = (laser3D.progress * 100).toFixed(1) + "%";
         if (text)
           text.textContent = Math.round(laser3D.progress * 100) + "%";
-        if (btn) {
+          if (btn) {
           if (laser3D.progress >= 1) {
-            btn.innerHTML = "▶ Reproduzir";
+            btn.textContent = "Reproduzir";
           } else if (laser3D.playing) {
-            btn.innerHTML = "⏸ Pausar";
+            btn.textContent = "Pausar";
           } else {
-            btn.innerHTML = laser3D.progress > 0 ? "▶ Continuar" : "▶ Simular";
+            btn.textContent = laser3D.progress > 0 ? "Continuar" : "Simular";
           }
         }
       }
