@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -5139,6 +5139,465 @@
           margin: 6px 0 5px 0 !important;
         }
       }
+
+      /* ============================================================
+         PERMISSÕES — módulos e abas bloqueados
+         ============================================================ */
+      .module-btn.modulo-bloqueado {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+      .module-btn.modulo-bloqueado:hover {
+        color: var(--text-muted);
+      }
+      .tab-btn.aba-bloqueada {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+      .tab-btn.aba-bloqueada:hover {
+        color: var(--text-muted);
+      }
+
+      /* ============================================================
+         BASE DE DADOS — cards + documento "Ordem de Produção"
+         ============================================================ */
+      .bd-item {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        margin-bottom: 10px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+      }
+      .bd-item.expanded { border-color: var(--primary); }
+      .bd-item-header {
+        display: flex; align-items: center; gap: 14px;
+        padding: 14px 18px; cursor: pointer; user-select: none;
+      }
+      .bd-item-header:hover { background: var(--bg-panel-2); }
+      .bd-item-chevron {
+        font-size: 0.9rem; color: var(--text-muted);
+        transition: transform 0.25s, color 0.25s; flex-shrink: 0;
+      }
+      .bd-item.expanded .bd-item-chevron {
+        transform: rotate(90deg); color: var(--primary);
+      }
+      .bd-item-codigo {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        background: var(--primary-subtle); color: var(--primary);
+        padding: 3px 10px; border-radius: 6px;
+        font-weight: 600; font-size: 0.85rem; flex-shrink: 0;
+      }
+      .bd-item-codigo.vazio {
+        background: var(--bg-panel-2); color: var(--text-muted);
+        font-style: italic;
+      }
+      .bd-item-info {
+        flex: 1; min-width: 0; font-size: 0.85rem;
+        color: var(--text-muted); line-height: 1.35;
+      }
+      .bd-item-info strong { color: var(--text-main); display: block; }
+      .bd-item-info small { font-size: 0.74rem; }
+      .bd-item-data {
+        font-size: 0.74rem; color: var(--text-dim);
+        white-space: nowrap; flex-shrink: 0;
+      }
+      .bd-item-body {
+        display: grid; grid-template-rows: 0fr;
+        transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .bd-item.expanded .bd-item-body { grid-template-rows: 1fr; }
+      .bd-item-body-inner { overflow: hidden; }
+      .bd-item-body-content {
+        padding: 20px; border-top: 1px solid var(--border-light);
+        background: var(--bg-panel-2);
+      }
+
+      .ordem-doc {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        padding: 24px;
+      }
+      .ordem-doc-titulo {
+        text-align: center; font-size: 1.05rem; font-weight: 700;
+        letter-spacing: 0.05em; margin: 0 0 20px 0;
+        color: var(--text-main); text-transform: uppercase;
+      }
+      .ordem-campos {
+        display: flex; flex-direction: column; gap: 10px;
+        margin-bottom: 22px; max-width: 520px;
+      }
+      .ordem-campo {
+        display: grid; grid-template-columns: 200px 1fr;
+        align-items: center; gap: 14px;
+      }
+      .ordem-campo label {
+        font-weight: 600; font-size: 0.82rem;
+        color: var(--text-main); text-align: right; margin: 0;
+      }
+      .ordem-campo .valor {
+        border: 1px solid var(--border-strong);
+        background: var(--bg-panel-2); padding: 7px 12px;
+        border-radius: 5px; font-weight: 600; font-size: 0.85rem;
+        text-align: center; color: var(--text-main);
+        font-variant-numeric: tabular-nums;
+      }
+      .ordem-tabela {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.78rem;
+        margin-bottom: 14px;
+      }
+      .ordem-tabela th {
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid #94a3b8;
+        padding: 5px 8px;
+        font-weight: 700;
+        font-size: 0.62rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #475569;
+        text-align: left;
+        line-height: 1.25;
+      }
+      .ordem-tabela th:not(:first-child) {
+        text-align: right;
+      }
+      .ordem-tabela td {
+        border: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 5px 8px;
+        color: #0f172a;
+        font-size: 0.8rem;
+      }
+      .ordem-tabela tbody tr:last-child td {
+        border-bottom: 1px solid #94a3b8;
+      }
+      .ordem-tabela td.numero {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .ordem-tabela td.item {
+        width: 40px;
+        text-align: left;
+        color: #94a3b8;
+        font-weight: 500;
+      }
+
+      /* ---------- Blocos da Ordem de Produção Consolidada ---------- */
+      .bd-doc-bloco {
+        padding-bottom: 6px;
+        margin-bottom: 28px;
+        page-break-inside: avoid;
+      }
+      .bd-doc-bloco + .bd-doc-bloco {
+        border-top: 1px dashed #cbd5e1;
+        padding-top: 24px;
+      }
+      .bd-doc-bloco-header {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #2563eb;
+        margin-bottom: 14px;
+      }
+      .bd-doc-foto {
+        width: 300px;
+        height: 300px;
+        flex-shrink: 0;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff;
+      }
+      .bd-doc-bloco-header {
+        gap: 22px;
+        align-items: stretch;
+      }
+      .bd-doc-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      @media (max-width: 700px) {
+        .bd-doc-bloco-header { flex-direction: column; }
+        .bd-doc-foto { width: 100%; height: 260px; }
+      }
+      .bd-doc-foto img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      .bd-doc-foto .sem-foto {
+        font-size: 0.68rem;
+        color: #94a3b8;
+        text-align: center;
+        line-height: 1.3;
+      }
+      .bd-doc-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .bd-doc-tag {
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #2563eb;
+        margin-bottom: 3px;
+      }
+      .bd-doc-codigo {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.15;
+        margin-bottom: 4px;
+      }
+      .bd-doc-medida {
+        font-size: 0.78rem;
+        color: #475569;
+        line-height: 1.5;
+      }
+      .bd-doc-medida strong {
+        color: #0f172a;
+        font-weight: 700;
+      }
+      .bd-doc-secao {
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #64748b;
+        margin: 16px 0 6px 0;
+      }
+      .ordem-secao-titulo {
+        font-size: 0.72rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.06em;
+        color: var(--primary); margin: 20px 0 8px 0;
+        padding-bottom: 6px; border-bottom: 1px solid var(--border-light);
+      }
+
+      /* ---------- Nova aba "Ordem de Produção" consolidada ---------- */
+      .op-selecao-item {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 14px; background: var(--bg-panel);
+        border: 1px solid var(--border-light);
+        border-radius: 8px; margin-bottom: 8px;
+      }
+      .op-selecao-item.selecionado {
+        border-color: var(--primary); background: var(--primary-subtle);
+      }
+      .op-selecao-item input[type="checkbox"] {
+        width: 18px; height: 18px; cursor: pointer; flex-shrink: 0;
+      }
+      .op-selecao-info {
+        flex: 1; min-width: 0; font-size: 0.85rem; line-height: 1.35;
+      }
+      .op-selecao-info strong {
+        display: block; color: var(--text-main); margin-bottom: 2px;
+      }
+      .op-selecao-info small { color: var(--text-muted); font-size: 0.74rem; }
+      .op-selecao-qtd {
+        width: 80px; padding: 6px 8px; text-align: center;
+        font-family: inherit; font-size: 0.85rem; font-weight: 600;
+        background: var(--bg-panel-2); border: 1px solid var(--border-strong);
+        border-radius: 6px; color: var(--text-main);
+        -moz-appearance: textfield;
+      }
+      .op-selecao-qtd::-webkit-outer-spin-button,
+      .op-selecao-qtd::-webkit-inner-spin-button {
+        -webkit-appearance: none; margin: 0;
+      }
+      .op-selecao-qtd:focus {
+        border-color: var(--primary); outline: none;
+        box-shadow: 0 0 0 3px var(--primary-subtle);
+      }
+
+      /* ---------- Foto + ações do card da Base de Dados ---------- */
+      .bd-item-body-grid {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 18px;
+        align-items: start;
+      }
+      @media (max-width: 900px) {
+        .bd-item-body-grid { grid-template-columns: 1fr; }
+      }
+      .bd-foto {
+        background: linear-gradient(135deg, #f8f9fa 0%, #eef1f4 100%);
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        min-height: 220px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        overflow: hidden;
+      }
+      .bd-foto img {
+        max-width: 100%;
+        max-height: 220px;
+        object-fit: contain;
+        border-radius: 4px;
+      }
+      :root[data-theme="dark"] .bd-foto {
+        background: linear-gradient(135deg, #1a1a1c 0%, #242426 100%);
+      }
+      .bd-item-excluir {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid var(--border-light);
+        background: var(--bg-panel);
+        color: var(--text-muted);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        padding: 0;
+        flex-shrink: 0;
+      }
+      .bd-item-excluir:hover {
+        background: var(--danger-bg);
+        border-color: var(--danger-border);
+        color: var(--danger-text);
+      }
+      .bd-item-excluir svg { width: 16px; height: 16px; }
+
+      /* ---------- Quantidade editável dentro do documento ---------- */
+      .ordem-campo .valor-editavel {
+        border: 1.5px solid var(--primary);
+        background: #ffffff;
+        padding: 7px 12px;
+        border-radius: 5px;
+        font-weight: 700;
+        font-size: 0.92rem;
+        text-align: center;
+        color: #0f172a;
+        font-variant-numeric: tabular-nums;
+        outline: none;
+        width: 100%;
+        font-family: inherit;
+        -moz-appearance: textfield;
+      }
+      .ordem-campo .valor-editavel::-webkit-outer-spin-button,
+      .ordem-campo .valor-editavel::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      .ordem-campo .valor-editavel:focus {
+        box-shadow: 0 0 0 3px var(--primary-subtle);
+      }
+
+      /* ---------- A4 sheet (documento físico) ---------- */
+      .ordem-doc {
+        width: 100%;
+        max-width: 780px;
+        min-height: 1050px;
+        background: #ffffff;
+        color: #0f172a;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 4px;
+        padding: 42px 48px;
+        margin: 0 auto;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+      }
+      .ordem-doc .ordem-doc-titulo { color: #0f172a; }
+      .ordem-doc .ordem-campo label { color: #0f172a; }
+      .ordem-doc .ordem-campo .valor {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #0f172a;
+      }
+      .ordem-doc .ordem-secao-titulo {
+        color: #2563eb;
+        border-bottom-color: #e2e8f0;
+      }
+      .ordem-doc .ordem-tabela { border-color: #cbd5e1; }
+      .ordem-doc .ordem-tabela th {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #0f172a;
+      }
+      .ordem-doc .ordem-tabela td {
+        border-color: #cbd5e1;
+        color: #0f172a;
+      }
+
+      /* ---------- Rodapé de ações do documento ---------- */
+      .ordem-acoes {
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+        justify-content: flex-end;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 16px;
+      }
+      .ordem-btn-imprimir {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        border: 1px solid var(--primary);
+        background: var(--primary);
+        color: #ffffff;
+        font-family: inherit;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .ordem-btn-imprimir:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+      }
+
+      /* ---------- Interruptor m / cm ---------- */
+      .bd-unidade-toggle {
+        display: inline-flex;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        padding: 3px;
+        gap: 2px;
+        vertical-align: middle;
+      }
+      .bd-unidade-btn {
+        padding: 5px 16px;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-family: inherit;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        min-height: 30px;
+        letter-spacing: 0.02em;
+        transition: all 0.15s;
+      }
+      .bd-unidade-btn:hover { color: var(--text-main); }
+      .bd-unidade-btn.active {
+        background: var(--bg-panel);
+        color: var(--primary);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+      }
+      .bd-unidade-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -5308,6 +5767,14 @@
       </button>
       <button class="tab-btn" onclick="switchTab('historico')">
         Histórico
+      </button>
+      <button
+        class="tab-btn"
+        id="tabBtnOrdemProducao"
+        onclick="switchTab('ordem-producao')"
+        style="display: none"
+      >
+        Ordem de Produção
       </button>
       <button class="tab-btn" onclick="switchTab('precos')">Tabela de Custos</button>
       <button class="tab-btn" onclick="switchTab('manual')">Manual</button>
@@ -5776,6 +6243,70 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ABA ORDEM DE PRODUÇÃO (Elias) -->
+    <div
+      id="ordem-producao-tab"
+      class="tab-content"
+      style="max-width: 1400px; margin: 0 auto; padding-bottom: 50px"
+    >
+      <div class="panel" style="margin-bottom: 20px">
+        <h2
+          style="
+            color: var(--primary);
+            font-size: 1.35rem;
+            margin-bottom: 8px;
+            border: none;
+            padding: 0;
+          "
+        >
+          📋 Ordem de Produção Consolidada
+        </h2>
+        <p
+          style="
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+            margin: 0;
+          "
+        >
+        Selecione os engradados abaixo, informe a quantidade de cada um e clique
+        em <strong>Gerar Ordem de Produção</strong> para visualizar o total de
+        madeiras e faixas de EVA necessárias.
+      </p>
+      <div style="margin-top: 16px;">
+        <span class="bd-unidade-wrap">
+          Unidade das medidas:
+          <span class="bd-unidade-toggle">
+            <button type="button" class="bd-unidade-btn" data-unidade="m" onclick="bdToggleUnidade('m')">m</button>
+            <button type="button" class="bd-unidade-btn" data-unidade="cm" onclick="bdToggleUnidade('cm')">cm</button>
+          </span>
+        </span>
+      </div>
+    </div>
+
+      <div class="panel" style="margin-bottom: 20px">
+        <h3 style="margin: 0 0 14px 0; font-size: 1rem; font-weight: 700">
+          Selecione os engradados
+        </h3>
+        <div id="opSelecaoLista">
+          <div style="padding: 20px; text-align: center; color: var(--text-muted)">
+            Carregando...
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 16px">
+          <button
+            onclick="gerarOrdemProducaoConsolidada()"
+            class="btn-calc"
+            style="max-width: 340px"
+          >
+            ⚙️ Gerar Ordem de Produção
+          </button>
+        </div>
+      </div>
+
+      <div id="opResultado" style="display: none"></div>
     </div>
 
     <!-- ABA PREÇOS -->
@@ -8138,14 +8669,15 @@
           return;
         }
 
+        const nomeExibido = MAPA_USUARIOS[user];
+        const senhaEsperada = SENHAS_ESPECIFICAS[user] || SENHA_PADRAO;
+        const senhaOK = pass === senhaEsperada;
+
         // --- DEBUG: mostra exatamente o que está sendo comparado ---
         console.log("[LOGIN] usuário digitado: ", JSON.stringify(user));
         console.log("[LOGIN] senha digitada:   ", JSON.stringify(pass));
         console.log("[LOGIN] usuários válidos: ", Object.keys(MAPA_USUARIOS));
-        console.log("[LOGIN] senha esperada:   ", JSON.stringify(SENHA_PADRAO));
-
-        const nomeExibido = MAPA_USUARIOS[user];
-        const senhaOK = pass === SENHA_PADRAO;
+        console.log("[LOGIN] senha esperada:   ", JSON.stringify(senhaEsperada));
 
         console.log(
           "[LOGIN] usuário existe?",
@@ -8167,6 +8699,9 @@
           // Marca o documento como "logado" — esconde o overlay de login.
           document.documentElement.classList.add("has-session");
           errorLabel.style.opacity = "0";
+
+          // Aplica restrições de permissão (esconde/desabilita conforme usuário)
+          aplicarPermissoes();
 
           let overlay = document.getElementById("login-overlay");
           overlay.classList.add("hidden");
@@ -8273,9 +8808,1005 @@
         }
       }
 
+      // ============================================================
+      // PERMISSÕES — aplica/limpa restrições conforme o usuário logado
+      // ============================================================
+      function aplicarPermissoes() {
+        limparPermissoes();
+        const perm = getPermissoes(usuarioLogado);
+        if (!perm) return;
+
+        document.body.classList.add("usuario-restrito");
+
+        // 1. Módulos bloqueados (Corte a Laser / Projeção)
+        document.querySelectorAll(".module-btn").forEach((btn) => {
+          const mod = btn.dataset.module;
+          if (!perm.modulos.includes(mod)) {
+            btn.classList.add("modulo-bloqueado");
+          }
+        });
+
+        // 2. Abas de Engradados
+        document
+          .querySelectorAll("#tabs-engradados .tab-btn")
+          .forEach((btn) => {
+            const onclick = btn.getAttribute("onclick") || "";
+            const match = onclick.match(/switchTab\(['"]([^'"]+)['"]\)/);
+            if (!match) return;
+            const tabId = match[1];
+
+            if (!perm.abasEngradados.includes(tabId)) {
+              btn.classList.add("aba-bloqueada");
+            }
+
+            // Renomeia "Histórico" → "Base de Dados" (se configurado)
+            if (tabId === "historico" && perm.rotuloHistorico) {
+              btn.textContent = perm.rotuloHistorico;
+            }
+          });
+
+        // 3. Dropzone de template — esconder
+        if (!perm.templateHabilitado) {
+          const dz = document.getElementById("templateDropzone");
+          if (dz) dz.style.display = "none";
+        }
+
+        // 4. Botão "Exportar para Planilha" do Simulador — esconder
+        if (!perm.exportarSimulador) {
+          const btnExp = document.getElementById("btnExport");
+          if (btnExp) btnExp.style.display = "none";
+        }
+
+        // 5. Botão "Salvar no histórico" — renomear
+        if (perm.rotuloHistorico) {
+          const btnSalvar = document.getElementById("btnSalvarHistorico");
+          if (btnSalvar)
+            btnSalvar.innerHTML = "💾 Salvar na " + perm.rotuloHistorico;
+        }
+
+        // 6. Base de Dados — substitui o conteúdo da aba histórico
+        if (perm.baseDadosAtiva) {
+          aplicarBaseDadosView();
+        }
+
+        // 7. Aba "Ordem de Produção" — só para quem tem permissão
+        const tabOp = document.getElementById("tabBtnOrdemProducao");
+        if (tabOp) {
+          tabOp.style.display = perm.abaOrdemProducao ? "" : "none";
+        }
+      }
+
+      // Restaura o estado padrão (sem restrições). Chamado antes de
+      // aplicar as permissões e também no logout.
+      function limparPermissoes() {
+        document.body.classList.remove("usuario-restrito");
+
+        document
+          .querySelectorAll(".module-btn.modulo-bloqueado")
+          .forEach((b) => b.classList.remove("modulo-bloqueado"));
+        document
+          .querySelectorAll(".tab-btn.aba-bloqueada")
+          .forEach((b) => b.classList.remove("aba-bloqueada"));
+
+        // Restaura rótulos
+        const historicoBtn = Array.from(
+          document.querySelectorAll("#tabs-engradados .tab-btn")
+        ).find((b) =>
+          (b.getAttribute("onclick") || "").includes("'historico'")
+        );
+        if (historicoBtn) historicoBtn.textContent = "Histórico";
+
+        const btnSalvar = document.getElementById("btnSalvarHistorico");
+        if (btnSalvar) btnSalvar.innerHTML = "💾 Salvar no histórico";
+
+        // Restaura elementos escondidos
+        const dz = document.getElementById("templateDropzone");
+        if (dz) dz.style.display = "";
+
+        // Restaura o conteúdo real da aba histórico
+        removerBaseDadosView();
+
+        // Esconde a aba "Ordem de Produção"
+        const tabOp = document.getElementById("tabBtnOrdemProducao");
+        if (tabOp) tabOp.style.display = "none";
+
+        // Limpa seleção pendente da Ordem de Produção
+        opSelecionados = {};
+        opSimulacoes = [];
+      }
+
+      // ============================================================
+      // BASE DE DADOS — view customizada do Elias dentro da aba "Histórico"
+      // ============================================================
+      let baseDadosCache = [];
+
+      function aplicarBaseDadosView() {
+        const tab = document.getElementById("historico-tab");
+        if (!tab || tab.dataset.baseDadosView === "1") return;
+        tab.dataset.baseDadosView = "1";
+
+        Array.from(tab.children).forEach((child) => {
+          if (child.id === "baseDadosWrap") return;
+          child.dataset.displayAntes = child.style.display;
+          child.style.display = "none";
+        });
+
+        const wrap = document.createElement("div");
+        wrap.id = "baseDadosWrap";
+        wrap.innerHTML =
+          '<div class="panel" style="margin-bottom: 20px;">' +
+          '  <h2 style="color: var(--primary); font-size: 1.35rem; margin-bottom: 8px; border: none; padding: 0;">📦 Base de Dados</h2>' +
+          '  <p style="color: var(--text-muted); line-height: 1.6; font-size: 0.95rem; margin: 0 0 16px 0;">' +
+          "    Engradados salvos no simulador. Clique em um item para visualizar a Ordem de Produção." +
+          "  </p>" +
+          '  <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">' +
+          '    <input type="text" id="baseDadosFiltro" placeholder="🔎 Buscar por código..." oninput="renderizarBaseDados()" style="flex: 1; min-width: 180px;" />' +
+          '    <button onclick="carregarBaseDados()" style="padding: 12px 20px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; min-height: 44px;">🔄 Atualizar</button>' +
+          "  </div>" +
+          '  <div style="margin-top: 12px;">' +
+          '    <span class="bd-unidade-wrap">' +
+          "      Unidade das medidas:" +
+          '      <span class="bd-unidade-toggle">' +
+          '        <button type="button" class="bd-unidade-btn" data-unidade="m" onclick="bdToggleUnidade(\'m\')">m</button>' +
+          '        <button type="button" class="bd-unidade-btn" data-unidade="cm" onclick="bdToggleUnidade(\'cm\')">cm</button>' +
+          "      </span>" +
+          "    </span>" +
+          "  </div>" +
+          '  <div id="baseDadosContador" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 12px;"></div>' +
+          "</div>" +
+          '<div id="baseDadosLista"></div>';
+        tab.appendChild(wrap);
+        _bdAtualizarBotoesUnidade();
+      }
+
+      function removerBaseDadosView() {
+        const tab = document.getElementById("historico-tab");
+        if (!tab || tab.dataset.baseDadosView !== "1") return;
+        delete tab.dataset.baseDadosView;
+
+        Array.from(tab.children).forEach((child) => {
+          if (child.id === "baseDadosWrap") return;
+          if (child.dataset.displayAntes !== undefined) {
+            child.style.display = child.dataset.displayAntes;
+            delete child.dataset.displayAntes;
+          }
+        });
+
+        const wrap = document.getElementById("baseDadosWrap");
+        if (wrap) wrap.remove();
+        baseDadosCache = [];
+      }
+
+      async function carregarBaseDados() {
+        const lista = document.getElementById("baseDadosLista");
+        if (!lista) return;
+        if (typeof db === "undefined" || !db) {
+          lista.innerHTML =
+            '<div style="padding: 40px; text-align: center; color: var(--danger-text);">❌ Firebase não inicializado.</div>';
+          return;
+        }
+        lista.innerHTML =
+          '<div style="padding: 40px; text-align: center; color: var(--text-muted);">⏳ Carregando engradados...</div>';
+        try {
+          const snap = await db
+            .collection("simulacoes")
+            .orderBy("dataCriacao", "desc")
+            .get();
+          baseDadosCache = [];
+          snap.forEach((doc) => {
+            baseDadosCache.push({ id: doc.id, ...doc.data() });
+          });
+          renderizarBaseDados();
+        } catch (err) {
+          console.error("[BASE DADOS] Erro:", err);
+          lista.innerHTML =
+            '<div style="padding: 40px; text-align: center; color: var(--danger-text);">❌ Erro ao carregar: ' +
+            (err.message || err.code) +
+            "</div>";
+        }
+      }
+
+      function renderizarBaseDados() {
+        const lista = document.getElementById("baseDadosLista");
+        const contador = document.getElementById("baseDadosContador");
+        if (!lista) return;
+
+        const filtroEl = document.getElementById("baseDadosFiltro");
+        const filtro = (filtroEl ? filtroEl.value : "").trim().toLowerCase();
+
+        const filtradas = baseDadosCache.filter((s) => {
+          if (!filtro) return true;
+          const cod = (s.codigo || "").toLowerCase();
+          const mm = s.medidas || {};
+          const medidas = [
+            (mm.comprimentoInterno || 0).toFixed(2).replace(".", ","),
+            (mm.larguraInterna || 0).toFixed(2).replace(".", ","),
+            (mm.alturaInterna || 0).toFixed(2).replace(".", ","),
+          ].join(" ");
+          return cod.includes(filtro) || medidas.includes(filtro);
+        });
+
+        if (contador) {
+          contador.textContent =
+            filtradas.length +
+            " de " +
+            baseDadosCache.length +
+            " engradados";
+        }
+
+        if (filtradas.length === 0) {
+          lista.innerHTML =
+            '<div class="panel" style="text-align: center; padding: 60px 20px; color: var(--text-muted);">' +
+            '<div style="font-size: 3rem; margin-bottom: 16px;">📭</div>' +
+            "<p style='margin:0'>Nenhum engradado encontrado.</p></div>";
+          return;
+        }
+
+        lista.innerHTML = filtradas
+          .map((s) => renderizarBaseDadosItem(s))
+          .join("");
+      }
+
+      // Cache de quantidade digitada por engradado (só em memória).
+      let bdQtdCache = {};
+
+      // Unidade de exibição das medidas: "m" (metros) ou "cm" (centímetros).
+      // Persiste entre sessões via localStorage.
+      let bdUnidade = (function () {
+        try {
+          return localStorage.getItem("artefacto_bd_unidade") === "cm"
+            ? "cm"
+            : "m";
+        } catch (e) {
+          return "m";
+        }
+      })();
+
+      function bdToggleUnidade(u) {
+        bdUnidade = u === "cm" ? "cm" : "m";
+        try {
+          localStorage.setItem("artefacto_bd_unidade", bdUnidade);
+        } catch (e) {}
+        _bdAtualizarBotoesUnidade();
+
+        // Re-renderiza a Base de Dados se ela estiver visível
+        if (document.getElementById("baseDadosLista")) {
+          renderizarBaseDados();
+        }
+
+        // Re-renderiza a Ordem de Produção consolidada se já existir
+        if (
+          typeof opUltimoResultado !== "undefined" &&
+          opUltimoResultado &&
+          opUltimoResultado.length > 0
+        ) {
+          _opRenderDocumentoHTML(opUltimoResultado);
+        }
+      }
+
+      function _bdAtualizarBotoesUnidade() {
+        document.querySelectorAll(".bd-unidade-btn").forEach((b) => {
+          b.classList.toggle("active", b.dataset.unidade === bdUnidade);
+        });
+      }
+
+      // Formata uma medida em metros (3 casas) ou centímetros (1 casa),
+      // dependendo do interruptor.
+      function bdFmtMedida(v) {
+        if (v == null || isNaN(v)) return "—";
+        if (bdUnidade === "cm") {
+          return (v * 100).toFixed(1).replace(".", ",");
+        }
+        return v.toFixed(3).replace(".", ",");
+      }
+
+      function bdUnidadeLabel() {
+        return bdUnidade === "cm" ? "cm" : "m";
+      }
+
+      function renderizarBaseDadosItem(s) {
+        const idSeguro = s.id.replace(/[^a-zA-Z0-9]/g, "");
+        const m = s.medidas || {};
+        const fmt = (v) => (v || 0).toFixed(2).replace(".", ",");
+        const codigo = s.codigo || "SEM CÓDIGO";
+        const codigoClasse = s.codigo ? "" : "vazio";
+        const qtd = bdQtdCache[s.id] || 1;
+
+        let dataStr = "—";
+        if (s.dataCriacao && s.dataCriacao.toDate) {
+          dataStr = s.dataCriacao.toDate().toLocaleDateString("pt-BR");
+        }
+
+        const fotoMime =
+          s.fotoFormato === "jpeg" ? "image/jpeg" : "image/png";
+        const fotoHTML = s.fotoBase64
+          ? '<img src="data:' + fotoMime + ";base64," + s.fotoBase64 +
+            '" alt="Engradado" />'
+          : '<div style="color:var(--text-muted);font-size:0.78rem;text-align:center;padding:20px;">Clique para gerar a imagem 3D</div>';
+
+          const lixeiraSVG =
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+          '<polyline points="3 6 5 6 21 6"></polyline>' +
+          '<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>' +
+          '<line x1="10" y1="11" x2="10" y2="17"></line>' +
+          '<line x1="14" y1="11" x2="14" y2="17"></line>' +
+          "</svg>";
+
+        // Só o dono pode excluir.
+        const ehDonoBD = !s.usuario || s.usuario === usuarioLogado;
+        const botaoExcluirBD = ehDonoBD
+          ? '<button class="bd-item-excluir" title="Excluir engradado" ' +
+            "onclick=\"event.stopPropagation(); bdExcluirEngradado('" + s.id + "');\">" +
+            lixeiraSVG +
+            "</button>"
+          : "";
+
+        return (
+          '<div class="bd-item" id="bd-item-' + idSeguro + '">' +
+          '  <div class="bd-item-header" onclick="toggleBaseDadosItem(\'' + idSeguro + '\')">' +
+          '    <span class="bd-item-chevron">▶</span>' +
+          '    <span class="bd-item-codigo ' + codigoClasse + '">' + codigo + "</span>" +
+          '    <div class="bd-item-info">' +
+          "      <strong>" + bdFmtMedida(m.comprimentoInterno) + " × " + bdFmtMedida(m.larguraInterna) + " × " + bdFmtMedida(m.alturaInterna) + " " + bdUnidadeLabel() + "</strong>" +
+          "      <small>" + (s.usuario || "—") + " · " + (s.material || "—") + "</small>" +
+          "    </div>" +
+          '    <span class="bd-item-data">' + dataStr + "</span>" +
+          botaoExcluirBD +
+          "  </div>" +
+          '  <div class="bd-item-body">' +
+          '    <div class="bd-item-body-inner">' +
+          '      <div class="bd-item-body-content">' +
+          '        <div class="bd-item-body-grid">' +
+          '          <div class="bd-foto" id="bd-foto-' + idSeguro + '">' + fotoHTML + "</div>" +
+          '          <div id="bd-doc-' + idSeguro + '">' + bdRenderizarDoc(s, qtd) + "</div>" +
+          "        </div>" +
+          "      </div>" +
+          "    </div>" +
+          "  </div>" +
+          "</div>"
+        );
+      }
+
+      // Gera o documento A4 (inline ou para impressão). Se `paraImpressao`
+      // for true, a quantidade vira texto em vez de input.
+      function bdRenderizarDoc(s, qtd, paraImpressao) {
+        const m = s.medidas || {};
+        const codigo = s.codigo || "SEM CÓDIGO";
+        const qtdNum = Math.max(1, parseInt(qtd, 10) || 1);
+        const uLbl = bdUnidadeLabel();
+
+        const madeiras = s.madeiras || [];
+        const eva = bdCalcularEVA(s);
+
+        let madeirasRows = "";
+        if (madeiras.length === 0) {
+          madeirasRows =
+            '<tr><td colspan="4" style="text-align:center;color:#94a3b8;">Sem dados de madeira</td></tr>';
+        } else {
+          madeiras.forEach((w, i) => {
+            madeirasRows +=
+              "<tr>" +
+              '<td class="item">' + (i + 1) + "</td>" +
+              "<td>" + (w.descricao || "—") + "</td>" +
+              '<td class="numero">' + bdFmtMedida(w.comprimento) + " × " + bdFmtMedida(w.largura) + "</td>" +
+              '<td class="numero"><strong>' +
+              ((w.quantidade || 0) * qtdNum) +
+              "</strong></td>" +
+              "</tr>";
+          });
+        }
+
+        const allEva = [...eva.internas, ...eva.externas];
+        let evaRows = "";
+        if (allEva.length === 0) {
+          evaRows =
+            '<tr><td colspan="4" style="text-align:center;color:#94a3b8;">Sem EVA</td></tr>';
+        } else {
+          allEva.forEach((e, i) => {
+            evaRows +=
+              "<tr>" +
+              '<td class="item">' + (i + 1) + "</td>" +
+              "<td>" + e.descricao + "</td>" +
+              '<td class="numero">' + bdFmtMedida(e.comprimento) + " × " + bdFmtMedida(e.altura) + " × " + bdFmtMedida(e.espessura) + "</td>" +
+              '<td class="numero"><strong>' +
+              (e.quantidade * qtdNum) +
+              "</strong></td>" +
+              "</tr>";
+          });
+        }
+
+        const qtdField = paraImpressao
+          ? '<span class="valor">' + qtdNum + "</span>"
+          : '<input type="number" min="1" value="' + qtdNum +
+            '" class="valor-editavel" onchange="bdAtualizarQuantidade(\'' +
+            s.id + "', this.value)\" />";
+
+        const acoes = paraImpressao
+          ? ""
+          : '<div class="ordem-acoes">' +
+            '<button class="ordem-btn-imprimir" onclick="bdImprimirDoc(\'' + s.id + '\')">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>' +
+            "Imprimir / PDF</button></div>";
+
+        return (
+          '<div class="ordem-doc">' +
+          '  <div class="ordem-doc-titulo">ORDEM DE PRODUÇÃO</div>' +
+          '  <div class="ordem-campos">' +
+          '    <div class="ordem-campo"><label>Código do Engradado:</label><span class="valor">' +
+          codigo +
+          "</span></div>" +
+          '    <div class="ordem-campo"><label>Quantidade a Fabricar:</label>' +
+          qtdField +
+          "</div>" +
+          '    <div class="ordem-campo"><label>Engradado Medida Interna:</label><span class="valor">' +
+          bdFmtMedida(m.comprimentoInterno) + " × " + bdFmtMedida(m.larguraInterna) + " × " + bdFmtMedida(m.alturaInterna) + "H</span></div>" +
+          "  </div>" +
+          '  <div class="ordem-secao-titulo">Madeiras</div>' +
+          '  <table class="ordem-tabela"><thead><tr><th>Item</th><th>Madeira</th><th>Medidas (' + uLbl + ')</th><th>QTD TOTAL<br>FABRICAÇÃO</th></tr></thead><tbody>' +
+          madeirasRows +
+          "</tbody></table>" +
+          '  <div class="ordem-secao-titulo">Faixas de EVA</div>' +
+          '  <table class="ordem-tabela"><thead><tr><th>Item</th><th>Tipo</th><th>Medidas (' + uLbl + ')</th><th>QTD TOTAL<br>FABRICAÇÃO</th></tr></thead><tbody>' +
+          evaRows +
+          "</tbody></table>" +
+          acoes +
+          "</div>"
+        );
+      }
+
+      async function toggleBaseDadosItem(idSeguro) {
+        const el = document.getElementById("bd-item-" + idSeguro);
+        if (!el) return;
+        const vaiExpandir = !el.classList.contains("expanded");
+        el.classList.toggle("expanded");
+
+        if (!vaiExpandir) return;
+
+        // Lazy load da foto 3D — mesmo padrão do Histórico.
+        const fotoDiv = el.querySelector(".bd-foto");
+        if (!fotoDiv) return;
+
+        const sim = baseDadosCache.find(
+          (x) => x.id.replace(/[^a-zA-Z0-9]/g, "") === idSeguro
+        );
+        if (!sim) return;
+        if (sim.fotoBase64) return;
+
+        if (sim._fotoGerada) {
+          fotoDiv.innerHTML =
+            '<img src="data:image/png;base64,' +
+            sim._fotoGerada +
+            '" alt="Engradado" />';
+          return;
+        }
+
+        fotoDiv.innerHTML =
+          '<div style="color:var(--text-muted);font-size:0.78rem;text-align:center;padding:20px;">⏳ Gerando imagem 3D...</div>';
+        try {
+          const foto = await gerarFotoHistorico(sim);
+          if (foto) {
+            sim._fotoGerada = foto;
+            fotoDiv.innerHTML =
+              '<img src="data:image/png;base64,' + foto + '" alt="Engradado" />';
+          } else {
+            fotoDiv.innerHTML =
+              '<div style="color:var(--text-muted);font-size:0.8rem;text-align:center;">Sem foto disponível</div>';
+          }
+        } catch (err) {
+          console.error("[BASE DADOS] Erro ao gerar foto:", err);
+          fotoDiv.innerHTML =
+            '<div style="color:var(--text-muted);font-size:0.8rem;text-align:center;">Erro ao gerar foto</div>';
+        }
+      }
+
+      // Re-renderiza o documento quando a quantidade muda.
+      function bdAtualizarQuantidade(simId, val) {
+        const q = Math.max(1, parseInt(val, 10) || 1);
+        bdQtdCache[simId] = q;
+        const sim = baseDadosCache.find((x) => x.id === simId);
+        if (!sim) return;
+        const idSeguro = simId.replace(/[^a-zA-Z0-9]/g, "");
+        const docDiv = document.getElementById("bd-doc-" + idSeguro);
+        if (docDiv) docDiv.innerHTML = bdRenderizarDoc(sim, q);
+      }
+
+      async function bdExcluirEngradado(simId) {
+        // Regra de propriedade: só o dono pode excluir.
+        const sim = baseDadosCache.find((x) => x.id === simId);
+        if (sim && sim.usuario && sim.usuario !== usuarioLogado) {
+          showToast(
+            "🔒 Você só pode excluir engradados que você mesmo salvou.",
+            false
+          );
+          return;
+        }
+
+        if (
+          !confirm(
+            "Tem certeza que deseja excluir este engradado da Base de Dados?"
+          )
+        )
+          return;
+        if (typeof db === "undefined" || !db) {
+          showToast("❌ Firebase não inicializado", false);
+          return;
+        }
+        try {
+          await db.collection("simulacoes").doc(simId).delete();
+          baseDadosCache = baseDadosCache.filter((x) => x.id !== simId);
+          delete bdQtdCache[simId];
+          renderizarBaseDados();
+          showToast("🗑️ Engradado excluído", false);
+        } catch (err) {
+          console.error("[BASE DADOS] Erro ao excluir:", err);
+          showToast("❌ Erro ao excluir", false);
+        }
+      }
+
+      // Abre uma janela limpa com o documento A4 e dispara Ctrl+P.
+      function imprimirDocHTML(htmlDoc, titulo) {
+        const win = window.open("", "_blank");
+        if (!win) {
+          showToast("⚠️ Permita pop-ups para imprimir", false);
+          return;
+        }
+
+        const estilo =
+          "@page { size: A4 portrait; margin: 15mm; }" +
+          "* { box-sizing: border-box; }" +
+          "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 24px; background: #eef1f4; color: #0f172a; -webkit-print-color-adjust: exact; print-color-adjust: exact; }" +
+          ".ordem-doc { background: #ffffff; max-width: 780px; margin: 0 auto; padding: 48px 52px; border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,0.08); }" +
+          ".ordem-doc-titulo { text-align: center; font-size: 1.05rem; font-weight: 700; letter-spacing: 0.08em; margin: 0 0 24px 0; padding-bottom: 14px; border-bottom: 1px solid #94a3b8; text-transform: uppercase; }" +
+
+          // ---- Bloco por engradado ----
+          ".bd-doc-bloco { padding-bottom: 6px; margin-bottom: 28px; page-break-inside: avoid; }" +
+          ".bd-doc-bloco + .bd-doc-bloco { border-top: 1px dashed #cbd5e1; padding-top: 26px; }" +
+          ".bd-doc-bloco-header { display: flex; gap: 22px; align-items: stretch; padding-bottom: 14px; border-bottom: 2px solid #2563eb; margin-bottom: 16px; }" +
+          ".bd-doc-foto { width: 300px; height: 300px; flex-shrink: 0; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; display: flex; align-items: center; justify-content: center; background: #ffffff; }" +
+          ".bd-doc-foto img { max-width: 100%; max-height: 100%; object-fit: contain; }" +
+          ".bd-doc-foto .sem-foto { font-size: 0.68rem; color: #94a3b8; text-align: center; }" +
+          ".bd-doc-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }" +
+          ".bd-doc-tag { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #2563eb; margin-bottom: 3px; }" +
+          ".bd-doc-codigo { font-size: 1.15rem; font-weight: 700; color: #0f172a; line-height: 1.15; margin-bottom: 4px; }" +
+          ".bd-doc-medida { font-size: 0.78rem; color: #475569; line-height: 1.5; }" +
+          ".bd-doc-medida strong { color: #0f172a; font-weight: 700; }" +
+          ".bd-doc-secao { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin: 16px 0 6px 0; }" +
+
+          // ---- Tabelas limpas (sem cinza, só separadores finos) ----
+          ".ordem-tabela { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-bottom: 14px; }" +
+          ".ordem-tabela th { background: transparent; border: none; border-bottom: 1px solid #94a3b8; padding: 5px 8px; font-weight: 700; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.04em; color: #475569; text-align: left; line-height: 1.25; }" +
+          ".ordem-tabela th:not(:first-child) { text-align: right; }" +
+          ".ordem-tabela td { border: none; border-bottom: 1px solid #e2e8f0; padding: 5px 8px; color: #0f172a; font-size: 0.8rem; }" +
+          ".ordem-tabela tbody tr:last-child td { border-bottom: 1px solid #94a3b8; }" +
+          ".ordem-tabela td.numero { text-align: right; font-variant-numeric: tabular-nums; }" +
+          ".ordem-tabela td.item { width: 40px; text-align: left; color: #94a3b8; font-weight: 500; }" +
+
+          ".ordem-acoes { display: none !important; }" +
+          "@media print { body { padding: 0; background: #ffffff; } .ordem-doc { box-shadow: none; padding: 0; border-radius: 0; } .bd-doc-bloco { page-break-inside: avoid; break-inside: avoid; } .bd-doc-bloco-header { page-break-after: avoid; break-after: avoid; } .bd-doc-secao { page-break-after: avoid; break-after: avoid; } .ordem-tabela thead { display: table-header-group; } .ordem-tabela tr { page-break-inside: avoid; break-inside: avoid; } }";
+
+        win.document.open();
+        win.document.write(
+          "<!DOCTYPE html><html lang='pt-BR'><head><meta charset='UTF-8'><title>" +
+            titulo +
+            "</title><style>" +
+            estilo +
+            "</style></head><body>" +
+            htmlDoc +
+            "</body></html>"
+        );
+        win.document.close();
+        win.addEventListener("load", () => {
+          setTimeout(() => {
+            try {
+              win.focus();
+              win.print();
+            } catch (e) {}
+          }, 400);
+        });
+      }
+
+      function bdImprimirDoc(simId) {
+        const sim = baseDadosCache.find((x) => x.id === simId);
+        if (!sim) return;
+        const qtd = bdQtdCache[simId] || 1;
+        const htmlDoc = bdRenderizarDoc(sim, qtd, true);
+        imprimirDocHTML(
+          htmlDoc,
+          "Ordem de Produção — " + (sim.codigo || "SEM CÓDIGO")
+        );
+      }
+
+      // Calcula as faixas de EVA (internas + externas) a partir das
+      // medidas salvas. Replica a regra do simulador.
+      function bdCalcularEVA(s) {
+        const m = s.medidas || {};
+        const cInt = m.comprimentoInterno || 0;
+        const lInt = m.larguraInterna || 0;
+        const aInt = m.alturaInterna || 0;
+        const cExt = m.comprimentoExterno || cInt + 0.07;
+        const lExt = m.larguraExterna || lInt + 0.07;
+        const ladoMaior = Math.max(cExt, lExt);
+
+        const evaH_solta = Math.max(0.05, aInt - 0.04);
+        const internas = [
+          {
+            descricao: "Faixa de EVA (Interna)",
+            comprimento: 0.28,
+            altura: evaH_solta,
+            espessura: 0.02,
+            quantidade: 4,
+          },
+        ];
+
+        let externas = [];
+        if (aInt <= 0.25) {
+          let qtdEva = 1;
+          let compEva = 0.28;
+          if (ladoMaior < 0.9) {
+            qtdEva = 1;
+            compEva = Math.max(0.1, ladoMaior - 0.2);
+          } else if (ladoMaior < 2.0) {
+            qtdEva = 2;
+          } else if (ladoMaior <= 3.5) {
+            qtdEva = 3;
+          } else {
+            qtdEva = Math.max(4, Math.ceil((ladoMaior + 1.0) / 1.5));
+          }
+
+          if (aInt >= 0.15) {
+            externas = [
+              {
+                descricao: "EVA Externo (Paralelo)",
+                comprimento: compEva,
+                altura: 0.05,
+                espessura: 0.02,
+                quantidade: qtdEva * 2,
+              },
+            ];
+          } else {
+            const evaH_ext = Math.max(0.05, aInt - 0.02);
+            externas = [
+              {
+                descricao: "EVA Externo (Inteiro)",
+                comprimento: compEva,
+                altura: evaH_ext,
+                espessura: 0.02,
+                quantidade: qtdEva,
+              },
+            ];
+          }
+        }
+
+        return { internas, externas };
+      }
+
+      // ============================================================
+      // ORDEM DE PRODUÇÃO — aba consolidada (Elias)
+      // ============================================================
+      let opSimulacoes = [];
+      let opSelecionados = {};
+      let opUltimoDocHTML = "";
+
+      async function carregarOrdemProducao() {
+        const lista = document.getElementById("opSelecaoLista");
+        if (!lista) return;
+        if (typeof db === "undefined" || !db) {
+          lista.innerHTML =
+            '<div style="padding: 20px; text-align: center; color: var(--danger-text);">❌ Firebase não inicializado.</div>';
+          return;
+        }
+        lista.innerHTML =
+          '<div style="padding: 20px; text-align: center; color: var(--text-muted);">⏳ Carregando engradados...</div>';
+        try {
+          const snap = await db
+            .collection("simulacoes")
+            .orderBy("dataCriacao", "desc")
+            .get();
+          opSimulacoes = [];
+          snap.forEach((doc) => {
+            opSimulacoes.push({ id: doc.id, ...doc.data() });
+          });
+          renderizarOpSelecao();
+        } catch (err) {
+          console.error("[OP] Erro:", err);
+          lista.innerHTML =
+            '<div style="padding: 20px; text-align: center; color: var(--danger-text);">❌ Erro: ' +
+            (err.message || err.code) +
+            "</div>";
+        }
+      }
+
+      function renderizarOpSelecao() {
+        const lista = document.getElementById("opSelecaoLista");
+        if (!lista) return;
+
+        if (opSimulacoes.length === 0) {
+          lista.innerHTML =
+            '<div style="padding: 20px; text-align: center; color: var(--text-muted);">Nenhum engradado salvo.</div>';
+          return;
+        }
+
+        const fmt = (v) => (v || 0).toFixed(2).replace(".", ",");
+
+        lista.innerHTML = opSimulacoes
+          .map((s) => {
+            const idSeguro = s.id.replace(/[^a-zA-Z0-9]/g, "");
+            const m = s.medidas || {};
+            const cod = s.codigo || "SEM CÓDIGO";
+            const selecionado = !!opSelecionados[s.id];
+            const qtd = selecionado ? opSelecionados[s.id].qtd : 1;
+
+            return (
+              '<div class="op-selecao-item' +
+              (selecionado ? " selecionado" : "") +
+              '" id="op-item-' + idSeguro + '">' +
+              '  <input type="checkbox" ' +
+              (selecionado ? "checked" : "") +
+              " onchange=\"toggleOpSelecao('" + s.id + "')\" />" +
+              '  <div class="op-selecao-info">' +
+              "    <strong>" + cod + " — " + fmt(m.comprimentoInterno) + " × " + fmt(m.larguraInterna) + " × " + fmt(m.alturaInterna) + " m</strong>" +
+              "    <small>" + (s.material || "—") + " · " + (s.usuario || "—") + "</small>" +
+              "  </div>" +
+              '  <input type="number" class="op-selecao-qtd" min="0" value="' + qtd + '" ' +
+              "onchange=\"atualizarOpQtd('" + s.id + "', this.value)\" " +
+              'onclick="event.stopPropagation()" />' +
+              "</div>"
+            );
+          })
+          .join("");
+      }
+
+      function toggleOpSelecao(id) {
+        if (opSelecionados[id]) {
+          delete opSelecionados[id];
+        } else {
+          // Limite rígido: 2 engradados por vez.
+          if (Object.keys(opSelecionados).length >= 2) {
+            showToast(
+              "⚠️ Máximo de 2 engradados por vez. Desmarque um para selecionar outro.",
+              false
+            );
+            renderizarOpSelecao();
+            return;
+          }
+          opSelecionados[id] = { qtd: 1 };
+        }
+        renderizarOpSelecao();
+      }
+
+      function atualizarOpQtd(id, val) {
+        const q = Math.max(0, parseInt(val, 10) || 0);
+        if (opSelecionados[id]) {
+          opSelecionados[id].qtd = q;
+        } else {
+          opSelecionados[id] = { qtd: q };
+        }
+      }
+
+      // Obtém a foto 3D de uma simulação. Usa cache do Firestore, cache
+      // em memória, ou gera na hora via gerarFotoHistorico.
+      async function bdObterFoto(sim) {
+        if (sim.fotoBase64) return sim.fotoBase64;
+        if (sim._fotoGerada) return sim._fotoGerada;
+        try {
+          const foto = await gerarFotoHistorico(sim);
+          if (foto) sim._fotoGerada = foto;
+          return foto;
+        } catch (e) {
+          console.warn("[OP] Erro ao gerar foto:", e);
+          return null;
+        }
+      }
+
+      let opUltimoResultado = null;
+
+      async function gerarOrdemProducaoConsolidada() {
+        const selecionados = Object.entries(opSelecionados)
+          .filter(([, v]) => v.qtd > 0)
+          .map(([id, v]) => {
+            const s = opSimulacoes.find((x) => x.id === id);
+            return s ? { sim: s, qtd: v.qtd } : null;
+          })
+          .filter(Boolean);
+
+        if (selecionados.length === 0) {
+          showToast(
+            "⚠️ Selecione ao menos um engradado com quantidade > 0.",
+            false
+          );
+          return;
+        }
+
+        const resultado = document.getElementById("opResultado");
+        resultado.style.display = "block";
+        resultado.innerHTML =
+          '<div style="padding: 40px; text-align: center; color: var(--text-muted);">⏳ Gerando imagens 3D...</div>';
+
+        // Gera as fotos de cada engradado em sequência
+        for (const item of selecionados) {
+          await bdObterFoto(item.sim);
+        }
+
+        opUltimoResultado = selecionados;
+        _opRenderDocumentoHTML(selecionados);
+        showToast("✅ Ordem de produção consolidada gerada!", true);
+      }
+
+      // Renderiza o documento consolidado a partir dos selecionados.
+      // Função pura (não gera fotos nem altera estado), para poder ser
+      // chamada de novo quando o usuário troca a unidade.
+      function _opRenderDocumentoHTML(selecionados) {
+        const resultado = document.getElementById("opResultado");
+        if (!resultado) return;
+
+        const uLbl = bdUnidadeLabel();
+
+        let html = '<div class="ordem-doc">';
+        html +=
+          '  <div class="ordem-doc-titulo">ORDEM DE PRODUÇÃO CONSOLIDADA</div>';
+
+        selecionados.forEach(({ sim, qtd }, idx) => {
+          const m = sim.medidas || {};
+          const codigo = sim.codigo || "SEM CÓDIGO";
+          const madeiras = sim.madeiras || [];
+          const eva = bdCalcularEVA(sim);
+          const allEva = [...eva.internas, ...eva.externas];
+          const fotoB64 = sim.fotoBase64 || sim._fotoGerada || null;
+
+          html += '<div class="bd-doc-bloco">';
+          html += '  <div class="bd-doc-bloco-header">';
+          html += '    <div class="bd-doc-foto">';
+          if (fotoB64) {
+            html +=
+              '<img src="data:image/png;base64,' + fotoB64 + '" alt="Engradado" />';
+          } else {
+            html += '<div class="sem-foto">Sem imagem</div>';
+          }
+          html += "    </div>";
+          html += '    <div class="bd-doc-info">';
+          html +=
+            '      <div class="bd-doc-tag">Engradado ' +
+            (idx + 1) +
+            " de " +
+            selecionados.length +
+            "</div>";
+          html += '      <div class="bd-doc-codigo">' + codigo + "</div>";
+          html +=
+            '      <div class="bd-doc-medida">Medida interna: ' +
+            bdFmtMedida(m.comprimentoInterno) +
+            " × " +
+            bdFmtMedida(m.larguraInterna) +
+            " × " +
+            bdFmtMedida(m.alturaInterna) +
+            "H</div>";
+          html +=
+            '      <div class="bd-doc-medida" style="margin-top: 4px;">Quantidade a fabricar: <strong>' +
+            qtd +
+            "</strong></div>";
+          html += "    </div>";
+          html += "  </div>";
+
+          let madeirasRows = "";
+          if (madeiras.length === 0) {
+            madeirasRows =
+              '<tr><td colspan="4" style="text-align:center;color:#94a3b8;border:none;">Sem dados de madeira</td></tr>';
+          } else {
+            madeiras.forEach((w, i) => {
+              madeirasRows +=
+                "<tr>" +
+                '<td class="item">' + (i + 1) + "</td>" +
+                "<td>" + (w.descricao || "—") + "</td>" +
+                '<td class="numero">' + bdFmtMedida(w.comprimento) + " × " + bdFmtMedida(w.largura) + "</td>" +
+                '<td class="numero"><strong>' + (w.quantidade || 0) * qtd + "</strong></td>" +
+                "</tr>";
+            });
+          }
+
+          html += '  <div class="bd-doc-secao">Madeiras</div>';
+          html +=
+            '  <table class="ordem-tabela"><thead><tr><th>Item</th><th>Madeira</th><th>Medidas (' + uLbl + ')</th><th>QTD TOTAL<br>FABRICAÇÃO</th></tr></thead><tbody>' +
+            madeirasRows +
+            "</tbody></table>";
+
+          let evaRows = "";
+          if (allEva.length === 0) {
+            evaRows =
+              '<tr><td colspan="4" style="text-align:center;color:#94a3b8;border:none;">Sem EVA</td></tr>';
+          } else {
+            allEva.forEach((e, i) => {
+              evaRows +=
+                "<tr>" +
+                '<td class="item">' + (i + 1) + "</td>" +
+                "<td>" + e.descricao + "</td>" +
+                '<td class="numero">' + bdFmtMedida(e.comprimento) + " × " + bdFmtMedida(e.altura) + " × " + bdFmtMedida(e.espessura) + "</td>" +
+                '<td class="numero"><strong>' + e.quantidade * qtd + "</strong></td>" +
+                "</tr>";
+            });
+          }
+
+          html += '  <div class="bd-doc-secao">Faixas de EVA</div>';
+          html +=
+            '  <table class="ordem-tabela"><thead><tr><th>Item</th><th>Tipo</th><th>Medidas (' + uLbl + ')</th><th>QTD TOTAL<br>FABRICAÇÃO</th></tr></thead><tbody>' +
+            evaRows +
+            "</tbody></table>";
+
+          html += "</div>";
+        });
+
+        html += "</div>";
+
+        opUltimoDocHTML = html;
+
+        let avisoHTML = "";
+        if (selecionados.length > 1) {
+          const svgImpressora =
+            '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px; color:#1e40af;">' +
+            '<polyline points="6 9 6 2 18 2 18 9"></polyline>' +
+            '<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>' +
+            '<rect x="6" y="14" width="12" height="8"></rect>' +
+            "</svg>";
+          const svgCheck =
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:6px; flex-shrink:0;">' +
+            '<polyline points="20 6 9 17 4 12"></polyline>' +
+            "</svg>";
+          const svgVazio =
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:6px; flex-shrink:0;">' +
+            '<circle cx="12" cy="12" r="8"></circle>' +
+            "</svg>";
+
+          avisoHTML =
+            '<div class="op-aviso-impressao" style="max-width: 780px; margin: 0 auto 14px auto; padding: 14px 18px; background: rgba(37, 99, 235, 0.07); border-left: 4px solid #2563eb; border-radius: 8px; font-size: 0.85rem; line-height: 1.6; color: #1e3a8a;">' +
+            '<strong style="color: #1e40af; display: block; margin-bottom: 6px; font-size: 0.9rem;">' +
+            svgImpressora +
+            "Como imprimir os 2 engradados</strong>" +
+            "Você selecionou <strong>" +
+            selecionados.length +
+            " engradados</strong>. Cada um ocupa uma folha A4 inteira (nada é cortado ao meio). " +
+            "Na janela de impressão, escolha:" +
+            '<div style="margin-top: 8px; padding-left: 4px;">' +
+            '  <div style="margin-bottom: 6px; display:flex; align-items:flex-start;">' +
+            svgCheck +
+            '<span><strong>Frente e verso (Duplex)</strong> — <em style="color: #1e40af;">recomendado</em>. Um engradado em cada face da mesma folha. Economiza papel e o montador tem tudo à mão.</span>' +
+            "</div>" +
+            '  <div style="display:flex; align-items:flex-start;">' +
+            svgVazio +
+            "<span><strong>Duas folhas separadas</strong> — alternativa se a impressora não tiver duplex.</span>" +
+            "</div>" +
+            "</div>" +
+            "</div>";
+        }
+
+        const acoesHTML =
+          '<div class="ordem-acoes" style="max-width: 780px; margin: 16px auto 0 auto;">' +
+          '  <button class="ordem-btn-imprimir" onclick="opImprimirConsolidada()">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>' +
+          "Imprimir / PDF</button>" +
+          "</div>";
+
+        resultado.style.display = "block";
+        resultado.innerHTML = avisoHTML + html + acoesHTML;
+      }
+
+      function opImprimirConsolidada() {
+        if (!opUltimoDocHTML) return;
+        imprimirDocHTML(opUltimoDocHTML, "Ordem de Produção Consolidada");
+      }
+
+      // Retorna true se o usuário logado PODE exportar planilha a partir
+      // do Simulador. Usuários sem restrição sempre podem.
+      function podeExportarSimulador() {
+        const perm = getPermissoes(usuarioLogado);
+        return !perm || perm.exportarSimulador !== false;
+      }
+
       // Alterna entre os módulos (Engradados / Corte a Laser).
       // Mostra a barra de abas correspondente e ativa sua primeira aba.
       function switchModule(modulo) {
+        const perm = getPermissoes(usuarioLogado);
+        if (perm && !perm.modulos.includes(modulo)) {
+          showToast("🔒 Você não tem acesso a este módulo.", false);
+          return;
+        }
         document.querySelectorAll(".module-btn").forEach((b) => {
           b.classList.toggle("active", b.dataset.module === modulo);
         });
@@ -8306,6 +9837,11 @@
       }
 
       function switchTab(tabId) {
+        const perm = getPermissoes(usuarioLogado);
+        if (perm && !perm.abasEngradados.includes(tabId)) {
+          showToast("🔒 Você não tem acesso a esta aba.", false);
+          return;
+        }
         document
           .querySelectorAll(".tab-content")
           .forEach((t) => t.classList.remove("active"));
@@ -8336,6 +9872,10 @@
 
         if (tabId === "historico") {
           carregarHistorico();
+        }
+
+        if (tabId === "ordem-producao") {
+          carregarOrdemProducao();
         }
 
         if (tabId === "precos") {
@@ -8407,8 +9947,33 @@
         samuelj: "SAMUEL J.",
         barth: "LUÍS BARTH",
         joseed: "JOSÉ E.",
+        elias: "ELIAS",
       };
       const SENHA_PADRAO = "custos2026";
+      // Senhas específicas por login (sobrepõem a SENHA_PADRAO).
+      const SENHAS_ESPECIFICAS = { elias: "especiais" };
+
+      // Permissões restritas. Usuários NÃO listados aqui têm acesso total.
+      // A chave é o nome exibido (valor de MAPA_USUARIOS), porque é o
+      // que fica salvo em `usuarioLogado`.
+      const PERMISSOES = {
+        "ELIAS": {
+          modulos: ["engradados"],
+          abasEngradados: ["simulador", "historico", "manual", "ordem-producao"],
+          templateHabilitado: false,
+          exportarSimulador: false,
+          rotuloHistorico: "Base de Dados",
+          baseDadosAtiva: true,
+          abaOrdemProducao: true,
+        },
+      };
+
+      // Retorna o objeto de permissões do usuário logado, ou null se ele
+      // tem acesso total (usuários não listados em PERMISSOES).
+      function getPermissoes(nomeUsuario) {
+        if (!nomeUsuario) return null;
+        return PERMISSOES[nomeUsuario] || null;
+      }
 
       let scene, camera, renderer, controls, crateGroup;
       let ambientLight, dirLight;
@@ -11563,7 +13128,8 @@
         const tipoOk = tipoEl && tipoEl.value === "especial";
 
         if (codOk || tipoOk) {
-          document.getElementById("btnExport").style.display = "block";
+          document.getElementById("btnExport").style.display =
+            podeExportarSimulador() ? "block" : "none";
           document.getElementById("btnSalvarHistorico").style.display = "block";
         } else {
           document.getElementById("btnExport").style.display = "none";
@@ -12416,7 +13982,10 @@
 
           if (conflitoCodigo || conflitoMedidas) {
             btn.disabled = false;
-            btn.innerText = "💾 Salvar no histórico";
+            const permC = getPermissoes(usuarioLogado);
+            btn.innerText = (permC && permC.rotuloHistorico)
+              ? "💾 Salvar na " + permC.rotuloHistorico
+              : "💾 Salvar no histórico";
 
             let msg = "⚠️ Não foi possível salvar:\n\n";
             if (conflitoCodigo) {
@@ -12787,7 +14356,11 @@
           // ---- 6. Grava no Firestore ----
           const ref = await db.collection("simulacoes").add(documento);
           console.log("✅ Simulação salva no Firestore. ID:", ref.id);
-          showToast("💾 Salvo no histórico com sucesso!", true);
+          const permSalvar = getPermissoes(usuarioLogado);
+          const msgSalvar = (permSalvar && permSalvar.rotuloHistorico)
+            ? "💾 Salvo na " + permSalvar.rotuloHistorico + " com sucesso!"
+            : "💾 Salvo no histórico com sucesso!";
+          showToast(msgSalvar, true);
         } catch (err) {
           console.error("❌ Erro ao salvar no Firestore:", err);
           showToast(
@@ -12796,7 +14369,10 @@
           );
         } finally {
           btn.disabled = false;
-          btn.innerText = "💾 Salvar no histórico";
+          const permF = getPermissoes(usuarioLogado);
+          btn.innerText = (permF && permF.rotuloHistorico)
+            ? "💾 Salvar na " + permF.rotuloHistorico
+            : "💾 Salvar no histórico";
 
           // Limpa o código
           const codInputFim = document.getElementById("codigoEngradado");
@@ -12995,6 +14571,11 @@
       });
 
       async function carregarHistorico() {
+        const perm = getPermissoes(usuarioLogado);
+        if (perm && perm.baseDadosAtiva) {
+          // Usuário tem view customizada — roteia para a Base de Dados
+          return carregarBaseDados();
+        }
         const lista = document.getElementById("historicoLista");
         const vazio = document.getElementById("historicoVazio");
         const contador = document.getElementById("historicoContador");
@@ -13364,6 +14945,16 @@
         const codigoVazio = !s.codigo;
         const idSeguro = s.id.replace(/[^a-zA-Z0-9]/g, "");
 
+        // Só o dono do relatório pode excluí-lo.
+        const ehDonoHistorico = !s.usuario || s.usuario === usuarioLogado;
+        const botaoExcluirHTML = ehDonoHistorico
+          ? '<button onclick="excluirSimulacao(\'' +
+            s.id +
+            '\')" title="Excluir simulação">' +
+            lixeiraSVG +
+            "</button>"
+          : "";
+
         const isEspecial = s.tipo === "especial";
         const badgeClasse = s.codigo
           ? (isEspecial ? "especial" : "")
@@ -13389,9 +14980,7 @@
 
         <div class="historico-item-actions" onclick="event.stopPropagation();">
           <button class="btn-export-hist" onclick="exportarSimulacaoHistorico('${idSeguro}')" title="Exportar planilha desta simulação">${downloadSVG}</button>
-          <button onclick="excluirSimulacao('${
-            s.id
-          }')" title="Excluir simulação">${lixeiraSVG}</button>
+          ${botaoExcluirHTML}
         </div>
       </div>
 
@@ -14381,6 +15970,16 @@
       // Exclui uma simulação (com confirmação)
       // -------------------------------------------------------------
       async function excluirSimulacao(id) {
+        // Regra de propriedade: só o dono pode excluir.
+        const sim = historicoSimulacoes.find((x) => x.id === id);
+        if (sim && sim.usuario && sim.usuario !== usuarioLogado) {
+          showToast(
+            "🔒 Você só pode excluir relatórios que você mesmo criou.",
+            false
+          );
+          return;
+        }
+
         if (
           !confirm(
             "Tem certeza que deseja excluir esta simulação do histórico?"
@@ -19737,6 +21336,10 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
             ".btn-calc, .btn-export, #btnSalvarHistorico, .laser-btn-process, .btn-explode, #btnInspector"
           )
           .forEach((el) => {
+            // O botão Salvar preserva o próprio 💾 — ele é parte do rótulo,
+            // não decoração. Pular ele aqui mantém "💾 Salvar no histórico"
+            // / "💾 Salvar na Base de Dados" intactos.
+            if (el.id === "btnSalvarHistorico") return;
             el.childNodes.forEach((node) => {
               if (node.nodeType === 3 && node.textContent.trim()) {
                 node.textContent = node.textContent
@@ -19968,6 +21571,9 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
 
         if (sessaoSalva) {
           usuarioLogado = sessaoSalva;
+
+          // Aplica permissões antes de qualquer navegação/restauração
+          aplicarPermissoes();
 
           // Esconde o overlay de login (mesmos passos do validarLogin)
           const overlay = document.getElementById("login-overlay");
