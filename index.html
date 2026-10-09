@@ -11605,8 +11605,11 @@
           '<line x1="14" y1="11" x2="14" y2="17"></line>' +
           "</svg>";
 
-        // Só o dono pode excluir.
-        const ehDonoBD = !s.usuario || s.usuario === usuarioLogado;
+        // Só o dono pode excluir. Super-admin vê o botão em qualquer item.
+        const ehDonoBD =
+          !s.usuario ||
+          s.usuario === usuarioLogado ||
+          isSuperAdmin(usuarioLogado);
         const botaoExcluirBD = ehDonoBD
           ? '<button class="bd-item-excluir" title="Excluir engradado" ' +
             "onclick=\"event.stopPropagation(); bdExcluirEngradado('" + s.id + "');\">" +
@@ -11784,9 +11787,15 @@
       }
 
       async function bdExcluirEngradado(simId) {
-        // Regra de propriedade: só o dono pode excluir.
+        // Regra de propriedade: só o dono pode excluir. Super-admin
+        // (criador do app) ignora essa regra.
         const sim = baseDadosCache.find((x) => x.id === simId);
-        if (sim && sim.usuario && sim.usuario !== usuarioLogado) {
+        if (
+          sim &&
+          sim.usuario &&
+          sim.usuario !== usuarioLogado &&
+          !isSuperAdmin(usuarioLogado)
+        ) {
           showToast(
             "🔒 Você só pode excluir engradados que você mesmo salvou.",
             false
@@ -12479,10 +12488,31 @@
         barth: "LUÍS BARTH",
         joseed: "JOSÉ E.",
         elias: "ELIAS",
+        reginad: "REGINA D.",
+        thiagom: "THIAGO M.",
+        daphynep: "DAPHYNE P.",
+        giovannam: "GIOVANNA M.",
+        gilsonb: "GILSON BRASIL",
+        ada: "ADA",
+        amanda: "AMANDA",
+        natane: "NATANE",
       };
       const SENHA_PADRAO = "custos2026";
       // Senhas específicas por login (sobrepõem a SENHA_PADRAO).
-      const SENHAS_ESPECIFICAS = { elias: "especiais" };
+      // Padrão das senhas novas: <animal><cor>, tudo minúsculo, sem
+      // espaços nem caracteres especiais — fáceis de digitar no celular.
+      // mauros e elias ficam INALTERADOS.
+      const SENHAS_ESPECIFICAS = {
+        elias: "especiais",
+        reginad: "tigreazul",
+        thiagom: "leaoamarelo",
+        daphynep: "corujaroxa",
+        giovannam: "golfinhorosa",
+        gilsonb: "tartarugaverde",
+        ada: "loboazul",
+        amanda: "pandaamarelo",
+        natane: "gaviotaroxa",
+      };
 
       // Permissões restritas. Usuários NÃO listados aqui têm acesso total.
       // A chave é o nome exibido (valor de MAPA_USUARIOS), porque é o
@@ -12498,6 +12528,22 @@
           abaOrdemProducao: true,
         },
       };
+
+      // ============================================================
+      // SUPER-ADMINS
+      // ------------------------------------------------------------
+      // Usuários com poder total. Podem excluir (e editar) registros
+      // criados por qualquer outro usuário — engradados, simulações
+      // do histórico, peças do faturamento e fechamentos salvos.
+      // Também têm acesso a todos os módulos e abas (o que já é o
+      // caso de qualquer usuário não listado em PERMISSOES).
+      // A chave é o nome exibido (valor de MAPA_USUARIOS).
+      // ============================================================
+      const SUPER_ADMINS = new Set(["MAURO S."]);
+
+      function isSuperAdmin(nome) {
+        return SUPER_ADMINS.has(nome);
+      }
 
       // Retorna o objeto de permissões do usuário logado, ou null se ele
       // tem acesso total (usuários não listados em PERMISSOES).
@@ -17720,8 +17766,11 @@
         const codigoVazio = !s.codigo;
         const idSeguro = s.id.replace(/[^a-zA-Z0-9]/g, "");
 
-        // Só o dono do relatório pode excluí-lo.
-        const ehDonoHistorico = !s.usuario || s.usuario === usuarioLogado;
+        // Só o dono pode excluir. Super-admin vê o botão em qualquer item.
+        const ehDonoHistorico =
+          !s.usuario ||
+          s.usuario === usuarioLogado ||
+          isSuperAdmin(usuarioLogado);
         const botaoExcluirHTML = ehDonoHistorico
           ? '<button onclick="excluirSimulacao(\'' +
             s.id +
@@ -18799,9 +18848,15 @@
       // Exclui uma simulação (com confirmação)
       // -------------------------------------------------------------
       async function excluirSimulacao(id) {
-        // Regra de propriedade: só o dono pode excluir.
+        // Regra de propriedade: só o dono pode excluir. Super-admin
+        // (criador do app) ignora essa regra.
         const sim = historicoSimulacoes.find((x) => x.id === id);
-        if (sim && sim.usuario && sim.usuario !== usuarioLogado) {
+        if (
+          sim &&
+          sim.usuario &&
+          sim.usuario !== usuarioLogado &&
+          !isSuperAdmin(usuarioLogado)
+        ) {
           showToast(
             "🔒 Você só pode excluir relatórios que você mesmo criou.",
             false
@@ -27143,8 +27198,13 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         const p = fatPecasCache[idx];
         if (!p) return;
 
-        // Regra de propriedade: só o dono pode remover
-        if (p.usuario && p.usuario !== usuarioLogado) {
+        // Regra de propriedade: só o dono pode remover. Super-admin
+        // (criador do app) ignora essa regra.
+        if (
+          p.usuario &&
+          p.usuario !== usuarioLogado &&
+          !isSuperAdmin(usuarioLogado)
+        ) {
           showToast(
             "🔒 Você só pode remover peças que você mesmo cadastrou.",
             false
@@ -28917,7 +28977,11 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         const f = fatFechamentosCache.find((x) => x.id === id);
         if (!f) return;
 
-        if (f.usuario && f.usuario !== usuarioLogado) {
+        if (
+          f.usuario &&
+          f.usuario !== usuarioLogado &&
+          !isSuperAdmin(usuarioLogado)
+        ) {
           showToast(
             "🔒 Você só pode editar fechamentos que você mesmo salvou.",
             false
@@ -29329,7 +29393,11 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         const f = fatFechamentosCache.find((x) => x.id === id);
         if (!f) return;
 
-        if (f.usuario && f.usuario !== usuarioLogado) {
+        if (
+          f.usuario &&
+          f.usuario !== usuarioLogado &&
+          !isSuperAdmin(usuarioLogado)
+        ) {
           showToast(
             "🔒 Você só pode excluir fechamentos que você mesmo salvou.",
             false
