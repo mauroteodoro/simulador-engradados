@@ -74,6 +74,7 @@
     <!-- Substituímos o SheetJS pelo ExcelJS para permitir fórmulas, bordas e cores perfeitas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
       /* VARIAVEIS DE TEMA — paleta sóbria, técnica */
       :root {
@@ -5693,12 +5694,49 @@
       }
       .fat-section-header {
         display: flex;
-        align-items: baseline;
+        align-items: center;
         justify-content: space-between;
         gap: 12px;
         margin-bottom: 12px;
         padding-bottom: 10px;
         border-bottom: 1px solid var(--border-light);
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .fat-section.collapsed .fat-section-header {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+      .fat-section-title-group {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        flex: 1;
+        min-width: 0;
+      }
+      .fat-section-chevron {
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        flex-shrink: 0;
+        display: inline-block;
+        transition: transform 0.25s ease, color 0.25s ease;
+      }
+      .fat-section:not(.collapsed) .fat-section-chevron {
+        transform: rotate(90deg);
+        color: var(--primary);
+      }
+      .fat-section-body {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .fat-section.collapsed .fat-section-body {
+        grid-template-rows: 0fr;
+      }
+      .fat-section-body-inner {
+        overflow: hidden;
       }
       .fat-section-header h3 {
         margin: 0;
@@ -6055,6 +6093,30 @@
       .fat-group-titulo:first-child {
         margin-top: 0;
       }
+      /* Cabeçalho de grupo com o botão de ordenação na mesma linha. */
+      .fat-group-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 18px 0 6px 0;
+        padding-bottom: 6px;
+      }
+      .fat-group-header .fat-group-titulo {
+        margin: 0;
+        padding-bottom: 0;
+      }
+      .fat-group-header .fat-order-wrap {
+        flex-shrink: 0;
+      }
+      @media (max-width: 600px) {
+        .fat-group-header {
+          flex-wrap: wrap;
+        }
+        .fat-group-header .fat-order-wrap {
+          width: 100%;
+        }
+      }
       .fat-group-titulo.fat-group-warn {
         color: var(--accent-warning);
       }
@@ -6094,6 +6156,12 @@
         font-weight: 600;
         font-size: 0.78rem;
         flex-shrink: 0;
+      }
+      .fat-peca-codigo.vazio {
+        background: var(--bg-subtle);
+        color: var(--text-muted);
+        font-style: italic;
+        font-weight: 500;
       }
       .fat-peca-info {
         flex: 1;
@@ -6271,6 +6339,49 @@
         text-align: center;
         color: var(--text-muted);
         font-size: 0.8rem;
+      }
+
+      /* Input de quantidade dentro do card da peça */
+      .fat-peca-prod {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        flex-shrink: 0;
+      }
+      .fat-peca-prod-label {
+        font-size: 0.66rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .fat-peca-prod-input {
+        width: 54px;
+        padding: 4px 6px;
+        text-align: center;
+        font-family: inherit;
+        font-size: 0.82rem;
+        font-weight: 600;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-sm);
+        color: var(--text-main);
+        outline: none;
+        font-variant-numeric: tabular-nums;
+        -moz-appearance: textfield;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease,
+          background 0.15s ease;
+      }
+      .fat-peca-prod-input::-webkit-outer-spin-button,
+      .fat-peca-prod-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      .fat-peca-prod-input:focus {
+        border-color: var(--primary);
+        background: var(--bg-panel);
+        box-shadow: 0 0 0 3px var(--primary-subtle);
       }
 
       /* Tabela de produção */
@@ -7429,6 +7540,29 @@
         border-radius: 999px;
       }
 
+      /* ---------- 22b. Correção: âncora dos controles 3D ----------
+         O `#canvas-container` precisa de `position: relative` para que
+         o `.explode-controls` (que é `absolute`) se ancore nele, e não
+         no cabeçalho sticky. Reforçado com `!important` porque essa
+         regra já foi perdida em algum momento durante as alterações
+         de CSS. */
+      #canvas-container {
+        position: relative !important;
+        overflow: hidden !important;
+      }
+      .explode-controls {
+        position: absolute !important;
+        top: 16px !important;
+        right: 16px !important;
+        bottom: auto !important;
+        left: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        gap: 8px !important;
+        z-index: 10 !important;
+      }
+
       /* ---------- 23. Mobile — calibragem fina ---------- */
       @media (max-width: 900px) {
         body {
@@ -7695,30 +7829,32 @@
         <div class="panel">
           <h2>Configuração de Peça</h2>
 
-          <div class="input-group" style="background: rgba(37, 99, 235, 0.05); padding: 12px; border-radius: 10px; border: 1px solid rgba(37, 99, 235, 0.2); margin-bottom: 12px;">
-            <label style="color: var(--primary);">Código do Engradado <span style="color: var(--accent-danger);">*</span></label>
-            <input
-              type="text"
-              id="codigoEngradado"
-              placeholder="Ex: 31019A79"
-              autocomplete="off"
-              spellcheck="false"
-              style="text-transform: uppercase;"
-              oninput="this.value = this.value.toUpperCase(); if (this.value.trim().length > 0 && document.getElementById('tipoProjeto').value !== 'padrao') { setSelectValue('tipoProjeto', 'padrao'); } atualizarHabilitacaoMedidas(); verificarCodigoExistenteDebounce();"
-            />
-            <div id="codigoAviso" style="display: none; margin-top: 8px;"></div>
-          </div>
-
           <div class="input-group">
             <label>Tipo de Projeto</label>
             <select
               id="tipoProjeto"
               class="laser-select"
-              onchange="atualizarHabilitacaoMedidas(); verificarCodigoExistenteDebounce();"
+              onchange="aplicarTipoProjeto(); atualizarHabilitacaoMedidas(); verificarCodigoExistenteDebounce();"
             >
               <option value="padrao" selected>Padrão</option>
               <option value="especial">Especial</option>
             </select>
+          </div>
+
+          <div class="input-group" id="codigoEngradadoGroup" style="background: rgba(37, 99, 235, 0.05); padding: 12px; border-radius: 10px; border: 1px solid rgba(37, 99, 235, 0.2); margin-bottom: 12px;">
+            <label style="color: var(--primary);">Código do Engradado <span style="color: var(--accent-danger);">*</span></label>
+            <input
+              type="text"
+              id="codigoEngradado"
+              placeholder="31019..."
+              autocomplete="off"
+              spellcheck="false"
+              maxlength="8"
+              style="text-transform: uppercase; font-family: 'Geist Mono', ui-monospace, monospace; letter-spacing: 0.06em;"
+              oninput="normalizarCodigoEngradado(this); atualizarHabilitacaoMedidas(); verificarCodigoExistenteDebounce();"
+              onkeydown="protegerPrefixoCodigo(event, this);"
+            />
+            <div id="codigoAviso" style="display: none; margin-top: 8px;"></div>
           </div>
 
           <div class="input-group">
@@ -9157,16 +9293,57 @@
 
       <div style="max-width: 1400px; margin: 0 auto; padding-bottom: 50px;">
 
-        <!-- ============ 1. RECEITAS DE PEÇAS ============ -->
-        <div class="fat-section">
-          <div class="fat-section-header">
-            <h3>1. Peças Cadastradas</h3>
+        <!-- ============ 1. BASE DE MATERIAIS ============ -->
+        <div class="fat-section" id="fatSecBase">
+          <div class="fat-section-header" onclick="fatToggleSecao('fatSecBase')">
+            <div class="fat-section-title-group">
+              <span class="fat-section-chevron">▶</span>
+              <h3>1. Base de Materiais</h3>
+            </div>
+            <span class="fat-count" id="fatMateriaisCount"></span>
+          </div>
+          <div class="fat-section-body">
+            <div class="fat-section-body-inner">
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 12px 0; line-height: 1.5;">
+                Suba a planilha matriz de materiais (<strong>custos.xlsx</strong> — aba <strong>materiais</strong>). A base é usada para <strong>preencher automaticamente</strong> descrição e unidade dos insumos das peças, quando a planilha da peça traz só o código.
+              </p>
+              <div
+                class="laser-dropzone"
+                id="fatDropMateriais"
+                role="button"
+                tabindex="0"
+              >
+                <div class="laser-dropzone-title" id="fatDropMatTitle">
+                  Clique ou arraste a planilha de materiais aqui
+                </div>
+                <div class="laser-dropzone-hint" id="fatDropMatHint">
+                  .xlsx · aba "materiais" · colunas: código, nome, unidade
+                </div>
+                <div class="laser-dropzone-filename" id="fatDropMatFilename"></div>
+              </div>
+              <input
+                type="file"
+                id="fatFileMateriais"
+                accept=".xlsx"
+                style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; overflow: hidden;"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ 2. RECEITAS DE PEÇAS ============ -->
+        <div class="fat-section" id="fatSecPecas">
+          <div class="fat-section-header" onclick="fatToggleSecao('fatSecPecas')">
+            <div class="fat-section-title-group">
+              <span class="fat-section-chevron">▶</span>
+              <h3>2. Peças Cadastradas</h3>
+            </div>
             <div class="fat-section-header-right">
               <span class="fat-count" id="fatPecasCount"></span>
               <button
                 type="button"
                 class="fat-action-btn fat-action-btn-ghost"
-                onclick="fatAbrirModalConversao()"
+                onclick="event.stopPropagation(); fatAbrirModalConversao()"
                 style="min-height: 34px; padding: 6px 12px; font-size: 0.78rem;"
                 id="fatBtnConversao"
               >
@@ -9181,128 +9358,55 @@
               </button>
             </div>
           </div>
-          <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 12px 0; line-height: 1.5;">
-            Suba a planilha de Custos (.xlsx) de cada peça. A ferramenta lê a aba
-            <strong>fases</strong>, seção <strong>ARMAÇÃO</strong>, e salva os
-            insumos vinculados ao código da peça.
-          </p>
-          <div
-            class="laser-dropzone"
-            id="fatDropReceita"
-            role="button"
-            tabindex="0"
-          >
-            <div class="laser-dropzone-title" id="fatDropReceitaTitle">
-              Clique ou arraste a planilha da peça aqui
+          <div class="fat-section-body">
+            <div class="fat-section-body-inner">
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 12px 0; line-height: 1.5;">
+                Suba a planilha de cada peça. A ferramenta lê os insumos e
+                salva vinculados ao código da peça. Informe também a
+                <strong>quantidade produzida</strong> em cada card — o
+                sistema multiplica pela receita e calcula o consumo.
+              </p>
+              <div
+                class="laser-dropzone"
+                id="fatDropReceita"
+                role="button"
+                tabindex="0"
+              >
+                <div class="laser-dropzone-title" id="fatDropReceitaTitle">
+                  Clique ou arraste a planilha da peça aqui
+                </div>
+                <div class="laser-dropzone-hint" id="fatDropReceitaHint">
+                  .xlsx ou .xls · template dos engradados ou export do Wget
+                </div>
+              </div>
+              <input
+                type="file"
+                id="fatFileReceita"
+                accept=".xlsx"
+                style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; overflow: hidden;"
+              />
+              <div class="fat-pecas-list" id="fatPecasLista">
+                <div class="fat-empty">Nenhuma peça cadastrada ainda.</div>
+              </div>
             </div>
-            <div class="laser-dropzone-hint" id="fatDropReceitaHint">
-              .xlsx · aba "fases" · seção "FASE 03 - ARMAÇÃO"
-            </div>
-          </div>
-          <input
-            type="file"
-            id="fatFileReceita"
-            accept=".xlsx"
-            style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; overflow: hidden;"
-          />
-          <div class="fat-pecas-list" id="fatPecasLista">
-            <div class="fat-empty">Nenhuma peça cadastrada ainda.</div>
-          </div>
-        </div>
-
-        <!-- ============ 2. PRODUÇÃO DO MÊS ============ -->
-        <div class="fat-section">
-          <div class="fat-section-header">
-            <h3>2. Produção do Mês</h3>
-            <span class="fat-count" id="fatProdCount"></span>
-          </div>
-          <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 12px 0; line-height: 1.5;">
-            Informe quantas peças de cada tipo foram produzidas no período.
-            O sistema multiplica pela receita e calcula o consumo por insumo.
-          </p>
-          <div id="fatProducaoArea">
-            <div class="fat-empty">Cadastre ao menos uma receita para habilitar.</div>
           </div>
         </div>
 
         <!-- ============ 3. REQUISIÇÃO × CONSUMO ============ -->
-        <div class="fat-section">
-          <div class="fat-section-header">
-            <h3>3. Requisição × Consumo</h3>
-            <div class="fat-section-header-right">
-              <span class="fat-count" id="fatReqCount"></span>
-              <div class="fat-order-wrap" id="fatOrderWrap" style="display: none">
-                <button
-                  type="button"
-                  class="fat-order-btn"
-                  onclick="fatToggleOrderPicker(event)"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  <span id="fatOrderBtnLabel">Maior diferença</span>
-                  <svg
-                    class="fat-order-chevron"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
-                </button>
-                <div class="fat-order-panel" id="fatOrderPanel" role="menu">
-                  <div
-                    class="fat-order-item selected"
-                    data-value="diff"
-                    onclick="fatSelectOrder('diff')"
-                  >
-                    Maior diferença
-                  </div>
-                  <div
-                    class="fat-order-item"
-                    data-value="consumido-desc"
-                    onclick="fatSelectOrder('consumido-desc')"
-                  >
-                    Mais usados
-                  </div>
-                  <div
-                    class="fat-order-item"
-                    data-value="consumido-asc"
-                    onclick="fatSelectOrder('consumido-asc')"
-                  >
-                    Menos usados
-                  </div>
-                  <div
-                    class="fat-order-item"
-                    data-value="requisitado-desc"
-                    onclick="fatSelectOrder('requisitado-desc')"
-                  >
-                    Mais requisitados
-                  </div>
-                  <div
-                    class="fat-order-item"
-                    data-value="codigo"
-                    onclick="fatSelectOrder('codigo')"
-                  >
-                    Código (A–Z)
-                  </div>
-                  <div
-                    class="fat-order-item"
-                    data-value="descricao"
-                    onclick="fatSelectOrder('descricao')"
-                  >
-                    Descrição (A–Z)
-                  </div>
-                </div>
-              </div>
+        <div class="fat-section" id="fatSecRequisicao">
+          <div class="fat-section-header" onclick="fatToggleSecao('fatSecRequisicao')">
+            <div class="fat-section-title-group">
+              <span class="fat-section-chevron">▶</span>
+              <h3>3. Requisição × Consumo</h3>
             </div>
+            <span class="fat-count" id="fatReqCount"></span>
           </div>
-          <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 12px 0; line-height: 1.5;">
-            Importe a planilha de insumos requisitados no mês. A ferramenta
-            compara com o consumo calculado e mostra as diferenças.
-          </p>
+          <div class="fat-section-body">
+            <div class="fat-section-body-inner">
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 12px 0; line-height: 1.5;">
+                Importe a planilha de insumos requisitados no mês. A ferramenta
+                compara com o consumo calculado e mostra as diferenças.
+              </p>
           <div class="fat-mes-field">
             <label for="fatMesInput">Mês da análise</label>
             <div class="fat-mes-picker" id="fatMesPicker">
@@ -9372,8 +9476,10 @@
             accept=".xlsx"
             style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; overflow: hidden;"
           />
-          <div id="fatConcilArea" style="margin-top: 16px;">
-            <div class="fat-empty">Nenhuma requisição importada ainda.</div>
+              <div id="fatConcilArea" style="margin-top: 16px;">
+                <div class="fat-empty">Nenhuma requisição importada ainda.</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -10968,57 +11074,29 @@
         </p>
 
         <div id="fatConvSugestoesWrap" style="display: none">
-          <div class="fat-modal-section-title">
-            Sugestões pendentes (<span id="fatConvSugestoesCount">0</span>)
+          <div
+            class="fat-modal-section-title"
+            style="display: flex; align-items: center; justify-content: space-between; gap: 10px;"
+          >
+            <span>
+              Sugestões pendentes (<span id="fatConvSugestoesCount">0</span>)
+            </span>
+            <button
+              type="button"
+              class="fat-action-btn fat-action-btn-primary"
+              id="fatBtnAplicarTodas"
+              style="min-height: 30px; padding: 5px 12px; font-size: 0.72rem; text-transform: none; letter-spacing: 0;"
+              onclick="fatAplicarTodasConversoes()"
+            >
+              Aplicar todas
+            </button>
           </div>
           <div id="fatConvSugestoes"></div>
         </div>
 
-        <div class="fat-modal-section-title">Adicionar manualmente</div>
-        <div class="fat-conv-form">
-          <input
-            type="text"
-            id="fatConvCodigo"
-            placeholder="Código (ex: 34013078)"
-            inputmode="numeric"
-          />
-          <input
-            type="text"
-            id="fatConvUnidCompra"
-            placeholder="Unidade compra (ex: CHAPA)"
-          />
-          <input
-            type="text"
-            id="fatConvUnidConsumo"
-            placeholder="Unidade consumo (ex: m²)"
-          />
-          <input
-            type="text"
-            id="fatConvDesc"
-            class="fat-conv-form-full"
-            placeholder="Descrição (opcional, mas ajuda a rastrear)"
-          />
-          <input
-            type="text"
-            id="fatConvFator"
-            placeholder="Fator (ex: 3,52)"
-            inputmode="decimal"
-          />
-          <button
-            type="button"
-            class="fat-action-btn fat-action-btn-primary"
-            onclick="fatSalvarConversaoManual()"
-          >
-            Adicionar
-          </button>
-          <button
-            type="button"
-            class="fat-action-btn fat-action-btn-ghost"
-            onclick="fatLimparFormConversao()"
-          >
-            Limpar
-          </button>
-        </div>
+        <!-- Adição manual removida — se necessário no futuro, reaproveitar as
+             funções fatSalvarConversaoManual / fatLimparFormConversao que
+             continuam no JS. -->
 
         <div class="fat-modal-section-title">
           Conversões cadastradas (<span id="fatConvCount">0</span>)
@@ -14783,6 +14861,100 @@
         sel.dispatchEvent(new Event("change", { bubbles: true }));
       }
 
+      // ============================================================
+      // CÓDIGO DO ENGRADADO — prefixo fixo "31019" + 3 caracteres
+      // ============================================================
+      const PREFIXO_CODIGO_ENGRA = "31019";
+
+      // Chamada sempre que o Tipo de Projeto muda. Padrão: preenche
+      // com o prefixo e posiciona o cursor no fim. Especial: bloqueia
+      // o campo (o código não se aplica).
+      function aplicarTipoProjeto() {
+        const tipoEl = document.getElementById("tipoProjeto");
+        const codEl = document.getElementById("codigoEngradado");
+        const grupoEl = document.getElementById("codigoEngradadoGroup");
+        if (!tipoEl || !codEl) return;
+
+        if (tipoEl.value === "especial") {
+          codEl.value = "";
+          codEl.disabled = true;
+          codEl.placeholder = "Não aplicável (Especial)";
+          if (grupoEl) {
+            grupoEl.style.opacity = "0.55";
+            grupoEl.style.pointerEvents = "none";
+          }
+        } else {
+          codEl.disabled = false;
+          codEl.placeholder = PREFIXO_CODIGO_ENGRA + "...";
+          if (grupoEl) {
+            grupoEl.style.opacity = "1";
+            grupoEl.style.pointerEvents = "";
+          }
+          // Sempre garante o prefixo
+          if (
+            !codEl.value ||
+            !codEl.value.toUpperCase().startsWith(PREFIXO_CODIGO_ENGRA)
+          ) {
+            codEl.value = PREFIXO_CODIGO_ENGRA;
+          }
+          // Cursor no fim do prefixo
+          try {
+            codEl.focus();
+            codEl.setSelectionRange(
+              PREFIXO_CODIGO_ENGRA.length,
+              PREFIXO_CODIGO_ENGRA.length
+            );
+          } catch (e) {}
+        }
+      }
+
+      // Normalização a cada digitação: mantém o prefixo, só aceita
+      // letras/números maiúsculos e limita o total a 8 caracteres.
+      function normalizarCodigoEngradado(input) {
+        const tipoEl = document.getElementById("tipoProjeto");
+        if (!tipoEl || tipoEl.value === "especial") {
+          input.value = "";
+          return;
+        }
+        let v = (input.value || "")
+          .toUpperCase()
+          .replace(/[^A-Z0-9]/g, "");
+        if (!v.startsWith(PREFIXO_CODIGO_ENGRA)) {
+          v = PREFIXO_CODIGO_ENGRA + v;
+        }
+        input.value = v.slice(0, 8);
+      }
+
+      // Bloqueia apagar o prefixo "31019" com Backspace/Delete.
+      function protegerPrefixoCodigo(event, input) {
+        const tipoEl = document.getElementById("tipoProjeto");
+        if (!tipoEl || tipoEl.value === "especial") return;
+
+        const comp = PREFIXO_CODIGO_ENGRA.length;
+        const selStart = input.selectionStart;
+        const selEnd = input.selectionEnd;
+
+        if (event.key === "Backspace") {
+          // Cursor parado no fim do prefixo, sem seleção → bloqueia
+          if (selStart <= comp && selEnd === selStart) {
+            event.preventDefault();
+            return;
+          }
+          // Seleção cobrindo o prefixo → reduz para começar após o prefixo
+          if (selStart < comp) {
+            event.preventDefault();
+            input.setSelectionRange(comp, selEnd);
+            return;
+          }
+        }
+
+        if (event.key === "Delete" && selEnd <= comp && selStart < comp) {
+          event.preventDefault();
+          input.setSelectionRange(comp, comp);
+          return;
+        }
+      }
+
       // ---- Habilita / desabilita campos de medida conforme código ou tipo ----
       function atualizarHabilitacaoMedidas() {
         const codigoEl = document.getElementById("codigoEngradado");
@@ -14791,7 +14963,11 @@
 
         const codigo = (codigoEl.value || "").trim();
         const tipo = tipoEl.value;
-        const habilitado = codigo.length > 0 || tipo === "especial";
+        // Padrão: exige código completo (8 chars, com prefixo 31019).
+        // Especial: sempre habilitado (não depende de código).
+        const codOk =
+          codigo.length === 8 && codigo.startsWith(PREFIXO_CODIGO_ENGRA);
+        const habilitado = tipo === "especial" || codOk;
 
         // ---- Campos de texto simples (cInt, lInt, aInt) ----
         ["cInt", "lInt", "aInt"].forEach((id) => {
@@ -14856,7 +15032,15 @@
         const codigo = (input.value || "").trim().toUpperCase();
         const tipo = tipoEl ? tipoEl.value : "padrao";
 
-        if (!codigo && tipo !== "especial") {
+        // Especial não tem código — nada a verificar.
+        if (tipo === "especial") {
+          aviso.style.display = "none";
+          aviso.innerHTML = "";
+          return;
+        }
+
+        // Padrão: só verifica quando o código está completo.
+        if (codigo.length < 8) {
           aviso.style.display = "none";
           aviso.innerHTML = "";
           return;
@@ -15839,11 +16023,66 @@
           cameraDistance = cameraDistance / CONF_EXCEL_FOTO_MARGIN;
 
           // Direção isométrica fixa
-          const direction = new THREE.Vector3(1, 0.85, 1).normalize();
+          // Usa a direção FIXA definida em CONF_FOTO_DIRECAO — assim
+          // todas as fotos (Histórico e Excel) saem sempre com o mesmo
+          // ângulo, independente de onde o usuário deixou a câmera.
+          const direction = CONF_FOTO_DIRECAO.clone();
           camera.position
             .copy(center)
             .add(direction.multiplyScalar(cameraDistance));
           camera.lookAt(center);
+
+          // ─── Centralização fina da projeção ─────────────────────
+          // Centrar a câmera no centro geométrico da caixa 3D NÃO
+          // garante que a projeção 2D saia centralizada — a perspectiva
+          // e assimetrias da geometria (ex.: EVA externo só na face
+          // frontal) deslocam o centro visual. Aqui projetamos os 8
+          // cantos da caixa no plano da imagem, medimos onde ficou o
+          // centro real, e deslocamos a câmera lateralmente para
+          // centralizar a projeção.
+          camera.updateMatrixWorld(true);
+          camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+
+          {
+            const _size = box.getSize(new THREE.Vector3());
+            const _ctr = box.getCenter(new THREE.Vector3());
+            const _proj = new THREE.Box3();
+            const _tmp = new THREE.Vector3();
+            for (let sx = -1; sx <= 1; sx += 2) {
+              for (let sy = -1; sy <= 1; sy += 2) {
+                for (let sz = -1; sz <= 1; sz += 2) {
+                  _tmp.set(
+                    _ctr.x + (sx * _size.x) / 2,
+                    _ctr.y + (sy * _size.y) / 2,
+                    _ctr.z + (sz * _size.z) / 2
+                  );
+                  _tmp.project(camera);
+                  _proj.expandByPoint(_tmp);
+                }
+              }
+            }
+            const _pc = _proj.getCenter(new THREE.Vector3());
+            // Sinal POSITIVO: se o centro projetado está à direita do
+            // quadro (+X), movemos a câmera para +X local — isso faz o
+            // objeto "andar" para a esquerda na tela, voltando ao centro.
+            const _offX = _pc.x;
+            const _offY = _pc.y;
+
+            if (Math.abs(_offX) > 0.003 || Math.abs(_offY) > 0.003) {
+              const _dist = camera.position.distanceTo(center);
+              const _fovRad = camera.fov * (Math.PI / 180);
+              const _fh = 2 * _dist * Math.tan(_fovRad / 2);
+              const _fw = _fh * camera.aspect;
+              const _worldShift = new THREE.Vector3(
+                (_offX * _fw) / 2,
+                (_offY * _fh) / 2,
+                0
+              ).applyQuaternion(camera.quaternion);
+              camera.position.add(_worldShift);
+              controls.target.add(_worldShift);
+              camera.lookAt(controls.target);
+            }
+          }
 
           renderer.render(scene, camera);
 
@@ -15902,11 +16141,66 @@
           }
           cameraDistance = cameraDistance / CONF_EXCEL_FOTO_MARGIN;
 
-          const direction = new THREE.Vector3(1, 0.85, 1).normalize();
+          // Mesma regra do capturarFotoParaExcel: usa a direção FIXA
+          // definida em CONF_FOTO_DIRECAO — garante ângulo idêntico
+          // entre Histórico e Excel.
+          const direction = CONF_FOTO_DIRECAO.clone();
           camera.position
             .copy(center)
             .add(direction.multiplyScalar(cameraDistance));
           camera.lookAt(center);
+
+          // ─── Centralização fina da projeção ─────────────────────
+          // Centrar a câmera no centro geométrico da caixa 3D NÃO
+          // garante que a projeção 2D saia centralizada — a perspectiva
+          // e assimetrias da geometria (ex.: EVA externo só na face
+          // frontal) deslocam o centro visual. Aqui projetamos os 8
+          // cantos da caixa no plano da imagem, medimos onde ficou o
+          // centro real, e deslocamos a câmera lateralmente para
+          // centralizar a projeção.
+          camera.updateMatrixWorld(true);
+          camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+
+          {
+            const _size = box.getSize(new THREE.Vector3());
+            const _ctr = box.getCenter(new THREE.Vector3());
+            const _proj = new THREE.Box3();
+            const _tmp = new THREE.Vector3();
+            for (let sx = -1; sx <= 1; sx += 2) {
+              for (let sy = -1; sy <= 1; sy += 2) {
+                for (let sz = -1; sz <= 1; sz += 2) {
+                  _tmp.set(
+                    _ctr.x + (sx * _size.x) / 2,
+                    _ctr.y + (sy * _size.y) / 2,
+                    _ctr.z + (sz * _size.z) / 2
+                  );
+                  _tmp.project(camera);
+                  _proj.expandByPoint(_tmp);
+                }
+              }
+            }
+            const _pc = _proj.getCenter(new THREE.Vector3());
+            // Sinal POSITIVO: se o centro projetado está à direita do
+            // quadro (+X), movemos a câmera para +X local — isso faz o
+            // objeto "andar" para a esquerda na tela, voltando ao centro.
+            const _offX = _pc.x;
+            const _offY = _pc.y;
+
+            if (Math.abs(_offX) > 0.003 || Math.abs(_offY) > 0.003) {
+              const _dist = camera.position.distanceTo(center);
+              const _fovRad = camera.fov * (Math.PI / 180);
+              const _fh = 2 * _dist * Math.tan(_fovRad / 2);
+              const _fw = _fh * camera.aspect;
+              const _worldShift = new THREE.Vector3(
+                (_offX * _fw) / 2,
+                (_offY * _fh) / 2,
+                0
+              ).applyQuaternion(camera.quaternion);
+              camera.position.add(_worldShift);
+              controls.target.add(_worldShift);
+              camera.lookAt(controls.target);
+            }
+          }
 
           renderer.render(scene, camera);
 
@@ -15937,8 +16231,12 @@
         const codigoDigitado = (codInput ? codInput.value.trim() : "").toUpperCase();
         const tipoProjeto = tipoInput ? tipoInput.value : "padrao";
 
-        if (!codigoDigitado && tipoProjeto !== "especial") {
-          showToast("⚠️ Digite um código ou marque como ESPECIAL.", false);
+        if (tipoProjeto === "padrao" && !codigoDigitado) {
+          showToast("⚠️ Informe o código do engradado.", false);
+          return;
+        }
+        if (tipoProjeto === "padrao" && codigoDigitado.length < 8) {
+          showToast("⚠️ Código incompleto — precisa de 8 dígitos.", false);
           return;
         }
 
@@ -15955,6 +16253,23 @@
 
         const d = dadosSimulacao;
         const usuarioExport = usuarioLogado; // captura sync
+
+        // Captura a foto do engradado AGORA — de forma SÍNCRONA, antes
+        // de qualquer operação assíncrona. Isso garante que, quando
+        // `exportarSimulacaoHistorico` troca o crateGroup temporariamente
+        // e depois restaura, a foto já foi capturada do estado certo.
+        // (Antes ficava dentro do `.then()`, depois do load assíncrono
+        // do template — e por isso pegava o crateGroup já restaurado.)
+        let fotoBase64Export = null;
+        try {
+          fotoBase64Export = capturarFotoParaExcel();
+          if (fotoBase64Export) {
+            const kb = Math.round((fotoBase64Export.length * 3) / 4 / 1024);
+            console.log("[EXPORT] Foto capturada: ~" + kb + " KB");
+          }
+        } catch (err) {
+          console.warn("[EXPORT] Falha ao capturar foto:", err);
+        }
 
         const workbook = new ExcelJS.Workbook();
         const buffer = base64ParaArrayBuffer(templateB64);
@@ -16055,8 +16370,12 @@
               // F6: nome do usuário que fez login no Web App
               wsFases.getCell("F6").value = usuarioExport || "";
 
-              // C3: código do relatório (só se houver)
-              if (d.codigo) {
+              // C3: código do relatório — ou "ESPECIAL" quando o tipo
+              // de projeto é especial (engradados especiais não têm
+              // código no sistema).
+              if (tipoProjeto === "especial") {
+                wsFases.getCell("C3").value = "ESPECIAL";
+              } else if (d.codigo) {
                 wsFases.getCell("C3").value = d.codigo;
               }
 
@@ -16299,12 +16618,13 @@
               });
 
               // ---- Foto 3D do engradado ----
-              // Captura a vista atual e embute na célula designada da aba.
+              // Usa a foto capturada no topo do exportarExcel (síncrona),
+              // garantindo que o crateGroup estava no estado correto da
+              // simulação sendo exportada no momento da captura.
               try {
-                const fotoBase64 = capturarFotoParaExcel();
-                if (fotoBase64) {
+                if (fotoBase64Export) {
                   const imageId = workbook.addImage({
-                    base64: "data:image/png;base64," + fotoBase64,
+                    base64: "data:image/png;base64," + fotoBase64Export,
                     extension: "png",
                   });
                   wsRel.addImage(imageId, {
@@ -16324,7 +16644,7 @@
                     "✅ Foto 3D embutida na aba RELATÓRIO DE ASSINATURA."
                   );
                 } else {
-                  console.warn("⚠️ Não foi possível capturar a foto 3D.");
+                  console.warn("⚠️ Sem foto 3D para embutir.");
                 }
               } catch (err) {
                 console.warn("Falha ao embutir a foto 3D no Excel:", err);
@@ -16399,8 +16719,12 @@
         const codigoDigitado = (codInput ? codInput.value.trim() : "").toUpperCase();
         const tipoProjeto = tipoInput ? tipoInput.value : "padrao";
 
-        if (!codigoDigitado && tipoProjeto !== "especial") {
-          showToast("⚠️ Digite um código ou marque como ESPECIAL.", false);
+        if (tipoProjeto === "padrao" && !codigoDigitado) {
+          showToast("⚠️ Informe o código do engradado.", false);
+          return;
+        }
+        if (tipoProjeto === "padrao" && codigoDigitado.length < 8) {
+          showToast("⚠️ Código incompleto — precisa de 8 dígitos.", false);
           return;
         }
 
@@ -16827,11 +17151,9 @@
             ? "💾 Salvar na " + permF.rotuloHistorico
             : "💾 Salvar no histórico";
 
-          // Limpa o código
-          const codInputFim = document.getElementById("codigoEngradado");
-          if (codInputFim) codInputFim.value = "";
-
-          // Reseta o tipo de projeto (usa o helper para sincronizar o rótulo visual)
+          // Reseta o tipo de projeto. O setSelectValue dispara o
+          // `change`, que chama aplicarTipoProjeto e repõe o prefixo
+          // no código.
           setSelectValue("tipoProjeto", "padrao");
 
           // Esconde o aviso de duplicidade
@@ -17458,25 +17780,25 @@
               </div>
               <div>
                 <strong>Código</strong>
-                <div class="historico-codigo-linha">
-                  <input
-                    type="text"
-                    class="historico-codigo-input"
-                    id="cod-${idSeguro}"
-                    value="${codigoAtual}"
-                    placeholder="Preencher depois..."
-                    onclick="event.stopPropagation();"
-                    onkeydown="if(event.key==='Enter'){ event.preventDefault(); salvarCodigoSimulacao('${
-                      s.id
-                    }', '${idSeguro}'); }"
-                  />
-                  <button
-                    class="historico-codigo-salvar"
-                    onclick="event.stopPropagation(); salvarCodigoSimulacao('${
-                      s.id
-                    }', '${idSeguro}');"
-                  >💾</button>
-                </div>
+                ${
+                  isEspecial
+                    ? '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 6px 0; font-style: italic;">— (Especial)</div>'
+                    : `<div class="historico-codigo-linha">
+                        <input
+                          type="text"
+                          class="historico-codigo-input"
+                          id="cod-${idSeguro}"
+                          value="${codigoAtual}"
+                          placeholder="Preencher depois..."
+                          onclick="event.stopPropagation();"
+                          onkeydown="if(event.key==='Enter'){ event.preventDefault(); salvarCodigoSimulacao('${s.id}', '${idSeguro}'); }"
+                        />
+                        <button
+                          class="historico-codigo-salvar"
+                          onclick="event.stopPropagation(); salvarCodigoSimulacao('${s.id}', '${idSeguro}');"
+                        >💾</button>
+                      </div>`
+                }
               </div>
             </div>
 
@@ -18404,18 +18726,72 @@
         // Guarda o estado atual (Simulador)
         const dadosAntes = dadosSimulacao;
         const usuarioAntes = usuarioLogado;
+        const isExplodedAntes = isExploded;
+
+        // A exportação lê `tipoProjeto` e `codigoEngradado` direto do DOM
+        // (não da simulação). Guardamos o estado atual do formulário para
+        // restaurá-lo no finally.
+        const codEl = document.getElementById("codigoEngradado");
+        const tipoEl = document.getElementById("tipoProjeto");
+        const codAntes = codEl ? codEl.value : "";
+        const codDisabledAntes = codEl ? codEl.disabled : false;
+        const tipoAntes = tipoEl ? tipoEl.value : "padrao";
 
         // Aplica os dados da simulação salva
         dadosSimulacao = simParaDadosSimulacao(sim);
         usuarioLogado = sim.usuario || usuarioAntes;
 
+        // Reflete a simulação no formulário — é o que o exportarExcel lê.
+        // Para "especial", o código fica vazio e a validação é ignorada.
+        if (tipoEl) tipoEl.value = sim.tipo === "especial" ? "especial" : "padrao";
+        if (codEl) {
+          codEl.disabled = false;
+          codEl.value = sim.codigo || "";
+        }
+
+        // Reconstrói o engradado no 3D com as medidas DA SIMULAÇÃO sendo
+        // exportada — para que a foto embutida no Excel seja essa, e não
+        // o que estava carregado no Simulador. Como `exportarExcel`
+        // agora captura a foto de forma síncrona (no topo), o rebuild
+        // tem efeito imediato.
+        const m = sim.medidas || {};
+        const cInt = m.comprimentoInterno || 0.93;
+        const lInt = m.larguraInterna || 0.93;
+        const aInt = m.alturaInterna || 0.05;
+        const material = sim.material || "Tecplay";
+        const cExt = Math.round((cInt + 0.07) * 1000) / 1000;
+        const lExt = Math.round((lInt + 0.07) * 1000) / 1000;
+
         try {
-          // `exportarExcel` captura `d` e `usuarioExport` de forma síncrona,
-          // então é seguro restaurar logo depois.
+          // Força o modo fechado (sem explosão) para a foto sair íntegra.
+          isExploded = false;
+          construirEngradado(cExt, lExt, aInt, material);
+          // `construirEngradado` já chama `recentrarCamera()` no final.
+
           exportarExcel();
         } finally {
+          // Restaura o estado original do Simulador
           dadosSimulacao = dadosAntes;
           usuarioLogado = usuarioAntes;
+          if (codEl) {
+            codEl.value = codAntes;
+            codEl.disabled = codDisabledAntes;
+          }
+          if (tipoEl) tipoEl.value = tipoAntes;
+
+          isExploded = isExplodedAntes;
+          const d = dadosAntes;
+          if (d && d.ladoMaior) {
+            construirEngradado(d.cExt, d.lExt, d.aInt, d.material);
+            if (isExplodedAntes) {
+              updateExplosion(
+                (document.getElementById("rangeExplode") || {}).value || 0.1
+              );
+            }
+          } else {
+            atualizarModelo();
+          }
+          dadosSimulacao = dadosAntes;
         }
       }
 
@@ -18457,6 +18833,16 @@
       // reservada para a foto na aba "RELATÓRIO DE ASSINATURA".
       const CONF_EXCEL_FOTO_LARGURA = 720;
       const CONF_EXCEL_FOTO_ALTURA = 600;
+
+      // Direção da câmera usada em TODAS as capturas (Histórico + Excel).
+      // É um vetor unitário do alvo até a posição da câmera. Este ângulo
+      // foi escolhido para mostrar bem a face superior (ripas + MDF), a
+      // face longa frontal e a face curta lateral.
+      //   +Y grande → mais "de cima"
+      //   +X, +Z    → vista isométrica inclinada
+      // Para ver mais de cima, aumente o Y (ex.: 1.6, 1.8).
+      // Para ver mais de frente, aumente X e Z (ex.: 1.3, 1.8).
+      const CONF_FOTO_DIRECAO = new THREE.Vector3(1.0, 1.35, 1.5).normalize();
 
       // Fator de zoom da captura:
       //   < 1.00  → engradado MENOR (mais sobra)
@@ -24754,6 +25140,289 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
       let fatPecasCache = []; // [{ codigo, nome, insumos:[], produzido:0 }]
       let fatRequisicao = []; // [{ codigo, descricao, unidade, quantidade, unitario, subtotal }]
 
+      // ============================================================
+      // UNIDADES UNIVERSAIS DE CONTAGEM
+      // ------------------------------------------------------------
+      // Estas conversões são DEFINIÇÕES matemáticas — não dependem do
+      // insumo nem da descrição. 1 cento é sempre 100, 1 milheiro é
+      // sempre 1000, em qualquer contexto.
+      //
+      // O padrão é: chave = forma normalizada (fatNormUnidade aplicada),
+      // valor = quantas unidades-base (UN) a chave representa.
+      //
+      // Quando aparecer uma unidade nova deste tipo (ex.: "grosa",
+      // "resma", "fardo padrão 12"), basta acrescentar uma linha aqui.
+      // Nada mais precisa ser alterado no resto do sistema.
+      // ============================================================
+      const FAT_UNIDADES_CONTAGEM = {
+        un:        1,
+        peca:      1,      // já normaliza para "un" pelo sinônimo, mas fica defensivo
+        milh:      1000,
+        mil:       1000,
+        milheiro:  1000,
+        cento:     100,
+        duzia:     12,
+        dezena:    10,
+        grossa:    144,
+      };
+
+      // Base de materiais — { codigo: { nome, unidade } }
+      // Carregada do Firestore (em chunks) e usada para enriquecer os
+      // insumos das peças quando a planilha trouxer só o código.
+      let fatMateriaisCache = {};
+
+      // Formato no Firestore:
+      //   coleção: faturamento_materiais
+      //   doc: "chunk_0", "chunk_1", ... cada um com { itens: [{c,n,u}, ...] }
+      // 6000+ registros não cabem em um único doc (limite 1 MB do
+      // Firestore), então quebramos em blocos de 1000.
+      const FAT_MATERIAIS_CHUNK = 1000;
+
+      // Lê o workbook ExcelJS da matriz de materiais.
+      // Espera uma planilha "materiais" com colunas:
+      //   A: _codigo    B: _nome    C: _unicusto
+      // Aceita variações de nome da aba ("Materiais", "MATERIAIS").
+      function fatMateriaisParseWorkbook(wb) {
+        if (!wb || !wb.worksheets) return { erro: "Workbook vazio." };
+
+        let ws = wb.getWorksheet("materiais");
+        if (!ws) {
+          ws = wb.worksheets.find((w) => {
+            const n = fatNormText(w.name);
+            return n === "materiais" || n === "material";
+          });
+        }
+        if (!ws) {
+          const abas = wb.worksheets.map((w) => w.name).join(", ");
+          return { erro: 'Aba "materiais" não encontrada. Abas: ' + abas };
+        }
+
+        // Detecta se a primeira linha é cabeçalho
+        const headerCell = fatNormText(fatReadCell(ws.getCell(1, 1)));
+        const temHeader =
+          headerCell.includes("codigo") ||
+          headerCell.includes("_codigo");
+
+        const inicio = temHeader ? 2 : 1;
+        const maxRow = ws.rowCount || 0;
+        const itens = [];
+        const vistos = new Set();
+
+        for (let r = inicio; r <= maxRow; r++) {
+          const cod = String(fatReadCell(ws.getCell(r, 1)) || "").trim();
+          const nome = String(fatReadCell(ws.getCell(r, 2)) || "").trim();
+          const uni = String(fatReadCell(ws.getCell(r, 3)) || "").trim();
+
+          if (!cod || !nome) continue;
+          if (vistos.has(cod)) continue;
+          vistos.add(cod);
+
+          itens.push({ c: cod, n: nome, u: uni });
+        }
+
+        if (itens.length === 0) {
+          return { erro: "Nenhum material válido encontrado na aba." };
+        }
+
+        return { itens: itens };
+      }
+
+      // Salva a base no Firestore em chunks. Apaga os chunks antigos
+      // primeiro, para não sobrar resíduo de uma importação maior anterior.
+      async function fatMateriaisSalvarFirestore(itens) {
+        if (typeof db === "undefined" || !db) {
+          throw new Error("Firebase não inicializado");
+        }
+
+        const colRef = db.collection("faturamento_materiais");
+
+        // 1. Apaga os chunks existentes
+        const snapAntigo = await colRef.get();
+        if (!snapAntigo.empty) {
+          const batchDel = db.batch();
+          snapAntigo.forEach((doc) => batchDel.delete(doc.ref));
+          await batchDel.commit();
+        }
+
+        // 2. Grava os novos chunks
+        const chunks = [];
+        for (let i = 0; i < itens.length; i += FAT_MATERIAIS_CHUNK) {
+          chunks.push(itens.slice(i, i + FAT_MATERIAIS_CHUNK));
+        }
+
+        for (let i = 0; i < chunks.length; i++) {
+          await colRef.doc("chunk_" + i).set({
+            itens: chunks[i],
+            atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+            total: itens.length,
+          });
+        }
+
+        return chunks.length;
+      }
+
+      // Carrega a base do Firestore para o cache em memória.
+      async function fatMateriaisCarregarFirestore() {
+        if (typeof db === "undefined" || !db) {
+          console.warn("[FAT] Firestore indisponível para a base de materiais.");
+          return;
+        }
+        try {
+          const snap = await db.collection("faturamento_materiais").get();
+          fatMateriaisCache = {};
+          let total = 0;
+          snap.forEach((doc) => {
+            const d = doc.data();
+            if (Array.isArray(d.itens)) {
+              d.itens.forEach((it) => {
+                if (it && it.c) {
+                  fatMateriaisCache[it.c] = {
+                    nome: it.n || "",
+                    unidade: it.u || "",
+                  };
+                  total++;
+                }
+              });
+            }
+          });
+          console.log("[FAT] Base de materiais carregada: " + total + " itens.");
+          fatMateriaisAtualizarStatus();
+        } catch (err) {
+          console.warn("[FAT] Erro ao carregar base de materiais:", err);
+        }
+      }
+
+      // Atualiza o dropzone e o contador da seção "Base de Materiais".
+      function fatMateriaisAtualizarStatus() {
+        const count = document.getElementById("fatMateriaisCount");
+        const title = document.getElementById("fatDropMatTitle");
+        const hint = document.getElementById("fatDropMatHint");
+        const dz = document.getElementById("fatDropMateriais");
+        if (!dz) return;
+
+        const n = Object.keys(fatMateriaisCache).length;
+        if (n > 0) {
+          dz.classList.add("has-file");
+          if (count) count.textContent = n + " materiais";
+          if (title) title.textContent = "Base carregada";
+          if (hint)
+            hint.textContent = "Clique para substituir pela versão mais recente";
+        } else {
+          dz.classList.remove("has-file");
+          if (count) count.textContent = "";
+          if (title)
+            title.textContent = "Clique ou arraste a planilha de materiais aqui";
+          if (hint)
+            hint.textContent =
+              '.xlsx · aba "materiais" · colunas: código, nome, unidade';
+        }
+      }
+
+      // Handler do upload da planilha de materiais.
+      async function fatHandleMateriaisFile(file) {
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith(".xlsx")) {
+          showToast("❌ Envie um arquivo .xlsx", false);
+          return;
+        }
+        if (typeof ExcelJS === "undefined") {
+          showToast("❌ Biblioteca ExcelJS não carregada", false);
+          return;
+        }
+
+        const titleEl = document.getElementById("fatDropMatTitle");
+        const hintEl = document.getElementById("fatDropMatHint");
+        const tituloPadrao = "Clique ou arraste a planilha de materiais aqui";
+        const hintPadrao =
+          '.xlsx · aba "materiais" · colunas: código, nome, unidade';
+
+        const setLoading = (texto, loading) => {
+          if (!titleEl) return;
+          if (loading) {
+            titleEl.innerHTML =
+              '<span class="fat-spinner" aria-hidden="true"></span>' + texto;
+            titleEl.classList.add("fat-loading");
+          } else {
+            titleEl.textContent = texto;
+            titleEl.classList.remove("fat-loading");
+          }
+        };
+
+        setLoading("Lendo planilha", true);
+        if (hintEl) hintEl.textContent = file.name;
+
+        try {
+          const buffer = await file.arrayBuffer();
+          const wb = new ExcelJS.Workbook();
+          await wb.xlsx.load(buffer);
+
+          const parsed = fatMateriaisParseWorkbook(wb);
+          if (parsed.erro) {
+            showToast("⚠️ " + parsed.erro, false);
+            setLoading(tituloPadrao, false);
+            if (hintEl) hintEl.textContent = hintPadrao;
+            return;
+          }
+
+          setLoading(
+            "Salvando " + parsed.itens.length + " materiais",
+            true
+          );
+
+          await fatMateriaisSalvarFirestore(parsed.itens);
+
+          // Atualiza o cache em memória sem precisar reler do Firestore
+          fatMateriaisCache = {};
+          parsed.itens.forEach((it) => {
+            fatMateriaisCache[it.c] = { nome: it.n, unidade: it.u };
+          });
+
+          fatMateriaisAtualizarStatus();
+          showToast(
+            "✅ " + parsed.itens.length + " materiais salvos",
+            true
+          );
+        } catch (err) {
+          console.error("[FAT] Erro ao ler planilha de materiais:", err);
+          showToast(
+            "❌ Falha ao ler planilha: " + (err.message || "desconhecido"),
+            false
+          );
+        } finally {
+          setLoading(tituloPadrao, false);
+          if (hintEl) hintEl.textContent = hintPadrao;
+        }
+      }
+
+      // Enriquece uma lista de insumos com dados da base de materiais.
+      // Só preenche descrição/unidade que vierem VAZIAS na planilha da
+      // peça. Não sobrescreve o que a planilha já trouxe — a planilha
+      // da peça sempre tem a palavra final.
+      function fatMateriaisEnriquecerInsumos(insumos) {
+        if (!Array.isArray(insumos)) return insumos;
+        if (Object.keys(fatMateriaisCache).length === 0) return insumos;
+
+        return insumos.map((it) => {
+          const cod = it.codigo;
+          if (!cod) return it;
+          const mat = fatMateriaisCache[cod];
+          if (!mat) return it;
+
+          const novaDesc =
+            !it.descricao || fatIsBlankStr(it.descricao)
+              ? mat.nome
+              : it.descricao;
+          const novaUni =
+            !it.unidade || fatIsBlankStr(it.unidade)
+              ? mat.unidade
+              : it.unidade;
+
+          if (novaDesc === it.descricao && novaUni === it.unidade) return it;
+          return { ...it, descricao: novaDesc, unidade: novaUni };
+        });
+      }
+
       // Modo de ordenação da tabela de conciliação. Persiste no
       // localStorage, para o usuário não perder a preferência ao
       // recarregar a página.
@@ -25075,14 +25744,31 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         return false;
       }
 
+      // Retorna true se o código é de um insumo físico (comprado e/ou
+      // requisitado). Códigos iniciados por 4090 são taxas de hora
+      // (TX HORA HOMEM, TX HORA GGF, TX HORA MAQ. ROUTER…), fatores de
+      // setup de processo, encargos sociais, custos administrativos,
+      // markup, DRE e lucro operacional — nada disso é insumo. Eles
+      // entram nos cálculos de custo da peça, mas não devem aparecer
+      // na conciliação de insumos requisitados.
+      function fatIsCodigoInsumo(codigo) {
+        if (!codigo) return false;
+        const c = String(codigo).trim();
+        if (/^4090/.test(c)) return false;
+        return true;
+      }
+
       // Retorna só os insumos "de verdade" de uma peça — exclui linhas
-      // onde código e descrição estão vazios (ou são só "-"). Serve
-      // tanto para contagem quanto para exibição. Filtra dados já
-      // gravados no Firestore antes desta correção existir.
+      // onde código e descrição estão vazios (ou são só "-"), e também
+      // os códigos 4090 (taxas/fatores). Serve tanto para contagem
+      // quanto para exibição. Filtra dados já gravados no Firestore
+      // antes desta correção existir.
       function fatInsumosVisiveis(p) {
         if (!p || !Array.isArray(p.insumos)) return [];
         return p.insumos.filter(
-          (i) => !(fatIsBlankStr(i.codigo) && fatIsBlankStr(i.descricao))
+          (i) =>
+            !(fatIsBlankStr(i.codigo) && fatIsBlankStr(i.descricao)) &&
+            fatIsCodigoInsumo(i.codigo)
         );
       }
 
@@ -25181,6 +25867,42 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
       // VALOR da célula imediatamente à direita. Serve pra achar "Código:"
       // e "Peça:" mesmo que estejam em posição diferente da C3/C2.
       function fatEncontrarLabel(ws, maxRow, maxCol, padroes) {
+        // Palavras que, por si sós, já são títulos de cabeçalho de
+        // tabela. Se o "valor à direita" de um rótulo encontrado for
+        // uma dessas, é porque esbarramos no cabeçalho da tabela de
+        // dados (ex.: linha "Seq | Código | Descrição | U/M | Qde"),
+        // não no bloco de identificação da peça. Nesse caso, pulamos
+        // e continuamos procurando.
+        const CABECALHOS = new Set([
+          "seq",
+          "codigo",
+          "descricao",
+          "um",
+          "u/m",
+          "qde",
+          "qtd",
+          "quantidade",
+          "vlr/un",
+          "vlr",
+          "vlr un",
+          "subtotal",
+          "sub total",
+          "sub.total",
+          "total",
+          "unidade",
+          "peca",
+          "produto",
+          "execucao",
+          "marceneiro",
+          "meia oficial",
+          "ajudante",
+          "apontador",
+          "revisado por",
+          "data inicio",
+          "data termino",
+          "natureza",
+        ]);
+
         for (let r = 1; r <= maxRow; r++) {
           for (let c = 1; c <= maxCol; c++) {
             const txt = fatNormText(fatReadCell(ws.getCell(r, c)));
@@ -25193,14 +25915,247 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
                 txt.startsWith(alvo + ":")
               ) {
                 const v = fatReadCell(ws.getCell(r, c + 1));
-                if (!fatIsBlankStr(v)) {
-                  return { row: r, col: c, valor: v };
-                }
+                if (fatIsBlankStr(v)) continue;
+                const vNorm = fatNormText(v);
+                if (CABECALHOS.has(vNorm)) continue;
+                return { row: r, col: c, valor: v };
               }
             }
           }
         }
         return null;
+      }
+
+      // ============================================================
+      // CARREGADOR DE WORKBOOK — ExcelJS (.xlsx) + SheetJS (.xls)
+      // ------------------------------------------------------------
+      // O Wget exporta .xls binário (formato antigo do Excel), que o
+      // ExcelJS não consegue ler. Usamos o SheetJS como fallback e
+      // embrulhamos o workbook dele numa camada fina que imita a API
+      // do ExcelJS (`worksheets`, `getWorksheet`, `ws.getCell(r,c)`,
+      // `rowCount`, `columnCount`). Assim os parsers existentes
+      // continuam funcionando sem nenhuma alteração.
+      // ============================================================
+      async function fatLoadWorkbookFromFile(file) {
+        const nomeLower = (file.name || "").toLowerCase();
+        const isXls = nomeLower.endsWith(".xls");
+
+        if (isXls) {
+          if (typeof XLSX === "undefined") {
+            throw new Error(
+              "Biblioteca SheetJS não carregada — não é possível ler .xls."
+            );
+          }
+          const buffer = await file.arrayBuffer();
+          const wbSjs = XLSX.read(buffer, { type: "array" });
+          return fatSheetJSWorkbookToShim(wbSjs);
+        }
+
+        const buffer = await file.arrayBuffer();
+        const wb = new ExcelJS.Workbook();
+        await wb.xlsx.load(buffer);
+        return wb;
+      }
+
+      // Converte um workbook do SheetJS para um objeto com a mesma
+      // interface de leitura usada pelos parsers (ExcelJS-like).
+      function fatSheetJSWorkbookToShim(wbSjs) {
+        const worksheets = (wbSjs.SheetNames || []).map((nome) => {
+          const sheet = wbSjs.Sheets[nome];
+          let rowCount = 0;
+          let columnCount = 0;
+
+          if (sheet && sheet["!ref"]) {
+            try {
+              const range = XLSX.utils.decode_range(sheet["!ref"]);
+              rowCount = range.e.r + 1;
+              columnCount = range.e.c + 1;
+            } catch (e) {
+              rowCount = 0;
+              columnCount = 0;
+            }
+          }
+
+          const getCell = (r, c) => {
+            const addr = XLSX.utils.encode_cell({
+              r: r - 1,
+              c: c - 1,
+            });
+            const cell = sheet[addr];
+            return { value: cell ? cell.v : null };
+          };
+
+          return {
+            name: nome,
+            rowCount: rowCount,
+            columnCount: columnCount,
+            getCell: getCell,
+          };
+        });
+
+        return {
+          worksheets: worksheets,
+          getWorksheet: (nome) =>
+            worksheets.find((w) => w.name === nome) || null,
+        };
+      }
+
+      // ============================================================
+      // DETECTOR DE FORMATO — decide qual parser usar
+      // ------------------------------------------------------------
+      // A ferramenta aceita dois formatos de planilha de peça:
+      //
+      //   "fases"    → template antigo dos engradados: aba "fases",
+      //                seção "FASE 03 - ARMAÇÃO", colunas A..G.
+      //   "producao" → export do Wget: qualquer aba com cabeçalho
+      //                contendo m0012003 (cód. peça), m0012001 (nome
+      //                peça), unidade e cstandard. As colunas são lidas
+      //                por POSIÇÃO: B=cód peça, C=nome peça,
+      //                D=descrição insumo, E=cód insumo, F=unidade,
+      //                H=quantidade usada.
+      //
+      // A detecção é por conteúdo — não depende do nome da aba.
+      // ============================================================
+      function fatDetectarFormatoProducao(workbook) {
+        if (!workbook || !workbook.worksheets) return null;
+
+        for (const ws of workbook.worksheets) {
+          const maxRow = Math.min(ws.rowCount || 0, 6);
+          const maxCol = Math.min(ws.columnCount || 0, 60);
+
+          for (let r = 1; r <= maxRow; r++) {
+            let temCodPeca = false;
+            let temNomePeca = false;
+            let temUnid = false;
+            let temCstd = false;
+
+            for (let c = 1; c <= maxCol; c++) {
+              const v = fatNormText(fatReadCell(ws.getCell(r, c)));
+              if (v === "m0012003") temCodPeca = true;
+              if (v === "m0012001") temNomePeca = true;
+              if (v === "unidade") temUnid = true;
+              if (v === "cstandard") temCstd = true;
+            }
+
+            if (temCodPeca && temNomePeca && temUnid && temCstd) {
+              return { ws: ws, headerRow: r };
+            }
+          }
+        }
+        return null;
+      }
+
+      // ============================================================
+      // PARSER DO EXPORT DO WGET
+      // ------------------------------------------------------------
+      // Lê a planilha por POSIÇÃO de coluna (B..H), conforme padrão
+      // do export. Todas as linhas de uma mesma peça compartilham o
+      // mesmo código em B — se detectar mais de uma peça no arquivo,
+      // devolve erro pedindo um arquivo por peça.
+      // Retorna { codigo, nome, insumos[] } ou { erro: "..." }.
+      // ============================================================
+      function fatParseProducao(ws, headerRow) {
+        // Colunas por posição, conforme especificação do export:
+        //   B=2 código da peça       C=3 nome/descrição da peça
+        //   D=4 descrição do insumo  E=5 código do insumo
+        //   F=6 unidade de medida    H=8 quantidade usada
+        const COL_COD_PECA = 2;
+        const COL_NOME_PECA = 3;
+        const COL_DESC_INS = 4;
+        const COL_COD_INS = 5;
+        const COL_UNID = 6;
+        const COL_QTD = 8;
+
+        const maxRow = ws.rowCount || 0;
+        const insumos = [];
+        const pecasVistas = new Map(); // codigo → nome
+        const ordemPecas = [];         // preserva ordem de aparição
+
+        for (let r = headerRow + 1; r <= maxRow; r++) {
+          const codPeca = String(
+            fatReadCell(ws.getCell(r, COL_COD_PECA)) || ""
+          ).trim();
+          const nomePeca = String(
+            fatReadCell(ws.getCell(r, COL_NOME_PECA)) || ""
+          ).trim();
+          const descIns = String(
+            fatReadCell(ws.getCell(r, COL_DESC_INS)) || ""
+          ).trim();
+          const codIns = String(
+            fatReadCell(ws.getCell(r, COL_COD_INS)) || ""
+          ).trim();
+          const unid = String(
+            fatReadCell(ws.getCell(r, COL_UNID)) || ""
+          ).trim();
+          const qtd = fatParseNum(
+            fatReadCell(ws.getCell(r, COL_QTD))
+          );
+
+          if (!codPeca) continue;
+          if (fatIsBlankStr(codIns) && fatIsBlankStr(descIns)) continue;
+
+          if (!pecasVistas.has(codPeca)) {
+            pecasVistas.set(codPeca, nomePeca || "(sem nome)");
+            ordemPecas.push(codPeca);
+          }
+
+          insumos.push({
+            codigo: codIns,
+            descricao: descIns,
+            unidade: unid,
+            quantidade: qtd,
+            unitario: null,
+            subtotal: null,
+          });
+        }
+
+        if (ordemPecas.length === 0) {
+          return { erro: "Nenhuma peça encontrada na planilha." };
+        }
+
+        if (ordemPecas.length > 1) {
+          return {
+            erro:
+              "A planilha contém mais de uma peça (" +
+              ordemPecas.join(", ") +
+              "). Suba um arquivo por peça.",
+          };
+        }
+
+        if (insumos.length === 0) {
+          return { erro: "Nenhum insumo encontrado na planilha." };
+        }
+
+        const codigo = ordemPecas[0];
+        const nome = pecasVistas.get(codigo);
+
+        // Conta quantos insumos vieram sem descrição — a UI mostra
+        // um aviso pedindo para reabrir a planilha no Excel e salvar.
+        const semDescricao = insumos.filter(
+          (i) => !i.descricao || fatIsBlankStr(i.descricao)
+        ).length;
+        const avisoDescricao =
+          semDescricao > 0
+            ? { semDescricao: semDescricao, total: insumos.length }
+            : null;
+
+        return { codigo, nome, insumos, avisoDescricao };
+      }
+
+      // Dispatcher: decide qual parser usar. Mantém o parser "fases"
+      // como fallback, para não quebrar o fluxo dos engradados.
+      function fatParsePlanilhaPeca(workbook) {
+        const prod = fatDetectarFormatoProducao(workbook);
+        if (prod) {
+          console.log(
+            "[FAT] Parser: formato 'producao' (Wget) · aba=" +
+              prod.ws.name +
+              " · headerRow=" +
+              prod.headerRow
+          );
+          return fatParseProducao(prod.ws, prod.headerRow);
+        }
+        return fatParseFases(workbook);
       }
 
       // ============================================================
@@ -25240,13 +26195,20 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
           }
         }
 
-        if (!nome || !codigo) {
+        // Nome é obrigatório — sem ele não há como identificar a peça.
+        // Código pode vir vazio: nesse caso, a peça é salva como
+        // "SEM CÓDIGO" e o documento no Firestore usa um slug do nome
+        // (que contém as medidas e é único na prática).
+        if (!nome) {
           return {
             erro:
-              "Não consegui identificar nome e/ou código da peça. " +
-              "Verifique se C2 (nome) e C3 (código) estão preenchidos.",
+              "Não consegui identificar o nome da peça. " +
+              "Verifique se C2 (nome) está preenchido.",
           };
         }
+
+        // Normaliza código vazio para string vazia (sem "Descrição").
+        if (!codigo) codigo = "";
 
         // ---- 3. Localiza a seção "FASE 03 - ARMAÇÃO" ----
         // Estratégia em duas prioridades:
@@ -25555,14 +26517,49 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         return { insumos };
       }
 
+      // Retorna true se o valor é um código de produto REAL — usado
+      // como ID único no Firestore.
+      // Critérios: 6+ caracteres, apenas letras A-Z e dígitos 0-9.
+      // Ficam de fora automaticamente:
+      //   - vazio
+      //   - "ESPECIAL"
+      //   - "B&C", "GABARITO", marca + separador, etc.
+      // Isso evita que duas peças diferentes caiam no mesmo documento
+      // (ex.: dois gabaritos B&C que não têm código real).
+      function fatCodigoEhReal(codigo) {
+        if (!codigo) return false;
+        const c = String(codigo).trim().toUpperCase();
+        if (c === "ESPECIAL") return false;
+        return /^[A-Z0-9]{6,}$/.test(c);
+      }
+
+      // Gera um ID único para o documento de receita no Firestore.
+      // Se o código é "real" (fatCodigoEhReal), usa ele — é o único
+      // jeito de duas peças com o mesmo código se sobrescreverem de
+      // propósito. Caso contrário, gera um slug a partir do nome
+      // (que contém as medidas e é único na prática).
+      function fatReceitaDocId(codigo, nome) {
+        const c = String(codigo || "").trim().toUpperCase();
+        if (fatCodigoEhReal(c)) return c;
+        const slug = String(nome || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/^_+|_+$/g, "")
+          .slice(0, 120);
+        return "SLUG_" + (slug || Date.now());
+      }
+
       // ============================================================
       // UPLOAD DA RECEITA
       // ============================================================
       async function fatHandleReceitaFile(file) {
         if (!file) return;
 
-        if (!file.name.toLowerCase().endsWith(".xlsx")) {
-          showToast("❌ Envie um arquivo .xlsx", false);
+        const nomeLower = file.name.toLowerCase();
+        if (!nomeLower.endsWith(".xlsx") && !nomeLower.endsWith(".xls")) {
+          showToast("❌ Envie um arquivo .xlsx ou .xls", false);
           return;
         }
         if (typeof ExcelJS === "undefined") {
@@ -25573,7 +26570,8 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         const titleEl = document.getElementById("fatDropReceitaTitle");
         const hintEl = document.getElementById("fatDropReceitaHint");
         const tituloPadrao = "Clique ou arraste a planilha da peça aqui";
-        const hintPadrao = '.xlsx · aba "fases" · seção "FASE 03 - ARMAÇÃO"';
+        const hintPadrao =
+          ".xlsx ou .xls · template dos engradados ou export do Wget";
 
         // Helper local: exibe spinner + texto durante operações longas.
         const setLoading = (texto, loading) => {
@@ -25592,11 +26590,9 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         if (hintEl) hintEl.textContent = file.name;
 
         try {
-          const buffer = await file.arrayBuffer();
-          const wb = new ExcelJS.Workbook();
-          await wb.xlsx.load(buffer);
+          const wb = await fatLoadWorkbookFromFile(file);
 
-          const parsed = fatParseFases(wb);
+          const parsed = fatParsePlanilhaPeca(wb);
           if (parsed.erro) {
             showToast("⚠️ " + parsed.erro, false);
             setLoading(tituloPadrao, false);
@@ -25604,19 +26600,29 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
             return;
           }
 
+          // Enriquece os insumos com a Base de Materiais:
+          // se a planilha da peça veio só com código (descrição ou
+          // unidade em branco), preenche com o cadastro da base.
+          if (parsed.insumos && parsed.insumos.length > 0) {
+            parsed.insumos = fatMateriaisEnriquecerInsumos(parsed.insumos);
+          }
+
           setLoading("Salvando", true);
 
-          // ---- 1. Verifica duplicata no Firestore E no cache local ----
-          //    Firestore: receitas já persistidas.
-          //    Cache local: peças em modo de edição (stubs) ou receitas
-          //    ainda não commitadas no batch.
+          // ---- 1. Calcula o ID e verifica duplicata ----
+          // Para código real, o docId é o próprio código. Para especiais
+          // (código "ESPECIAL" ou vazio), o docId é um slug derivado do
+          // nome — assim cada especial tem seu próprio documento.
+          parsed.docId = fatReceitaDocId(parsed.codigo, parsed.nome);
+
           let existente = null;
           let origemExistente = ""; // "firestore" | "cache" | "stub"
+
           try {
             if (typeof db !== "undefined" && db) {
               const snap = await db
                 .collection("faturamento_receitas")
-                .doc(parsed.codigo)
+                .doc(parsed.docId)
                 .get();
               if (snap.exists) {
                 existente = snap.data();
@@ -25629,7 +26635,7 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
 
           if (!existente) {
             const local = fatPecasCache.find(
-              (p) => p.codigo === parsed.codigo
+              (p) => p.docId === parsed.docId
             );
             if (local) {
               existente = local;
@@ -25707,9 +26713,10 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
             if (typeof db !== "undefined" && db) {
               await db
                 .collection("faturamento_receitas")
-                .doc(parsed.codigo)
+                .doc(parsed.docId)
                 .set({
                   codigo: parsed.codigo,
+                  docId: parsed.docId,
                   nome: parsed.nome,
                   insumos: parsed.insumos,
                   produzido: parsed.produzido,
@@ -25739,7 +26746,7 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
           //    preserva o .produzido atual — o usuário pode estar
           //    reimportando a planilha justamente para "curar" o stub.
           const idx = fatPecasCache.findIndex(
-            (p) => p.codigo === parsed.codigo
+            (p) => p.docId === parsed.docId
           );
           if (idx >= 0) {
             const anterior = fatPecasCache[idx];
@@ -25750,10 +26757,11 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
             ) {
               parsed.produzido = anterior.produzido;
             }
-            fatPecasCache[idx] = parsed;
-          } else {
-            fatPecasCache.push(parsed);
+            // Remove onde estava — a peça reimportada vai para o topo.
+            fatPecasCache.splice(idx, 1);
           }
+          // Mais recentes no topo da lista.
+          fatPecasCache.unshift(parsed);
 
           fatRenderPecas();
           fatRenderProducao();
@@ -25958,6 +26966,24 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
             const stubBadge = isStub
               ? '<span class="fat-stub-badge">sem insumos</span>'
               : "";
+
+            // Input de produção — a "Produção do Mês" agora vive aqui,
+            // dentro de cada peça. `stopPropagation` evita que o clique
+            // no input expanda/colapse o card.
+            const prodInput =
+              '<span class="fat-peca-prod" onclick="event.stopPropagation()">' +
+              '<span class="fat-peca-prod-label">Qtd</span>' +
+              '<input type="number" min="0" step="1" ' +
+              'class="fat-peca-prod-input" ' +
+              'value="' +
+              (p.produzido || 0) +
+              '" ' +
+              'onchange="fatSetProducao(' +
+              idx +
+              ', this.value)" ' +
+              'onclick="event.stopPropagation()" />' +
+              "</span>";
+
             // Stub não pode ser removido — só existe em memória para
             // preservar a produção de um fechamento histórico.
             const btnRemover =
@@ -25969,9 +26995,20 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
               ')">' +
               '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>' +
               "</button>";
-              const insumosLabel = isStub
+
+            const insumosLabel = isStub
               ? "—"
               : n + (n > 1 ? " insumos" : " insumo");
+
+            // "SEM CÓDIGO" quando o campo está vazio OU quando o que
+            // veio não é um código real (ex.: "B&C", "ESPECIAL").
+            // Peças assim são identificadas pelo ID slug, único por nome.
+            const temCodigo = fatCodigoEhReal(p.codigo);
+            const codigoMostrar = temCodigo
+              ? p.codigo
+              : "SEM CÓDIGO";
+            const classeCodigo = temCodigo ? "" : " vazio";
+
             return (
               '<div class="fat-peca-wrap' +
               expanded +
@@ -25983,8 +27020,10 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
               idx +
               ')">' +
               '<span class="fat-peca-chevron">▶</span>' +
-              '<span class="fat-peca-codigo">' +
-              fatEsc(p.codigo) +
+              '<span class="fat-peca-codigo' +
+              classeCodigo +
+              '">' +
+              fatEsc(codigoMostrar) +
               "</span>" +
               '<span class="fat-peca-info">' +
               fatEsc(p.nome) +
@@ -25993,6 +27032,7 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
               '<span class="fat-peca-qtd">' +
               insumosLabel +
               "</span>" +
+              prodInput +
               btnRemover +
               "</div>" +
               '<div class="fat-peca-body" id="fatPecaBody' +
@@ -26031,6 +27071,24 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         });
       }
 
+      // Formata número em pt-BR removendo zeros à direita.
+      // 55 → "55"     ·  144 → "144"      ·  0,176 → "0,176"
+      // 0,15 → "0,15" ·  1.979,038 → "1.979,038"
+      // Usado na conciliação para evitar que "55" apareça como "55,000"
+      // (o que, lido em formato EN, parece 55 mil).
+      function fatFmtNumLimpo(v) {
+        if (v == null || !isFinite(v)) return "—";
+        // Arredonda para 3 decimais (limite prático da conciliação).
+        const arred = Math.round(v * 1000) / 1000;
+        if (Number.isInteger(arred)) {
+          return arred.toLocaleString("pt-BR");
+        }
+        return arred.toLocaleString("pt-BR", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 3,
+        });
+      }
+
       function fatRenderPecaInsumos(idx) {
         const body = document.getElementById("fatPecaBody" + idx);
         const p = fatPecasCache[idx];
@@ -26051,7 +27109,6 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
           "<th>Descrição</th>" +
           "<th>U/M</th>" +
           '<th class="num">Por peça</th>' +
-          '<th class="num">Produzido</th>' +
           '<th class="num">Consumo total</th>' +
           "</tr></thead><tbody>";
 
@@ -26071,9 +27128,6 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
             "</td>" +
             '<td class="num">' +
             fatFmtNum(porPeca, 3) +
-            "</td>" +
-            '<td class="num">' +
-            produzido +
             "</td>" +
             '<td class="num"><strong>' +
             fatFmtNum(total, 3) +
@@ -26128,7 +27182,7 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
           if (typeof db !== "undefined" && db) {
             await db
               .collection("faturamento_receitas")
-              .doc(p.codigo)
+              .doc(p.docId || p.codigo)
               .delete();
           }
         } catch (err) {
@@ -26143,12 +27197,20 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         fatPecasCache.splice(idx, 1);
         fatRenderPecas();
         fatRenderProducao();
+        fatRenderConciliacao();
       }
 
       // ============================================================
-      // RENDER — produção do mês
+      // RENDER — produção do mês (fundida com "Peças Cadastradas")
       // ============================================================
+      // A quantidade produzida agora é editada dentro de cada card em
+      // fatRenderPecas(). Esta função fica como no-op para não quebrar
+      // os vários pontos que ainda a chamam.
       function fatRenderProducao() {
+        return;
+      }
+
+      function fatRenderProducaoLegado() {
         const area = document.getElementById("fatProducaoArea");
         const cont = document.getElementById("fatProdCount");
         if (!area) return;
@@ -26232,7 +27294,7 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
           try {
             await db
               .collection("faturamento_receitas")
-              .doc(p.codigo)
+              .doc(p.docId || p.codigo)
               .update({
                 produzido: p.produzido,
                 dataAtualizacao:
@@ -26485,12 +27547,73 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
           return { fator: 1, confianca: "trivial", motivo: "unidades equivalentes" };
         }
 
-        // MILH → un: universal, alta confiança
-        if (uc === "milh" && uo === "un") {
+        // Unidades universais de contagem — definições matemáticas
+        // que independem do insumo. Consulta o dicionário
+        // FAT_UNIDADES_CONTAGEM (topo do módulo). Funciona nos dois
+        // sentidos e entre duas unidades de contagem diferentes
+        // (ex.: 1 cento = 100 un, 1 duzia = 1/100 de cento, etc.).
+        const fatorCompra = FAT_UNIDADES_CONTAGEM[uc];
+        const fatorConsumo = FAT_UNIDADES_CONTAGEM[uo];
+
+        if (fatorCompra && fatorConsumo && fatorCompra !== fatorConsumo) {
+          // Ex.: compra em cento (100) e consumo em un (1) → 100/1 = 100
+          //      compra em un (1) e consumo em duzia (12) → 1/12 ≈ 0,083
+          const fator = fatorCompra / fatorConsumo;
+
+          // Motivo legível, escolhido pelo caso.
+          let motivo;
+          if (fatorConsumo === 1) {
+            motivo =
+              "1 " +
+              unidadeCompra +
+              " = " +
+              fatorCompra +
+              " unidades";
+          } else if (fatorCompra === 1) {
+            motivo =
+              "1 unidade = 1/" +
+              fatorConsumo +
+              " de " +
+              unidadeConsumo;
+          } else {
+            motivo =
+              "1 " +
+              unidadeCompra +
+              " = " +
+              fatorCompra +
+              " un = " +
+              (fatorCompra / fatorConsumo)
+                .toFixed(4)
+                .replace(/\.?0+$/, "")
+                .replace(".", ",") +
+              " " +
+              unidadeConsumo;
+          }
+
           return {
-            fator: 1000,
+            fator: fator,
             confianca: "alta",
-            motivo: "1 milheiro = 1000 unidades",
+            motivo: motivo,
+          };
+        }
+
+        // ─── Regras específicas de linha de produto ──────────────
+        // Alguns produtos têm fator universal conhecido, ligado à
+        // própria linha. Estas regras vêm antes das genéricas porque
+        // são mais específicas e não dependem da descrição trazer
+        // medidas — o fator é fixo para toda a família.
+        //
+        // PINO F XX ARFIX (F 20, F 25, F 30, F 45…) → 5.040 peças
+        // por caixa. Todas as bitolas da família têm o mesmo fator.
+        if (
+          /\bpino\s+f\s*\d+\s+arfix\b/i.test(descricao || "") &&
+          uc === "caixa" &&
+          uo === "un"
+        ) {
+          return {
+            fator: 5040,
+            confianca: "alta",
+            motivo: "PINO F XX ARFIX — 5.040 peças por caixa",
           };
         }
 
@@ -26588,22 +27711,43 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
       }
 
       // Carrega todas as conversões do Firestore para o cache.
-      async function fatCarregarConversoes() {
-        if (typeof db === "undefined" || !db) return;
-        try {
-          const snap = await db.collection("faturamento_conversoes").get();
-          fatConversoesCache = {};
-          snap.forEach((doc) => {
-            fatConversoesCache[doc.id] = { codigo: doc.id, ...doc.data() };
-          });
-          console.log(
-            "[FAT] " +
-              Object.keys(fatConversoesCache).length +
-              " conversões carregadas."
-          );
-        } catch (err) {
-          console.warn("[FAT] Erro ao carregar conversões:", err);
-        }
+      // Usa uma promessa compartilhada para evitar chamadas paralelas
+      // quando duas partes do código pedem o carregamento ao mesmo tempo
+      // (ex.: init + switchTab). `_fatConversoesCarregadas` fica true
+      // depois da primeira leitura bem-sucedida — é o sinal que a
+      // detecção de conversões usa para não rodar em cima de um cache
+      // vazio (o que faria reaparecer sugestões que já foram salvas).
+      let _fatConversoesCarregadas = false;
+      let _fatConversoesPromessa = null;
+
+      function fatCarregarConversoes() {
+        if (typeof db === "undefined" || !db) return Promise.resolve();
+        if (_fatConversoesPromessa) return _fatConversoesPromessa;
+
+        _fatConversoesPromessa = (async () => {
+          try {
+            const snap = await db.collection("faturamento_conversoes").get();
+            fatConversoesCache = {};
+            snap.forEach((doc) => {
+              fatConversoesCache[doc.id] = {
+                codigo: doc.id,
+                ...doc.data(),
+              };
+            });
+            console.log(
+              "[FAT] " +
+                Object.keys(fatConversoesCache).length +
+                " conversões carregadas."
+            );
+            _fatConversoesCarregadas = true;
+          } catch (err) {
+            console.warn("[FAT] Erro ao carregar conversões:", err);
+          } finally {
+            _fatConversoesPromessa = null;
+          }
+        })();
+
+        return _fatConversoesPromessa;
       }
 
       // Aplica as conversões detectadas automaticamente — só as de
@@ -26618,38 +27762,64 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
 
         linhas.forEach((l) => {
           if (!l.codigo) return;
-          if (!l.unidadeOriginalReq || !l.unidade) return;
-
-          const uc = l.unidadeOriginalReq;
-          const uo = l.unidade;
 
           // Já tem conversão cadastrada? Pula.
           if (fatConversoesCache[l.codigo]) return;
 
-          // Unidades já batem? Pula.
-          if (fatNormUnidade(uc) === fatNormUnidade(uo)) return;
+          const uc = l.unidadeOriginalReq;   // unidade da requisição
+          const uoConsumo = l.unidade;       // unidade do consumo (peça)
 
-          // Tenta sugerir
-          const sug = fatSugerirFator(uc, uo, l.descricaoOriginalReq || l.descricao);
+          // ─── Base de Materiais: fonte canônica ─────────────────
+          // Se a base tiver este código, usamos a unidade dela como
+          // alvo da conversão (é a "unidade correta" oficial). A
+          // descrição da base também é preferida para a extração de
+          // medidas — vem do cadastro da empresa e é mais confiável
+          // que textos de planilhas, que às vezes têm typos.
+          const matBase = fatMateriaisCache[l.codigo];
+          const unidadeBase = matBase ? matBase.unidade : "";
+          const descricaoBase = matBase ? matBase.nome : "";
+
+          // Sem nenhuma unidade (requisição, consumo e base), não há
+          // como sugerir nada.
+          if (!uc && !unidadeBase && !uoConsumo) return;
+
+          // Unidade-alvo da conversão: Base → Consumo → Requisição.
+          const uoTarget = unidadeBase || uoConsumo || uc;
+
+          // Se a requisição já está na unidade-alvo, nada a converter.
+          if (
+            uc &&
+            uoTarget &&
+            fatNormUnidade(uc) === fatNormUnidade(uoTarget)
+          ) {
+            return;
+          }
+
+          // Descrição preferida: Base de Materiais (mais confiável).
+          const descricaoParaSugestao =
+            descricaoBase || l.descricaoOriginalReq || l.descricao || "";
+
+          // Tenta sugerir um fator de conversão.
+          const sug = fatSugerirFator(uc, uoTarget, descricaoParaSugestao);
           if (!sug) return;
 
           if (sug.confianca === "alta") {
             paraSalvarAuto.push({
               codigo: l.codigo,
               unidadeCompra: uc,
-              unidadeConsumo: uo,
+              unidadeConsumo: uoTarget,
               fator: sug.fator,
               origem: "auto",
-              descricao: l.descricaoOriginalReq || l.descricao || "",
+              descricao: descricaoParaSugestao,
             });
           } else if (sug.confianca === "media") {
             fatConversoesSugeridas[l.codigo] = {
               codigo: l.codigo,
               unidadeCompra: uc,
-              unidadeConsumo: uo,
+              unidadeConsumo: uoTarget,
               fator: sug.fator,
               motivo: sug.motivo,
-              descricao: l.descricaoOriginalReq || l.descricao || "",
+              descricao: descricaoParaSugestao,
             };
           }
         });
@@ -26716,6 +27886,8 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
 
           (receita.insumos || []).forEach((i) => {
             if (!i.codigo) return;
+            // Ignora códigos de taxa/fator (4090xxxx) — não são insumos.
+            if (!fatIsCodigoInsumo(i.codigo)) return;
             const cIns = i.codigo;
             if (!consumo[cIns]) {
               consumo[cIns] = {
@@ -26734,7 +27906,10 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
 
         const reqMap = {};
         (requisicaoArr || []).forEach((i) => {
-          if (i.codigo) reqMap[i.codigo] = i;
+          if (!i.codigo) return;
+          // Mesma regra do lado da requisição: 4090xxxx fora.
+          if (!fatIsCodigoInsumo(i.codigo)) return;
+          reqMap[i.codigo] = i;
         });
 
         const codigos = new Set([
@@ -26879,6 +28054,15 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         if (_fatDeteccaoEmAndamento) return;
         _fatDeteccaoEmAndamento = true;
         try {
+          // Garante que as conversões já foram lidas do Firestore
+          // antes de tentar detectar novas. Sem isso, uma detecção
+          // disparada logo após o reload da página veria o cache
+          // vazio e sugeriria novamente conversões que já foram
+          // salvas em sessões anteriores.
+          if (!_fatConversoesCarregadas) {
+            await fatCarregarConversoes();
+          }
+
           const linhas = fatReconciliar();
           await fatDetectarConversoes(linhas);
           fatRenderConciliacaoTabela();
@@ -26893,6 +28077,10 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
       // Separado em wrapper + tabela para que a detecção assíncrona
       // de conversões possa re-renderizar só a tabela depois.
       function fatRenderConciliacao() {
+        // Sempre mantém o dropzone de requisição coerente com o
+        // estado atual (planilha carregada vs. vazio).
+        fatRequisicaoAtualizarStatus();
+
         const area = document.getElementById("fatConcilArea");
         const cont = document.getElementById("fatReqCount");
         const btnExp = document.getElementById("fatBtnExportar");
@@ -26925,7 +28113,6 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         if (!area) return;
 
         const temReceita = fatPecasCache.length > 0;
-        const wrapOrdem = document.getElementById("fatOrderWrap");
 
         const linhas = fatReconciliar();
 
@@ -26940,10 +28127,9 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
           cont.textContent = txt;
         }
 
-        if (wrapOrdem) {
-          wrapOrdem.style.display = comReq.length > 1 ? "inline-block" : "none";
-        }
-        fatAtualizarOrderLabel();
+        // O botão de ordenação agora é renderizado junto ao título
+        // "Insumos requisitados (N)", dentro do `html` montado abaixo.
+        // Não precisa mais manipular `fatOrderWrap` por fora.
 
         const mesLabel = fatFmtMes(fatMes);
         let html = "";
@@ -26980,10 +28166,46 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
             "</div>";
         }
 
+        // Cabeçalho do grupo com o botão de ordenação na mesma linha.
+        // O botão é recriado a cada render — os handlers inline
+        // (fatToggleOrderPicker / fatSelectOrder) continuam válidos.
+        html += '<div class="fat-group-header">';
         html +=
           '<div class="fat-group-titulo">Insumos requisitados (' +
           comReq.length +
           ")</div>";
+        if (comReq.length > 1) {
+          html +=
+            '<div class="fat-order-wrap" id="fatOrderWrap">' +
+            '<button type="button" class="fat-order-btn" onclick="fatToggleOrderPicker(event)" aria-haspopup="true" aria-expanded="false">' +
+            '<span id="fatOrderBtnLabel">' +
+            (FAT_ORDER_LABELS[fatOrderMode] || "Maior diferença") +
+            "</span>" +
+            '<svg class="fat-order-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>' +
+            "</button>" +
+            '<div class="fat-order-panel" id="fatOrderPanel" role="menu">' +
+            '<div class="fat-order-item' +
+            (fatOrderMode === "diff" ? " selected" : "") +
+            "\" data-value=\"diff\" onclick=\"fatSelectOrder('diff')\">Maior diferença</div>" +
+            '<div class="fat-order-item' +
+            (fatOrderMode === "consumido-desc" ? " selected" : "") +
+            "\" data-value=\"consumido-desc\" onclick=\"fatSelectOrder('consumido-desc')\">Mais usados</div>" +
+            '<div class="fat-order-item' +
+            (fatOrderMode === "consumido-asc" ? " selected" : "") +
+            "\" data-value=\"consumido-asc\" onclick=\"fatSelectOrder('consumido-asc')\">Menos usados</div>" +
+            '<div class="fat-order-item' +
+            (fatOrderMode === "requisitado-desc" ? " selected" : "") +
+            "\" data-value=\"requisitado-desc\" onclick=\"fatSelectOrder('requisitado-desc')\">Mais requisitados</div>" +
+            '<div class="fat-order-item' +
+            (fatOrderMode === "codigo" ? " selected" : "") +
+            "\" data-value=\"codigo\" onclick=\"fatSelectOrder('codigo')\">Código (A–Z)</div>" +
+            '<div class="fat-order-item' +
+            (fatOrderMode === "descricao" ? " selected" : "") +
+            "\" data-value=\"descricao\" onclick=\"fatSelectOrder('descricao')\">Descrição (A–Z)</div>" +
+            "</div>" +
+            "</div>";
+        }
+        html += "</div>";
         html +=
           '<table class="fat-resultado-table"><thead><tr>' +
           "<th>Código</th><th>Descrição</th><th>U/M</th>" +
@@ -27004,12 +28226,14 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
 
             // Bloco do "Requisitado" — mostra valor ajustado + small
             // com o original e/ou aviso de divergência.
-            let reqHTML = fatFmtNum(l.requisitado, 3);
+            // Usamos fatFmtNumLimpo (sem zeros à direita) para que
+            // "55" apareça como "55" e não "55,000".
+            let reqHTML = fatFmtNumLimpo(l.requisitado);
             if (l.unidadeDivergente) {
               reqHTML +=
                 '<span class="fat-unid-aviso">⚠ unidade divergente</span>' +
                 '<span class="fat-unid-orig">orig.: ' +
-                fatFmtNum(l.requisitadoOriginal, 3) +
+                fatFmtNumLimpo(l.requisitadoOriginal) +
                 " " +
                 fatEsc(l.unidadeOriginalReq || "") +
                 "</span>";
@@ -27021,11 +28245,11 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
             ) {
               reqHTML +=
                 '<span class="fat-unid-orig">orig.: ' +
-                fatFmtNum(l.requisitadoOriginal, 3) +
+                fatFmtNumLimpo(l.requisitadoOriginal) +
                 " " +
                 fatEsc(l.unidadeOriginalReq) +
                 " × " +
-                fatFmtNum(l.fator, 4) +
+                fatFmtNumLimpo(l.fator) +
                 "</span>";
             }
 
@@ -27039,12 +28263,12 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
               '</td><td class="num">' +
               reqHTML +
               '</td><td class="num">' +
-              fatFmtNum(l.consumido, 3) +
+              fatFmtNumLimpo(l.consumido) +
               '</td><td class="num ' +
               classeDiff +
               '">' +
               (l.diff >= 0 ? "+" : "") +
-              fatFmtNum(l.diff, 3) +
+              fatFmtNumLimpo(l.diff) +
               '</td><td class="num ' +
               classeDiff +
               '">' +
@@ -27077,7 +28301,7 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
               "</td><td>" +
               fatEsc(l.unidade || "—") +
               '</td><td class="num fat-diff-pos">' +
-              fatFmtNum(l.consumido, 3) +
+              fatFmtNumLimpo(l.consumido) +
               "</td></tr>";
           });
           html += "</tbody></table>";
@@ -27098,7 +28322,19 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
         let csv =
           "Grupo;Código;Descrição;U/M;Requisitado;Consumido;Diferença;%\n";
 
-        linhas
+        // Ordena por descrição A–Z (pt-BR) antes de montar o arquivo.
+        // Como o CSV tem dois blocos (Requisitado / Sem requisição),
+        // ambos herdam a mesma ordem porque o sort é feito uma única
+        // vez sobre a lista completa.
+        const ordenadas = (linhas || []).slice().sort((a, b) =>
+          String(a.descricao || "").localeCompare(
+            String(b.descricao || ""),
+            "pt-BR",
+            { sensitivity: "base" }
+          )
+        );
+
+        ordenadas
           .filter((l) => l.temRequisicao)
           .forEach((l) => {
             csv +=
@@ -27114,7 +28350,7 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
               ].join(";") + "\n";
           });
 
-        linhas
+          ordenadas
           .filter((l) => !l.temRequisicao)
           .forEach((l) => {
             const c = Number(l.consumido || 0);
@@ -27189,10 +28425,11 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
             .orderBy("dataAtualizacao", "desc")
             .get();
 
-          fatPecasCache = [];
+            fatPecasCache = [];
           snap.forEach((doc) => {
             const d = doc.data();
             fatPecasCache.push({
+              docId: d.docId || doc.id,
               codigo: d.codigo || doc.id,
               nome: d.nome || "(sem nome)",
               insumos: Array.isArray(d.insumos) ? d.insumos : [],
@@ -27213,6 +28450,70 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
               fatEsc(err.message || err.code || "desconhecido") +
               "</div>";
           }
+        }
+      }
+
+      // ============================================================
+      // FATURAMENTO — seções colapsáveis
+      // ============================================================
+      // Cada seção pode ser minimizada clicando no header. O estado
+      // fica salvo no localStorage para sobreviver ao refresh.
+      const FAT_SECOES_IDS = [
+        "fatSecBase",
+        "fatSecPecas",
+        "fatSecRequisicao",
+      ];
+
+      function fatToggleSecao(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle("collapsed");
+        try {
+          const saved = JSON.parse(
+            localStorage.getItem("artefacto_fat_secoes") || "{}"
+          );
+          saved[id] = el.classList.contains("collapsed");
+          localStorage.setItem("artefacto_fat_secoes", JSON.stringify(saved));
+        } catch (e) {}
+      }
+
+      function fatInitSecoes() {
+        let saved = {};
+        try {
+          saved = JSON.parse(
+            localStorage.getItem("artefacto_fat_secoes") || "{}"
+          );
+        } catch (e) {}
+        FAT_SECOES_IDS.forEach((id) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          if (saved[id]) el.classList.add("collapsed");
+        });
+      }
+
+      // Atualiza o dropzone de requisição para refletir se já há
+      // uma planilha importada, igual ao comportamento da Base de
+      // Materiais.
+      function fatRequisicaoAtualizarStatus() {
+        const dz = document.getElementById("fatDropRequisicao");
+        const title = document.getElementById("fatDropReqTitle");
+        const hint = document.getElementById("fatDropReqHint");
+        if (!dz) return;
+
+        const n = (fatRequisicao || []).length;
+        if (n > 0) {
+          dz.classList.add("has-file");
+          if (title) title.textContent = "Planilha carregada";
+          if (hint)
+            hint.textContent =
+              n + " insumos · clique para substituir pela versão mais recente";
+        } else {
+          dz.classList.remove("has-file");
+          if (title)
+            title.textContent = "Clique ou arraste a planilha de requisição";
+          if (hint)
+            hint.textContent =
+              ".xlsx · colunas: CÓDIGO, DESCRIÇÃO, UNIDADE, UNITARIO, Soma de QTD";
         }
       }
 
@@ -27267,6 +28568,11 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
           "fatFileRequisicao",
           fatHandleRequisicaoFile
         );
+        bindDrop(
+          "fatDropMateriais",
+          "fatFileMateriais",
+          fatHandleMateriaisFile
+        );
 
         // Render inicial (caso já existam peças em memória)
         fatRenderPecas();
@@ -27283,6 +28589,15 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
 
         // Carrega as conversões de unidade
         fatCarregarConversoes().then(() => fatAtualizarBadgeConversao());
+
+        // Carrega a base de materiais do Firestore para o cache em memória
+        fatMateriaisCarregarFirestore();
+
+        // Restaura o estado colapsado/aberto das seções
+        fatInitSecoes();
+
+        // Reflete o estado atual do dropzone de requisição
+        fatRequisicaoAtualizarStatus();
       }
 
       // ============================================================
@@ -27543,14 +28858,14 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
               "</td><td>" +
               fatEsc(l.unidade || "—") +
               '</td><td class="num">' +
-              fatFmtNum(l.requisitado, 3) +
+              fatFmtNumLimpo(l.requisitado) +
               '</td><td class="num">' +
-              fatFmtNum(l.consumido, 3) +
+              fatFmtNumLimpo(l.consumido) +
               '</td><td class="num ' +
               classeDiff +
               '">' +
               (l.diff >= 0 ? "+" : "") +
-              fatFmtNum(l.diff, 3) +
+              fatFmtNumLimpo(l.diff) +
               '</td><td class="num ' +
               classeDiff +
               '">' +
@@ -27580,7 +28895,7 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
               "</td><td>" +
               fatEsc(l.unidade || "—") +
               '</td><td class="num fat-diff-pos">' +
-              fatFmtNum(l.consumido, 3) +
+              fatFmtNumLimpo(l.consumido) +
               "</td></tr>";
           });
           html += "</tbody></table>";
@@ -27976,10 +29291,11 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
             .doc(fatMes)
             .set(doc);
 
-          const mesSalvo = fatFmtMes(fatMes);
+            const mesSalvo = fatFmtMes(fatMes);
           showToast(
-            "📸 Fechamento de " + mesSalvo + " salvo! Iniciando novo mês...",
-            true
+            "Fechamento de " + mesSalvo + " salvo! Iniciando novo mês...",
+            true,
+            "check"
           );
 
           await fatCarregarFechamentos();
@@ -28285,6 +29601,73 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
             );
           })
           .join("");
+      }
+
+      // Aplica todas as sugestões pendentes de uma vez.
+      // Salva em batch no Firestore, atualiza o cache e re-renderiza
+      // o modal, a lista de conversões e a tabela de conciliação.
+      async function fatAplicarTodasConversoes() {
+        const codigos = Object.keys(fatConversoesSugeridas || {});
+        if (codigos.length === 0) {
+          showToast("⚠️ Nenhuma sugestão pendente.", false);
+          return;
+        }
+        if (typeof db === "undefined" || !db) {
+          showToast("❌ Firebase indisponível", false);
+          return;
+        }
+
+        const btn = document.getElementById("fatBtnAplicarTodas");
+        const textoOriginal = btn ? btn.textContent : "Aplicar todas";
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Aplicando...";
+        }
+
+        try {
+          const batch = db.batch();
+          codigos.forEach((codigo) => {
+            const s = fatConversoesSugeridas[codigo];
+            if (!s) return;
+            const ref = db
+              .collection("faturamento_conversoes")
+              .doc(codigo);
+            batch.set(ref, {
+              unidadeCompra: s.unidadeCompra,
+              unidadeConsumo: s.unidadeConsumo,
+              fator: s.fator,
+              origem: "auto",
+              descricao: s.descricao || "",
+              dataAtualizacao:
+                firebase.firestore.FieldValue.serverTimestamp(),
+            });
+            fatConversoesCache[codigo] = { ...s };
+          });
+          await batch.commit();
+
+          // Todas foram aplicadas — limpa a lista de pendentes.
+          fatConversoesSugeridas = {};
+
+          fatAtualizarBadgeConversao();
+          fatRenderSugestoesConversao();
+          fatRenderListaConversoes();
+          fatRenderConciliacaoTabela();
+
+          showToast(
+            "✅ " + codigos.length + " conversões aplicadas",
+            true
+          );
+        } catch (err) {
+          console.error("[FAT] Erro ao aplicar todas as conversões:", err);
+          showToast(
+            "❌ Erro ao aplicar: " + (err.message || "desconhecido"),
+            false
+          );
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = textoOriginal;
+          }
+        }
       }
 
       async function fatAplicarSugestaoConversao(codigo) {
@@ -28778,6 +30161,10 @@ ${sugestoesHTML ? '<div class="audit"><h2>Observações Técnicas</h2><ul>' + su
             if (f) carregarTemplateArquivo(f);
           });
         })();
+
+        // Aplica o estado inicial do tipo de projeto (Padrão por
+        // padrão) — preenche o prefixo do código e posiciona cursor.
+        aplicarTipoProjeto();
 
         // Garante que os botões de exportar/salvar nasçam escondidos
         // (roda DEPOIS do primeiro atualizarModelo do init3D)
